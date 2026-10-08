@@ -1,0 +1,923 @@
+/* SPDX-FileCopyrightText: (c) 2026 Rafal Zajac */
+/* SPDX-License-Identifier: MIT */
+
+/* docket plugin styles. Chip/card styling for ADF carriers lands in M8.4. */
+
+/* Indentation marker (`N> `) rendered as left padding; the nesting level rides
+   in the `--docket-indent-level` custom property, set per line by the Live
+   Preview view plugin and per paragraph by the Reading-view post-processor.
+   Scoped to both view containers and given class+element specificity so a
+   theme's default `.cm-line` / `p` rules don't override the padding. */
+.markdown-source-view.mod-cm6 .cm-line.docket-indent,
+.markdown-preview-view p.docket-indent {
+    padding-left: calc(var(--docket-indent-level, 0) * 1.6em);
+}
+
+/* Settings: the validation banner, shown only while the config is invalid. */
+.docket-banner {
+    display: none;
+    align-items: flex-start;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-4);
+    padding: var(--size-4-2) var(--size-4-3);
+    border-radius: var(--radius-m);
+    background: rgba(var(--color-red-rgb), 0.1);
+    color: var(--text-error);
+}
+.docket-banner.is-visible {
+    display: flex;
+}
+.docket-banner-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin-top: 0.15em;
+}
+
+/* Settings: synced locations, one setting row each, a kind icon by the path. */
+.docket-location .setting-item-name {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    overflow-wrap: anywhere;
+}
+.docket-location .setting-item-description {
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+.docket-location-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--text-muted);
+}
+.docket-location.is-invalid {
+    box-shadow: inset 3px 0 0 var(--color-red);
+    padding-left: var(--size-4-3);
+}
+.docket-locations-empty {
+    padding: var(--size-4-2) 0 var(--size-4-3);
+}
+
+/* Settings: the "Browse Confluence" picker — a space filter, an indented tree
+   of rows (twisty, tick, kind icon, title, badges), and a sticky footer. */
+.docket-picker {
+    width: min(720px, 90vw);
+}
+.docket-picker-filter {
+    width: 100%;
+    margin-bottom: var(--size-4-2);
+}
+.docket-picker-tree {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.docket-picker-row,
+.docket-picker-note {
+    padding-left: calc(var(--docket-depth, 0) * 1.4em);
+}
+.docket-picker-row {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding-top: var(--size-2-1);
+    padding-bottom: var(--size-2-1);
+    border-radius: var(--radius-s);
+}
+.docket-picker-row:hover {
+    background: var(--background-modifier-hover);
+}
+.docket-picker-row input[type="checkbox"] {
+    margin: 0;
+}
+.docket-picker-twisty {
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: 16px;
+    color: var(--text-muted);
+}
+.docket-picker-twisty.is-clickable {
+    cursor: var(--cursor);
+}
+.docket-picker-title {
+    overflow-wrap: anywhere;
+}
+.docket-picker-badges {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--size-2-2);
+    margin-left: auto;
+}
+.docket-picker-badge {
+    padding: 0 var(--size-2-3);
+    border-radius: var(--radius-s);
+    background: var(--background-modifier-hover);
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    white-space: nowrap;
+}
+.docket-picker-badge.is-synced {
+    color: var(--text-success);
+}
+.docket-picker-badge.is-remove {
+    color: var(--text-error);
+}
+.docket-picker-badge.is-rename {
+    color: var(--text-accent);
+}
+.docket-picker-rename {
+    flex: 0 0 auto;
+    visibility: hidden;
+}
+.docket-picker-row:hover .docket-picker-rename,
+.docket-picker-rename:focus-visible {
+    visibility: visible;
+}
+.docket-picker-rename.is-hidden {
+    display: none;
+}
+.docket-picker-name {
+    flex: 1 1 auto;
+    min-width: 8em;
+}
+.docket-picker-group > summary {
+    cursor: var(--cursor);
+    padding: var(--size-4-2) 0;
+    color: var(--text-muted);
+}
+.docket-picker-review {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Settings: a collapsible "Advanced" group headed like a setting heading. */
+.docket-advanced > summary {
+    cursor: var(--cursor);
+    padding: var(--size-4-3) 0;
+    border-bottom: var(--border-width) solid var(--background-modifier-border);
+    font-weight: var(--font-semibold);
+}
+.docket-settings input.is-invalid {
+    border-color: var(--background-modifier-error);
+}
+
+/* Settings: the connection test's result line. */
+.docket-test {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2-2);
+}
+.docket-test-icon {
+    display: inline-flex;
+}
+.docket-test.is-ok {
+    color: var(--text-success);
+}
+.docket-test.is-err {
+    color: var(--text-error);
+    user-select: text;
+}
+
+/* Location dialog. */
+.docket-wide-input {
+    width: 100%;
+    min-width: 16em;
+}
+.docket-field-error {
+    min-height: 1.4em;
+    color: var(--text-error);
+    font-size: var(--font-ui-small);
+}
+
+/* Hide docket's bookkeeping properties in the Properties view. */
+.docket-hide-props .metadata-property[data-property-key^="docket_"] {
+    display: none;
+}
+
+.docket-path-input {
+    width: 100%;
+    margin-bottom: 0.75em;
+}
+
+/* ── Panel ──────────────────────────────────────────────────────────────
+   The sidebar panel: a card for the active note, the changes list (styled as
+   Obsidian tree items, like the file explorer), progress, and the last run.
+   Theme variables only, so it follows light/dark and the user's accent. */
+.docket-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-4);
+    padding: var(--size-4-3);
+    font-size: var(--font-ui-small);
+}
+.docket-muted {
+    color: var(--text-muted);
+}
+
+/* First-run state: a centred icon, a sentence, and one call to action. */
+.docket-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--size-4-3);
+    padding: var(--size-4-8) var(--size-4-4);
+    text-align: center;
+    color: var(--text-muted);
+}
+.docket-empty-icon .svg-icon {
+    width: var(--icon-xl);
+    height: var(--icon-xl);
+    color: var(--text-faint);
+}
+
+/* This-note card. */
+.docket-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+    padding: var(--size-4-3);
+    border: var(--border-width) solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    background: var(--background-primary-alt);
+}
+.docket-card.is-empty {
+    color: var(--text-muted);
+}
+.docket-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-4-2);
+}
+.docket-card-icon {
+    display: inline-flex;
+    margin-top: 0.15em;
+    color: var(--text-muted);
+}
+.docket-card-titles {
+    min-width: 0;
+}
+.docket-card-name {
+    font-weight: var(--font-semibold);
+    color: var(--text-normal);
+    overflow-wrap: anywhere;
+}
+.docket-card-state {
+    color: var(--text-muted);
+}
+.docket-card-detail {
+    color: var(--text-faint);
+    font-size: var(--font-ui-smaller);
+    user-select: text;
+}
+.docket-card.is-edited .docket-card-icon,
+.docket-card.is-new .docket-card-icon {
+    color: var(--text-accent);
+}
+.docket-card.is-incoming .docket-card-icon {
+    color: var(--color-blue);
+}
+.docket-card.is-synced .docket-card-icon {
+    color: var(--text-success);
+}
+.docket-card.is-diverged .docket-card-icon,
+.docket-card.is-unchecked .docket-card-icon {
+    color: var(--text-warning);
+}
+.docket-card.is-conflict .docket-card-icon,
+.docket-card.is-refused .docket-card-icon,
+.docket-card.is-conflict .docket-card-state,
+.docket-card.is-refused .docket-card-state {
+    color: var(--text-error);
+}
+.docket-card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+}
+.docket-card-more {
+    margin-left: auto;
+}
+
+/* Section header: a title and a muted aside (age, summary). */
+.docket-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+}
+.docket-section > button {
+    align-self: flex-start;
+    margin-top: var(--size-4-1);
+}
+.docket-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--size-4-2);
+    padding-bottom: var(--size-4-1);
+}
+.docket-section-title {
+    font-weight: var(--font-semibold);
+    color: var(--text-normal);
+}
+.docket-section-head .docket-muted {
+    font-size: var(--font-ui-smaller);
+}
+
+/* Changes list: tree items; a row's actions show on hover or focus. */
+.docket-group-head .tree-item-inner {
+    font-weight: var(--font-medium);
+}
+.docket-row-end {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2-1);
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+.docket-row-end + .docket-row-end {
+    margin-left: 0;
+}
+.docket-icon-btn {
+    padding: var(--size-2-1);
+}
+.docket-icon-btn.is-active {
+    color: var(--interactive-accent);
+}
+.docket-icon-btn.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+.docket-group-head .docket-icon-btn,
+.docket-hover {
+    visibility: hidden;
+}
+.docket-group-head:hover .docket-icon-btn,
+.docket-change:hover .docket-hover,
+.docket-change:focus-within .docket-hover {
+    visibility: visible;
+}
+.docket-change .tree-item-inner {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.docket-change-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.docket-change-detail {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-faint);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.docket-change-icon {
+    color: var(--text-faint);
+}
+.docket-group.is-outgoing .docket-change-icon,
+.docket-group.is-new .docket-change-icon {
+    color: var(--text-accent);
+}
+.docket-group.is-incoming .docket-change-icon {
+    color: var(--color-blue);
+}
+.docket-group.is-diverged .docket-change-icon {
+    color: var(--text-warning);
+}
+.docket-group.is-conflicts .docket-change-icon,
+.docket-group.is-problems .docket-change-icon {
+    color: var(--text-error);
+}
+
+/* Progress: a thin accent bar over a muted caption. */
+.docket-progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+}
+.docket-bar {
+    height: 4px;
+    border-radius: var(--radius-s);
+    background: var(--background-modifier-border);
+    overflow: hidden;
+}
+.docket-bar-fill {
+    height: 100%;
+    width: var(--docket-progress, 0);
+    border-radius: inherit;
+    background: var(--interactive-accent);
+    transition: width 0.2s ease;
+}
+.docket-bar.is-indeterminate .docket-bar-fill {
+    width: 40%;
+    animation: docket-indet 1.1s ease-in-out infinite;
+}
+@keyframes docket-indet {
+    0% {
+        margin-left: -40%;
+    }
+    100% {
+        margin-left: 100%;
+    }
+}
+.docket-caption {
+    display: flex;
+    gap: var(--size-4-2);
+    color: var(--text-muted);
+}
+.docket-caption-count {
+    flex: 0 0 auto;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-faint);
+}
+.docket-caption-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Last run: worded counts, one colour per outcome. */
+.docket-summary {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--size-2-3);
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+}
+.docket-part + .docket-part::before {
+    content: "·";
+    margin-right: var(--size-2-3);
+    color: var(--text-faint);
+}
+.docket-part.is-added,
+.docket-part.is-ok {
+    color: var(--text-success);
+}
+.docket-part.is-updated {
+    color: var(--color-blue);
+}
+.docket-part.is-conflict,
+.docket-part.is-warn {
+    color: var(--text-warning);
+}
+.docket-part.is-err,
+.docket-part.is-deleted {
+    color: var(--text-error);
+}
+.docket-error {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-4-2);
+    padding: var(--size-4-2);
+    border-radius: var(--radius-m);
+    background: rgba(var(--color-red-rgb), 0.1);
+    color: var(--text-error);
+}
+.docket-error-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+.docket-error-text {
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+.docket-log-wrap > summary {
+    cursor: var(--cursor);
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+.docket-log {
+    display: flex;
+    flex-direction: column;
+    max-height: 40vh;
+    margin-top: var(--size-4-1);
+    overflow-y: auto;
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-smaller);
+    user-select: text;
+}
+.docket-log-row {
+    padding: var(--size-2-1) 0;
+    overflow-wrap: anywhere;
+    color: var(--text-muted);
+}
+.docket-log-row.is-added,
+.docket-log-row.is-updated {
+    color: var(--text-normal);
+}
+.docket-log-row.is-conflict,
+.docket-log-row.is-warn {
+    color: var(--text-warning);
+}
+.docket-log-row.is-err {
+    color: var(--text-error);
+}
+.docket-log-row.is-unchanged {
+    color: var(--text-faint);
+}
+.docket-log-row.is-deleted {
+    color: var(--text-faint);
+    text-decoration: line-through;
+}
+.docket-log-file {
+    color: inherit;
+    text-decoration: none;
+}
+.docket-log-file:hover {
+    text-decoration: underline;
+}
+
+/* Status bar: the icon spins while a run is in flight. */
+.docket-statusbar {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2-2);
+}
+.docket-statusbar-icon {
+    display: inline-flex;
+}
+.docket-statusbar-icon .svg-icon {
+    width: var(--icon-xs);
+    height: var(--icon-xs);
+}
+.docket-statusbar.is-busy .docket-statusbar-icon {
+    animation: docket-pulse 1.2s ease-in-out infinite;
+}
+@keyframes docket-pulse {
+    50% {
+        opacity: 0.35;
+    }
+}
+.docket-notice-link {
+    cursor: var(--cursor-link);
+}
+
+/* Push review modal. */
+.docket-review .modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+.docket-review-sub {
+    margin: 0;
+    color: var(--text-muted);
+}
+.docket-review-all {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding: 0 var(--size-4-2);
+    color: var(--text-muted);
+}
+.docket-review-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 50vh;
+    overflow-y: auto;
+    border: var(--border-width) solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+}
+.docket-review-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-4-2);
+    padding: var(--size-4-2);
+}
+.docket-review-row + .docket-review-row {
+    border-top: var(--border-width) solid var(--background-modifier-border);
+}
+label.docket-review-row:hover {
+    background: var(--background-modifier-hover);
+}
+.docket-review-lead {
+    flex: 0 0 auto;
+    padding-top: 0.15em;
+}
+.docket-review-main {
+    flex: 1;
+    min-width: 0;
+}
+/* A locked row (refused, not checked) selects whole, path and reason, for
+   copying; a pickable row is a label, where a drag-select would toggle it. */
+div.docket-review-row .docket-review-main {
+    user-select: text;
+}
+.docket-review-name {
+    overflow-wrap: anywhere;
+}
+.docket-review-note {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    user-select: text;
+}
+.docket-review-row.is-warn .docket-review-note {
+    color: var(--text-warning);
+}
+.docket-review-row.is-err .docket-review-note {
+    color: var(--text-error);
+}
+.docket-review-row.is-locked .docket-review-name {
+    color: var(--text-muted);
+}
+.docket-confirm-list {
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+/* Tabs: the Sync | Git | History row sits flush with the panel's top edge. */
+.docket-tabs {
+    display: flex;
+    margin: calc(-1 * var(--size-4-3)) calc(-1 * var(--size-4-3)) 0;
+    border-bottom: var(--border-width) solid var(--background-modifier-border);
+}
+.docket-tab {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: var(--size-4-1);
+    padding: var(--size-4-2);
+    color: var(--text-muted);
+    cursor: var(--cursor);
+    border-bottom: 2px solid transparent;
+}
+.docket-tab:hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+}
+.docket-tab.is-active {
+    color: var(--text-normal);
+    border-bottom-color: var(--interactive-accent);
+}
+.docket-tab-icon {
+    display: inline-flex;
+}
+.docket-tab-icon .svg-icon {
+    width: var(--icon-s);
+    height: var(--icon-s);
+}
+.docket-tab-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-4);
+}
+
+/* Toolbar: the nav-header row sits right under the tabs. */
+.docket-toolbar {
+    margin: calc(-1 * var(--size-4-4)) calc(-1 * var(--size-4-3)) 0;
+}
+.docket-toolbar .nav-action-button.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Git tab: one commit form over a flat change list. */
+.docket-git-guard {
+    align-items: center;
+}
+.docket-git-guard button {
+    flex: 0 0 auto;
+}
+.docket-git-recent {
+    width: 100%;
+}
+.docket-git-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+}
+.docket-git-list-head,
+.docket-git-file {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+}
+.docket-git-list-head input,
+.docket-git-file input {
+    margin: 0;
+}
+.docket-git-count {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+.docket-git-list-head,
+.docket-git-file {
+    padding: 0 0 0 var(--size-4-1);
+}
+.docket-git-kind {
+    flex: 0 0 1.2em;
+    font-family: var(--font-monospace);
+    text-align: center;
+}
+.docket-git-file.is-A .docket-git-kind {
+    color: var(--color-green);
+}
+.docket-git-file.is-D .docket-git-kind {
+    color: var(--color-red);
+}
+.docket-git-file.is-M .docket-git-kind,
+.docket-git-file.is-R .docket-git-kind {
+    color: var(--color-blue);
+}
+.docket-git-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.docket-git-name.is-clickable {
+    cursor: var(--cursor);
+}
+.docket-git-name.is-clickable:hover {
+    text-decoration: underline;
+}
+.docket-git-dir,
+.docket-git-from {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-ui-smaller);
+}
+.docket-git-badge {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: 0 var(--size-4-1);
+    border-radius: var(--radius-s);
+    background: var(--background-modifier-hover);
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+.docket-git-message {
+    width: 100%;
+    resize: vertical;
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-smaller);
+}
+.docket-git-error {
+    user-select: text;
+    white-space: pre-wrap;
+}
+.docket-git-commit {
+    align-self: flex-start;
+}
+
+/* History tab. */
+.docket-history-toggle {
+    display: flex;
+    gap: var(--size-4-1);
+}
+.docket-history-mode {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    width: auto;
+    padding: var(--size-4-1) var(--size-4-2);
+}
+.docket-history-mode.is-active {
+    color: var(--text-normal);
+    background: var(--background-modifier-active-hover);
+}
+.docket-history {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+}
+.docket-history-row {
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-smaller);
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+.docket-history > button {
+    align-self: flex-start;
+}
+
+/* Editor change bars against HEAD, and their hover popup. Gutter styling
+   ported from obsidian-git's styles.css (MIT, (c) 2020 Vinzent03, Denis
+   Olehov). */
+.docket-signs-gutter .cm-gutterElement {
+    display: grid;
+    /* Align the sign with lines of any height (headings, list items). */
+    padding-top: 0 !important;
+}
+.docket-sign {
+    justify-self: center;
+    height: inherit;
+    border-radius: 1px;
+}
+.docket-sign-add,
+.docket-sign-change {
+    width: 0.2rem;
+}
+.docket-sign-add {
+    background-color: var(--color-green);
+}
+.docket-sign-change {
+    background-color: var(--color-yellow);
+}
+.docket-sign-changedelete {
+    color: var(--color-yellow);
+    font-weight: var(--font-bold);
+    font-size: 1rem;
+    line-height: 1;
+}
+.docket-sign-delete,
+.docket-sign-topdelete {
+    width: 0.8rem;
+    height: 0.2rem;
+    background-color: var(--color-red);
+}
+.docket-sign-delete {
+    align-self: end;
+}
+.docket-sign-topdelete {
+    align-self: start;
+}
+div:hover > .docket-sign-add,
+div:hover > .docket-sign-change {
+    width: 0.6rem;
+}
+div:hover > .docket-sign-delete,
+div:hover > .docket-sign-topdelete {
+    height: 0.6rem;
+}
+/* Keep the text from shifting when the change bars are the only gutter. */
+.cm-gutters.cm-gutters-before:has(> .docket-signs-gutter:only-child) {
+    margin-inline-end: 0;
+}
+.cm-gutters.cm-gutters-before:has(> .docket-signs-gutter:only-child)
+    .docket-signs-gutter {
+    margin-inline-start: -1rem;
+}
+
+.cm-tooltip.docket-diff-tooltip {
+    max-width: min(40em, 80vw);
+    max-height: 40vh;
+    overflow: auto;
+    padding: var(--size-4-1) 0;
+    border: var(--border-width) solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background-color: var(--background-primary-alt);
+    box-shadow: var(--shadow-s);
+    font-size: var(--font-ui-smaller);
+}
+.docket-diff-head {
+    padding: 0 var(--size-4-2) var(--size-4-1);
+    color: var(--text-muted);
+}
+.docket-diff-line {
+    padding: 0 var(--size-4-2);
+    font-family: var(--font-monospace);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.docket-diff-line::before {
+    display: inline-block;
+    width: 1.2em;
+    color: var(--text-faint);
+}
+.docket-diff-del {
+    background-color: rgba(var(--color-red-rgb), 0.15);
+}
+.docket-diff-del::before {
+    content: "-";
+}
+.docket-diff-ins {
+    background-color: rgba(var(--color-green-rgb), 0.15);
+}
+.docket-diff-ins::before {
+    content: "+";
+}
+
+/* MCP server: the sync tab's line and the status-bar segment's error. */
+.docket-mcp-line {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+}
+.docket-mcp-line.mod-error,
+.docket-mcp-status.mod-error {
+    color: var(--text-error);
+}
+.docket-mcp-icon {
+    display: flex;
+}
+.docket-mcp-text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+/* MCP tab: the log fills the panel below the state line and scrolls. */
+.docket-mcp-tab {
+    flex: 1;
+    min-height: 0;
+}
+.docket-mcp-tab .docket-log {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    margin-top: 0;
+}

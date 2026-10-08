@@ -1,0 +1,4122 @@
+[
+  {
+    "name": "bookshop/docs/catalog/epub_delivery.md",
+    "text": "---\nid: epub-delivery\ntitle: EPUB Delivery\naliases: [ebook, \"digital edition\"]\nurl: https://help.example.com/epub-delivery\n---\n\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\n",
+    "tokens": [
+      {
+        "term": "id",
+        "position": 1,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "term": "epub",
+        "position": 2,
+        "start": 8,
+        "end": 12
+      },
+      {
+        "term": "deliveri",
+        "position": 3,
+        "start": 13,
+        "end": 21
+      },
+      {
+        "term": "titl",
+        "position": 4,
+        "start": 22,
+        "end": 27
+      },
+      {
+        "term": "epub",
+        "position": 5,
+        "start": 29,
+        "end": 33
+      },
+      {
+        "term": "deliveri",
+        "position": 6,
+        "start": 34,
+        "end": 42
+      },
+      {
+        "term": "alias",
+        "position": 7,
+        "start": 43,
+        "end": 50
+      },
+      {
+        "term": "ebook",
+        "position": 8,
+        "start": 53,
+        "end": 58
+      },
+      {
+        "term": "digit",
+        "position": 9,
+        "start": 61,
+        "end": 68
+      },
+      {
+        "term": "edit",
+        "position": 10,
+        "start": 69,
+        "end": 76
+      },
+      {
+        "term": "url",
+        "position": 11,
+        "start": 79,
+        "end": 82
+      },
+      {
+        "term": "http",
+        "position": 12,
+        "start": 84,
+        "end": 89
+      },
+      {
+        "term": "help.example.com",
+        "position": 13,
+        "start": 92,
+        "end": 108
+      },
+      {
+        "term": "epub",
+        "position": 14,
+        "start": 109,
+        "end": 113
+      },
+      {
+        "term": "deliveri",
+        "position": 15,
+        "start": 114,
+        "end": 122
+      },
+      {
+        "term": "epub",
+        "position": 16,
+        "start": 130,
+        "end": 134
+      },
+      {
+        "term": "deliveri",
+        "position": 17,
+        "start": 135,
+        "end": 143
+      },
+      {
+        "term": "custom",
+        "position": 20,
+        "start": 151,
+        "end": 159
+      },
+      {
+        "term": "receiv",
+        "position": 21,
+        "start": 160,
+        "end": 168
+      },
+      {
+        "term": "purchas",
+        "position": 23,
+        "start": 171,
+        "end": 180
+      },
+      {
+        "term": "epub",
+        "position": 24,
+        "start": 181,
+        "end": 185
+      },
+      {
+        "term": "edit",
+        "position": 25,
+        "start": 186,
+        "end": 193
+      },
+      {
+        "term": "download",
+        "position": 26,
+        "start": 199,
+        "end": 207
+      },
+      {
+        "term": "link",
+        "position": 27,
+        "start": 208,
+        "end": 212
+      },
+      {
+        "term": "payment",
+        "position": 29,
+        "start": 220,
+        "end": 227
+      },
+      {
+        "term": "clear",
+        "position": 30,
+        "start": 228,
+        "end": 234
+      },
+      {
+        "term": "shop",
+        "position": 32,
+        "start": 240,
+        "end": 244
+      },
+      {
+        "term": "email",
+        "position": 33,
+        "start": 245,
+        "end": 251
+      },
+      {
+        "term": "person",
+        "position": 35,
+        "start": 254,
+        "end": 262
+      },
+      {
+        "term": "download",
+        "position": 36,
+        "start": 263,
+        "end": 271
+      },
+      {
+        "term": "link",
+        "position": 37,
+        "start": 272,
+        "end": 276
+      },
+      {
+        "term": "link",
+        "position": 39,
+        "start": 282,
+        "end": 286
+      },
+      {
+        "term": "valid",
+        "position": 41,
+        "start": 290,
+        "end": 295
+      },
+      {
+        "term": "48",
+        "position": 43,
+        "start": 300,
+        "end": 302
+      },
+      {
+        "term": "hour",
+        "position": 44,
+        "start": 303,
+        "end": 308
+      },
+      {
+        "term": "allow",
+        "position": 46,
+        "start": 313,
+        "end": 319
+      },
+      {
+        "term": "five",
+        "position": 47,
+        "start": 320,
+        "end": 324
+      },
+      {
+        "term": "download",
+        "position": 48,
+        "start": 325,
+        "end": 334
+      },
+      {
+        "term": "support",
+        "position": 49,
+        "start": 340,
+        "end": 349
+      },
+      {
+        "term": "reader",
+        "position": 50,
+        "start": 350,
+        "end": 357
+      },
+      {
+        "term": "shop",
+        "position": 52,
+        "start": 363,
+        "end": 367
+      },
+      {
+        "term": "ship",
+        "position": 53,
+        "start": 368,
+        "end": 373
+      },
+      {
+        "term": "drm",
+        "position": 54,
+        "start": 374,
+        "end": 377
+      },
+      {
+        "term": "free",
+        "position": 55,
+        "start": 378,
+        "end": 382
+      },
+      {
+        "term": "epub",
+        "position": 56,
+        "start": 383,
+        "end": 387
+      },
+      {
+        "term": "3",
+        "position": 57,
+        "start": 388,
+        "end": 389
+      },
+      {
+        "term": "file",
+        "position": 58,
+        "start": 390,
+        "end": 395
+      },
+      {
+        "term": "open",
+        "position": 60,
+        "start": 403,
+        "end": 407
+      },
+      {
+        "term": "epub",
+        "position": 63,
+        "start": 415,
+        "end": 419
+      },
+      {
+        "term": "reader",
+        "position": 64,
+        "start": 420,
+        "end": 426
+      },
+      {
+        "term": "app",
+        "position": 65,
+        "start": 427,
+        "end": 430
+      }
+    ]
+  },
+  {
+    "name": "bookshop/docs/glossary/glossary.md",
+    "text": "---\ntitle: Bookshop Glossary\n---\n\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.\n",
+    "tokens": [
+      {
+        "term": "titl",
+        "position": 1,
+        "start": 4,
+        "end": 9
+      },
+      {
+        "term": "bookshop",
+        "position": 2,
+        "start": 11,
+        "end": 19
+      },
+      {
+        "term": "glossari",
+        "position": 3,
+        "start": 20,
+        "end": 28
+      },
+      {
+        "term": "stock",
+        "position": 4,
+        "start": 37,
+        "end": 42
+      },
+      {
+        "term": "keep",
+        "position": 5,
+        "start": 43,
+        "end": 50
+      },
+      {
+        "term": "unit",
+        "position": 6,
+        "start": 51,
+        "end": 55
+      },
+      {
+        "term": "sku",
+        "position": 7,
+        "start": 57,
+        "end": 60
+      },
+      {
+        "term": "identifi",
+        "position": 8,
+        "start": 63,
+        "end": 73
+      },
+      {
+        "term": "on",
+        "position": 10,
+        "start": 77,
+        "end": 80
+      },
+      {
+        "term": "edit",
+        "position": 11,
+        "start": 81,
+        "end": 88
+      },
+      {
+        "term": "titl",
+        "position": 14,
+        "start": 94,
+        "end": 99
+      },
+      {
+        "term": "uniqu",
+        "position": 15,
+        "start": 101,
+        "end": 107
+      },
+      {
+        "term": "across",
+        "position": 16,
+        "start": 108,
+        "end": 114
+      },
+      {
+        "term": "catalog",
+        "position": 18,
+        "start": 119,
+        "end": 126
+      },
+      {
+        "term": "retail",
+        "position": 19,
+        "start": 132,
+        "end": 138
+      },
+      {
+        "term": "price",
+        "position": 20,
+        "start": 139,
+        "end": 144
+      },
+      {
+        "term": "rp",
+        "position": 21,
+        "start": 146,
+        "end": 148
+      },
+      {
+        "term": "price",
+        "position": 22,
+        "start": 151,
+        "end": 156
+      },
+      {
+        "term": "custom",
+        "position": 24,
+        "start": 159,
+        "end": 167
+      },
+      {
+        "term": "pai",
+        "position": 25,
+        "start": 168,
+        "end": 172
+      },
+      {
+        "term": "titl",
+        "position": 28,
+        "start": 179,
+        "end": 184
+      },
+      {
+        "term": "discount",
+        "position": 30,
+        "start": 192,
+        "end": 201
+      },
+      {
+        "term": "backord",
+        "position": 31,
+        "start": 207,
+        "end": 216
+      },
+      {
+        "term": "order",
+        "position": 32,
+        "start": 218,
+        "end": 223
+      },
+      {
+        "term": "titl",
+        "position": 35,
+        "start": 230,
+        "end": 235
+      },
+      {
+        "term": "stock",
+        "position": 40,
+        "start": 251,
+        "end": 256
+      },
+      {
+        "term": "ship",
+        "position": 41,
+        "start": 258,
+        "end": 265
+      },
+      {
+        "term": "stock",
+        "position": 43,
+        "start": 271,
+        "end": 276
+      },
+      {
+        "term": "arriv",
+        "position": 44,
+        "start": 277,
+        "end": 284
+      }
+    ]
+  },
+  {
+    "name": "bookshop/docs/ordering/checkout.md",
+    "text": "---\ntitle: Checkout\n---\n\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.\n",
+    "tokens": [
+      {
+        "term": "titl",
+        "position": 1,
+        "start": 4,
+        "end": 9
+      },
+      {
+        "term": "checkout",
+        "position": 2,
+        "start": 11,
+        "end": 19
+      },
+      {
+        "term": "checkout",
+        "position": 3,
+        "start": 27,
+        "end": 35
+      },
+      {
+        "term": "order",
+        "position": 6,
+        "start": 44,
+        "end": 49
+      },
+      {
+        "term": "move",
+        "position": 7,
+        "start": 50,
+        "end": 55
+      },
+      {
+        "term": "cart",
+        "position": 10,
+        "start": 65,
+        "end": 69
+      },
+      {
+        "term": "payment",
+        "position": 12,
+        "start": 73,
+        "end": 80
+      },
+      {
+        "term": "payment",
+        "position": 13,
+        "start": 86,
+        "end": 93
+      },
+      {
+        "term": "method",
+        "position": 14,
+        "start": 94,
+        "end": 101
+      },
+      {
+        "term": "checkout",
+        "position": 16,
+        "start": 107,
+        "end": 115
+      },
+      {
+        "term": "accept",
+        "position": 17,
+        "start": 116,
+        "end": 123
+      },
+      {
+        "term": "credit",
+        "position": 18,
+        "start": 124,
+        "end": 130
+      },
+      {
+        "term": "card",
+        "position": 19,
+        "start": 131,
+        "end": 136
+      },
+      {
+        "term": "gift",
+        "position": 21,
+        "start": 141,
+        "end": 145
+      },
+      {
+        "term": "card",
+        "position": 22,
+        "start": 146,
+        "end": 151
+      },
+      {
+        "term": "gift",
+        "position": 24,
+        "start": 155,
+        "end": 159
+      },
+      {
+        "term": "card",
+        "position": 25,
+        "start": 160,
+        "end": 164
+      },
+      {
+        "term": "can",
+        "position": 26,
+        "start": 165,
+        "end": 168
+      },
+      {
+        "term": "cover",
+        "position": 27,
+        "start": 169,
+        "end": 174
+      },
+      {
+        "term": "part",
+        "position": 28,
+        "start": 175,
+        "end": 179
+      },
+      {
+        "term": "order",
+        "position": 31,
+        "start": 186,
+        "end": 191
+      },
+      {
+        "term": "rest",
+        "position": 33,
+        "start": 197,
+        "end": 201
+      },
+      {
+        "term": "charg",
+        "position": 35,
+        "start": 205,
+        "end": 212
+      },
+      {
+        "term": "card",
+        "position": 38,
+        "start": 218,
+        "end": 222
+      },
+      {
+        "term": "order",
+        "position": 39,
+        "start": 228,
+        "end": 233
+      },
+      {
+        "term": "confirm",
+        "position": 40,
+        "start": 234,
+        "end": 246
+      },
+      {
+        "term": "shop",
+        "position": 42,
+        "start": 252,
+        "end": 256
+      },
+      {
+        "term": "send",
+        "position": 43,
+        "start": 257,
+        "end": 262
+      },
+      {
+        "term": "order",
+        "position": 45,
+        "start": 266,
+        "end": 271
+      },
+      {
+        "term": "confirm",
+        "position": 46,
+        "start": 272,
+        "end": 284
+      },
+      {
+        "term": "email",
+        "position": 47,
+        "start": 285,
+        "end": 290
+      },
+      {
+        "term": "order",
+        "position": 50,
+        "start": 300,
+        "end": 305
+      },
+      {
+        "term": "number",
+        "position": 51,
+        "start": 306,
+        "end": 312
+      },
+      {
+        "term": "retail",
+        "position": 54,
+        "start": 321,
+        "end": 327
+      },
+      {
+        "term": "price",
+        "position": 55,
+        "start": 328,
+        "end": 333
+      },
+      {
+        "term": "everi",
+        "position": 57,
+        "start": 337,
+        "end": 342
+      },
+      {
+        "term": "titl",
+        "position": 58,
+        "start": 343,
+        "end": 348
+      }
+    ]
+  },
+  {
+    "name": "bookshop/gap/gap-0001-epub-download-link-after-a-resend.md",
+    "text": "---\nid: gap-0001\nstatus: open\nkind: incomplete\nanswer: deferred\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - EPUB Delivery\n  - Download Link\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 1\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+    "tokens": [
+      {
+        "term": "id",
+        "position": 1,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "term": "gap",
+        "position": 2,
+        "start": 8,
+        "end": 11
+      },
+      {
+        "term": "0001",
+        "position": 3,
+        "start": 12,
+        "end": 16
+      },
+      {
+        "term": "statu",
+        "position": 4,
+        "start": 17,
+        "end": 23
+      },
+      {
+        "term": "open",
+        "position": 5,
+        "start": 25,
+        "end": 29
+      },
+      {
+        "term": "kind",
+        "position": 6,
+        "start": 30,
+        "end": 34
+      },
+      {
+        "term": "incomplet",
+        "position": 7,
+        "start": 36,
+        "end": 46
+      },
+      {
+        "term": "answer",
+        "position": 8,
+        "start": 47,
+        "end": 53
+      },
+      {
+        "term": "defer",
+        "position": 9,
+        "start": 55,
+        "end": 63
+      },
+      {
+        "term": "srd_ref",
+        "position": 10,
+        "start": 64,
+        "end": 71
+      },
+      {
+        "term": "srd",
+        "position": 11,
+        "start": 73,
+        "end": 76
+      },
+      {
+        "term": "wishlist",
+        "position": 12,
+        "start": 77,
+        "end": 85
+      },
+      {
+        "term": "share",
+        "position": 13,
+        "start": 86,
+        "end": 93
+      },
+      {
+        "term": "doc_id",
+        "position": 14,
+        "start": 94,
+        "end": 100
+      },
+      {
+        "term": "epub",
+        "position": 15,
+        "start": 102,
+        "end": 106
+      },
+      {
+        "term": "deliveri",
+        "position": 16,
+        "start": 107,
+        "end": 115
+      },
+      {
+        "term": "heading_path",
+        "position": 17,
+        "start": 116,
+        "end": 128
+      },
+      {
+        "term": "epub",
+        "position": 18,
+        "start": 134,
+        "end": 138
+      },
+      {
+        "term": "deliveri",
+        "position": 19,
+        "start": 139,
+        "end": 147
+      },
+      {
+        "term": "download",
+        "position": 20,
+        "start": 152,
+        "end": 160
+      },
+      {
+        "term": "link",
+        "position": 21,
+        "start": 161,
+        "end": 165
+      },
+      {
+        "term": "search_term",
+        "position": 22,
+        "start": 166,
+        "end": 178
+      },
+      {
+        "term": "resend",
+        "position": 23,
+        "start": 184,
+        "end": 190
+      },
+      {
+        "term": "download",
+        "position": 24,
+        "start": 191,
+        "end": 199
+      },
+      {
+        "term": "link",
+        "position": 25,
+        "start": 200,
+        "end": 204
+      },
+      {
+        "term": "epub",
+        "position": 26,
+        "start": 209,
+        "end": 213
+      },
+      {
+        "term": "link",
+        "position": 27,
+        "start": 214,
+        "end": 218
+      },
+      {
+        "term": "expiri",
+        "position": 28,
+        "start": 219,
+        "end": 225
+      },
+      {
+        "term": "hit",
+        "position": 29,
+        "start": 226,
+        "end": 230
+      },
+      {
+        "term": "1",
+        "position": 30,
+        "start": 232,
+        "end": 233
+      },
+      {
+        "term": "creat",
+        "position": 31,
+        "start": 234,
+        "end": 241
+      },
+      {
+        "term": "2026",
+        "position": 32,
+        "start": 243,
+        "end": 247
+      },
+      {
+        "term": "10",
+        "position": 33,
+        "start": 248,
+        "end": 250
+      },
+      {
+        "term": "04t09",
+        "position": 34,
+        "start": 251,
+        "end": 256
+      },
+      {
+        "term": "30",
+        "position": 35,
+        "start": 257,
+        "end": 259
+      },
+      {
+        "term": "00z",
+        "position": 36,
+        "start": 260,
+        "end": 263
+      },
+      {
+        "term": "filled_bi",
+        "position": 37,
+        "start": 264,
+        "end": 273
+      },
+      {
+        "term": "ref",
+        "position": 38,
+        "start": 279,
+        "end": 282
+      },
+      {
+        "term": "epub",
+        "position": 39,
+        "start": 284,
+        "end": 288
+      },
+      {
+        "term": "deliveri",
+        "position": 40,
+        "start": 289,
+        "end": 297
+      },
+      {
+        "term": "download",
+        "position": 41,
+        "start": 298,
+        "end": 306
+      },
+      {
+        "term": "link",
+        "position": 42,
+        "start": 307,
+        "end": 311
+      },
+      {
+        "term": "hash",
+        "position": 43,
+        "start": 316,
+        "end": 320
+      },
+      {
+        "term": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+        "position": 44,
+        "start": 322,
+        "end": 386
+      },
+      {
+        "term": "epub",
+        "position": 45,
+        "start": 393,
+        "end": 397
+      },
+      {
+        "term": "download",
+        "position": 46,
+        "start": 398,
+        "end": 406
+      },
+      {
+        "term": "link",
+        "position": 47,
+        "start": 407,
+        "end": 411
+      },
+      {
+        "term": "resend",
+        "position": 50,
+        "start": 420,
+        "end": 426
+      },
+      {
+        "term": "demand",
+        "position": 51,
+        "start": 431,
+        "end": 437
+      },
+      {
+        "term": "gift",
+        "position": 52,
+        "start": 439,
+        "end": 446
+      },
+      {
+        "term": "epub",
+        "position": 54,
+        "start": 450,
+        "end": 454
+      },
+      {
+        "term": "share",
+        "position": 57,
+        "start": 462,
+        "end": 468
+      },
+      {
+        "term": "wishlist",
+        "position": 58,
+        "start": 469,
+        "end": 477
+      },
+      {
+        "term": "resend",
+        "position": 59,
+        "start": 478,
+        "end": 485
+      },
+      {
+        "term": "download",
+        "position": 61,
+        "start": 490,
+        "end": 498
+      },
+      {
+        "term": "link",
+        "position": 62,
+        "start": 499,
+        "end": 503
+      },
+      {
+        "term": "recipi",
+        "position": 65,
+        "start": 511,
+        "end": 520
+      },
+      {
+        "term": "srd",
+        "position": 67,
+        "start": 526,
+        "end": 529
+      },
+      {
+        "term": "must",
+        "position": 68,
+        "start": 530,
+        "end": 534
+      },
+      {
+        "term": "sai",
+        "position": 69,
+        "start": 535,
+        "end": 538
+      },
+      {
+        "term": "long",
+        "position": 71,
+        "start": 543,
+        "end": 547
+      },
+      {
+        "term": "resent",
+        "position": 73,
+        "start": 552,
+        "end": 558
+      },
+      {
+        "term": "link",
+        "position": 74,
+        "start": 559,
+        "end": 563
+      },
+      {
+        "term": "stai",
+        "position": 75,
+        "start": 564,
+        "end": 569
+      },
+      {
+        "term": "valid",
+        "position": 76,
+        "start": 570,
+        "end": 575
+      },
+      {
+        "term": "detail",
+        "position": 77,
+        "start": 581,
+        "end": 587
+      },
+      {
+        "term": "download",
+        "position": 79,
+        "start": 593,
+        "end": 601
+      },
+      {
+        "term": "link",
+        "position": 80,
+        "start": 602,
+        "end": 606
+      },
+      {
+        "term": "section",
+        "position": 81,
+        "start": 607,
+        "end": 614
+      },
+      {
+        "term": "state",
+        "position": 82,
+        "start": 615,
+        "end": 621
+      },
+      {
+        "term": "48",
+        "position": 84,
+        "start": 624,
+        "end": 626
+      },
+      {
+        "term": "hour",
+        "position": 85,
+        "start": 627,
+        "end": 631
+      },
+      {
+        "term": "lifetim",
+        "position": 86,
+        "start": 632,
+        "end": 640
+      },
+      {
+        "term": "five",
+        "position": 88,
+        "start": 645,
+        "end": 649
+      },
+      {
+        "term": "download",
+        "position": 89,
+        "start": 650,
+        "end": 659
+      },
+      {
+        "term": "link",
+        "position": 92,
+        "start": 668,
+        "end": 672
+      },
+      {
+        "term": "sent",
+        "position": 93,
+        "start": 673,
+        "end": 677
+      },
+      {
+        "term": "payment",
+        "position": 95,
+        "start": 684,
+        "end": 691
+      },
+      {
+        "term": "sai",
+        "position": 99,
+        "start": 705,
+        "end": 708
+      },
+      {
+        "term": "whether",
+        "position": 100,
+        "start": 709,
+        "end": 716
+      },
+      {
+        "term": "resend",
+        "position": 102,
+        "start": 719,
+        "end": 725
+      },
+      {
+        "term": "start",
+        "position": 103,
+        "start": 726,
+        "end": 732
+      },
+      {
+        "term": "new",
+        "position": 105,
+        "start": 735,
+        "end": 738
+      },
+      {
+        "term": "48",
+        "position": 106,
+        "start": 739,
+        "end": 741
+      },
+      {
+        "term": "hour",
+        "position": 107,
+        "start": 742,
+        "end": 746
+      },
+      {
+        "term": "window",
+        "position": 108,
+        "start": 747,
+        "end": 753
+      },
+      {
+        "term": "reus",
+        "position": 110,
+        "start": 757,
+        "end": 763
+      },
+      {
+        "term": "origin",
+        "position": 112,
+        "start": 768,
+        "end": 776
+      },
+      {
+        "term": "on",
+        "position": 113,
+        "start": 777,
+        "end": 780
+      },
+      {
+        "term": "support",
+        "position": 114,
+        "start": 782,
+        "end": 789
+      },
+      {
+        "term": "know",
+        "position": 115,
+        "start": 790,
+        "end": 795
+      },
+      {
+        "term": "yet",
+        "position": 117,
+        "start": 801,
+        "end": 804
+      },
+      {
+        "term": "ask",
+        "position": 118,
+        "start": 805,
+        "end": 810
+      },
+      {
+        "term": "target",
+        "position": 119,
+        "start": 816,
+        "end": 822
+      },
+      {
+        "term": "claim",
+        "position": 120,
+        "start": 823,
+        "end": 828
+      },
+      {
+        "term": "resent",
+        "position": 122,
+        "start": 832,
+        "end": 838
+      },
+      {
+        "term": "download",
+        "position": 123,
+        "start": 839,
+        "end": 847
+      },
+      {
+        "term": "link",
+        "position": 124,
+        "start": 848,
+        "end": 852
+      },
+      {
+        "term": "valid",
+        "position": 126,
+        "start": 856,
+        "end": 861
+      },
+      {
+        "term": "48",
+        "position": 128,
+        "start": 866,
+        "end": 868
+      },
+      {
+        "term": "hour",
+        "position": 129,
+        "start": 869,
+        "end": 874
+      },
+      {
+        "term": "resend",
+        "position": 132,
+        "start": 884,
+        "end": 890
+      }
+    ]
+  },
+  {
+    "name": "bookshop/initiatives/wishlist_sharing.md",
+    "text": "---\nid: srd-wishlist-sharing\ntitle: \"SRD: Wishlist Sharing\"\n---\n\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.\n",
+    "tokens": [
+      {
+        "term": "id",
+        "position": 1,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "term": "srd",
+        "position": 2,
+        "start": 8,
+        "end": 11
+      },
+      {
+        "term": "wishlist",
+        "position": 3,
+        "start": 12,
+        "end": 20
+      },
+      {
+        "term": "share",
+        "position": 4,
+        "start": 21,
+        "end": 28
+      },
+      {
+        "term": "titl",
+        "position": 5,
+        "start": 29,
+        "end": 34
+      },
+      {
+        "term": "srd",
+        "position": 6,
+        "start": 37,
+        "end": 40
+      },
+      {
+        "term": "wishlist",
+        "position": 7,
+        "start": 42,
+        "end": 50
+      },
+      {
+        "term": "share",
+        "position": 8,
+        "start": 51,
+        "end": 58
+      },
+      {
+        "term": "srd",
+        "position": 9,
+        "start": 67,
+        "end": 70
+      },
+      {
+        "term": "wishlist",
+        "position": 10,
+        "start": 72,
+        "end": 80
+      },
+      {
+        "term": "share",
+        "position": 11,
+        "start": 81,
+        "end": 88
+      },
+      {
+        "term": "draft",
+        "position": 13,
+        "start": 92,
+        "end": 97
+      },
+      {
+        "term": "requir",
+        "position": 14,
+        "start": 98,
+        "end": 109
+      },
+      {
+        "term": "let",
+        "position": 16,
+        "start": 114,
+        "end": 121
+      },
+      {
+        "term": "reader",
+        "position": 18,
+        "start": 124,
+        "end": 130
+      },
+      {
+        "term": "share",
+        "position": 19,
+        "start": 131,
+        "end": 136
+      },
+      {
+        "term": "wishlist",
+        "position": 21,
+        "start": 139,
+        "end": 147
+      },
+      {
+        "term": "link",
+        "position": 23,
+        "start": 151,
+        "end": 155
+      },
+      {
+        "term": "work",
+        "position": 26,
+        "start": 163,
+        "end": 167
+      },
+      {
+        "term": "progress",
+        "position": 28,
+        "start": 171,
+        "end": 179
+      },
+      {
+        "term": "server",
+        "position": 31,
+        "start": 188,
+        "end": 194
+      },
+      {
+        "term": "report",
+        "position": 32,
+        "start": 195,
+        "end": 202
+      },
+      {
+        "term": "rank",
+        "position": 34,
+        "start": 206,
+        "end": 210
+      },
+      {
+        "term": "agent",
+        "position": 38,
+        "start": 222,
+        "end": 227
+      },
+      {
+        "term": "settl",
+        "position": 39,
+        "start": 228,
+        "end": 236
+      },
+      {
+        "term": "conflict",
+        "position": 41,
+        "start": 239,
+        "end": 247
+      },
+      {
+        "term": "trust",
+        "position": 42,
+        "start": 248,
+        "end": 254
+      },
+      {
+        "term": "publish",
+        "position": 44,
+        "start": 259,
+        "end": 268
+      },
+      {
+        "term": "document",
+        "position": 45,
+        "start": 269,
+        "end": 282
+      },
+      {
+        "term": "knowledg",
+        "position": 48,
+        "start": 291,
+        "end": 300
+      },
+      {
+        "term": "base",
+        "position": 49,
+        "start": 301,
+        "end": 305
+      },
+      {
+        "term": "first",
+        "position": 50,
+        "start": 306,
+        "end": 311
+      },
+      {
+        "term": "requir",
+        "position": 51,
+        "start": 317,
+        "end": 329
+      },
+      {
+        "term": "reader",
+        "position": 53,
+        "start": 335,
+        "end": 341
+      },
+      {
+        "term": "can",
+        "position": 54,
+        "start": 342,
+        "end": 345
+      },
+      {
+        "term": "creat",
+        "position": 55,
+        "start": 346,
+        "end": 352
+      },
+      {
+        "term": "read",
+        "position": 57,
+        "start": 355,
+        "end": 359
+      },
+      {
+        "term": "link",
+        "position": 59,
+        "start": 365,
+        "end": 369
+      },
+      {
+        "term": "on",
+        "position": 61,
+        "start": 373,
+        "end": 376
+      },
+      {
+        "term": "wishlist",
+        "position": 62,
+        "start": 377,
+        "end": 385
+      },
+      {
+        "term": "open",
+        "position": 63,
+        "start": 389,
+        "end": 396
+      },
+      {
+        "term": "link",
+        "position": 65,
+        "start": 401,
+        "end": 405
+      },
+      {
+        "term": "show",
+        "position": 66,
+        "start": 406,
+        "end": 411
+      },
+      {
+        "term": "titl",
+        "position": 68,
+        "start": 416,
+        "end": 422
+      },
+      {
+        "term": "without",
+        "position": 69,
+        "start": 423,
+        "end": 430
+      },
+      {
+        "term": "reader",
+        "position": 71,
+        "start": 435,
+        "end": 443
+      },
+      {
+        "term": "account",
+        "position": 72,
+        "start": 444,
+        "end": 451
+      },
+      {
+        "term": "detail",
+        "position": 73,
+        "start": 452,
+        "end": 459
+      }
+    ]
+  },
+  {
+    "name": "bookshop/kb/shipping_times.md",
+    "text": "---\ntitle: Shipping Times\n---\n\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.\n",
+    "tokens": [
+      {
+        "term": "titl",
+        "position": 1,
+        "start": 4,
+        "end": 9
+      },
+      {
+        "term": "ship",
+        "position": 2,
+        "start": 11,
+        "end": 19
+      },
+      {
+        "term": "time",
+        "position": 3,
+        "start": 20,
+        "end": 25
+      },
+      {
+        "term": "ship",
+        "position": 4,
+        "start": 33,
+        "end": 41
+      },
+      {
+        "term": "time",
+        "position": 5,
+        "start": 42,
+        "end": 47
+      },
+      {
+        "term": "paperback",
+        "position": 6,
+        "start": 49,
+        "end": 58
+      },
+      {
+        "term": "order",
+        "position": 7,
+        "start": 59,
+        "end": 65
+      },
+      {
+        "term": "place",
+        "position": 8,
+        "start": 66,
+        "end": 72
+      },
+      {
+        "term": "noon",
+        "position": 10,
+        "start": 80,
+        "end": 84
+      },
+      {
+        "term": "ship",
+        "position": 11,
+        "start": 85,
+        "end": 89
+      },
+      {
+        "term": "busi",
+        "position": 14,
+        "start": 99,
+        "end": 107
+      },
+      {
+        "term": "dai",
+        "position": 15,
+        "start": 108,
+        "end": 111
+      },
+      {
+        "term": "backord",
+        "position": 16,
+        "start": 113,
+        "end": 123
+      },
+      {
+        "term": "ship",
+        "position": 17,
+        "start": 124,
+        "end": 128
+      },
+      {
+        "term": "within",
+        "position": 18,
+        "start": 129,
+        "end": 135
+      },
+      {
+        "term": "two",
+        "position": 19,
+        "start": 136,
+        "end": 139
+      },
+      {
+        "term": "dai",
+        "position": 20,
+        "start": 140,
+        "end": 144
+      },
+      {
+        "term": "stock",
+        "position": 23,
+        "start": 152,
+        "end": 157
+      },
+      {
+        "term": "arriv",
+        "position": 24,
+        "start": 158,
+        "end": 166
+      }
+    ]
+  },
+  {
+    "name": "bookshop/project-config.md",
+    "text": "---\nmcp-server: srd\nmcp-port: 7777\nsources:\n  - docs\n  - kb\n  - initiatives\ngaps: gap\nwatch: true\nwatch-debounce: 500ms\nglossary: docs/glossary\nkb: kb\ninitiatives: initiatives\nprecedence:\n  - kb\n  - docs/ordering\n  - docs/catalog\n---\n\n# Bookshop project configuration\n\nExample `project-config.md` for a fictional online bookshop. Start the server\nfrom it:\n\n```shell\ndocket mcp -c examples/bookshop/project-config.md\n```\n\nThe front matter holds flat keys only (text, number, checkbox, or list of\ntext), so Obsidian's Properties view can edit it. Every path is relative to\nthe project root, the directory holding this note; an absolute path, or one\nescaping the root with `..`, stops the server. Keys the server does not use are\nignored, so the note can carry settings for other tools too. `kb` is read by\nthe companion SRD skills, not by the server.\n\nA document's path is its location from the project root, for example\n`docs/catalog/epub_delivery.md`; its identity is its front-matter `id` when\nset (that document sets `epub-delivery`), else its path. The `.mcp.json`\nbeside this note registers `srd` on port 7777; the server refuses to\nstart when the two disagree.\n\n`precedence` ranks the folders by trust, most trusted first, and every\n`search`, `get_doc`, and `list_docs` result carries the document's `rank`:\n`kb/shipping_times.md` gets 1, `docs/catalog/epub_delivery.md` 3, and the\nunlisted `docs/glossary` folder ranks last, 4. Documents under `initiatives`\nare work in progress and carry no rank. Rank never reorders search results;\nagents use it to settle conflicting statements.\n\n`gaps` names the gap folder, `gap`, which holds one Markdown file per gap;\nfilled and wontfix gaps move into its `closed/` subfolder. The sample `gap-0001-epub-download-link-after-a-resend.md` is an open gap,\npartly filled by the Download Link section of `epub-delivery`; edit it in\nObsidian and the server keeps your changes.\n",
+    "tokens": [
+      {
+        "term": "mcp",
+        "position": 1,
+        "start": 4,
+        "end": 7
+      },
+      {
+        "term": "server",
+        "position": 2,
+        "start": 8,
+        "end": 14
+      },
+      {
+        "term": "srd",
+        "position": 3,
+        "start": 16,
+        "end": 19
+      },
+      {
+        "term": "mcp",
+        "position": 4,
+        "start": 20,
+        "end": 23
+      },
+      {
+        "term": "port",
+        "position": 5,
+        "start": 24,
+        "end": 28
+      },
+      {
+        "term": "7777",
+        "position": 6,
+        "start": 30,
+        "end": 34
+      },
+      {
+        "term": "sourc",
+        "position": 7,
+        "start": 35,
+        "end": 42
+      },
+      {
+        "term": "doc",
+        "position": 8,
+        "start": 48,
+        "end": 52
+      },
+      {
+        "term": "kb",
+        "position": 9,
+        "start": 57,
+        "end": 59
+      },
+      {
+        "term": "initi",
+        "position": 10,
+        "start": 64,
+        "end": 75
+      },
+      {
+        "term": "gap",
+        "position": 11,
+        "start": 76,
+        "end": 80
+      },
+      {
+        "term": "gap",
+        "position": 12,
+        "start": 82,
+        "end": 85
+      },
+      {
+        "term": "watch",
+        "position": 13,
+        "start": 86,
+        "end": 91
+      },
+      {
+        "term": "true",
+        "position": 14,
+        "start": 93,
+        "end": 97
+      },
+      {
+        "term": "watch",
+        "position": 15,
+        "start": 98,
+        "end": 103
+      },
+      {
+        "term": "debounc",
+        "position": 16,
+        "start": 104,
+        "end": 112
+      },
+      {
+        "term": "500m",
+        "position": 17,
+        "start": 114,
+        "end": 119
+      },
+      {
+        "term": "glossari",
+        "position": 18,
+        "start": 120,
+        "end": 128
+      },
+      {
+        "term": "doc",
+        "position": 19,
+        "start": 130,
+        "end": 134
+      },
+      {
+        "term": "glossari",
+        "position": 20,
+        "start": 135,
+        "end": 143
+      },
+      {
+        "term": "kb",
+        "position": 21,
+        "start": 144,
+        "end": 146
+      },
+      {
+        "term": "kb",
+        "position": 22,
+        "start": 148,
+        "end": 150
+      },
+      {
+        "term": "initi",
+        "position": 23,
+        "start": 151,
+        "end": 162
+      },
+      {
+        "term": "initi",
+        "position": 24,
+        "start": 164,
+        "end": 175
+      },
+      {
+        "term": "preced",
+        "position": 25,
+        "start": 176,
+        "end": 186
+      },
+      {
+        "term": "kb",
+        "position": 26,
+        "start": 192,
+        "end": 194
+      },
+      {
+        "term": "doc",
+        "position": 27,
+        "start": 199,
+        "end": 203
+      },
+      {
+        "term": "order",
+        "position": 28,
+        "start": 204,
+        "end": 212
+      },
+      {
+        "term": "doc",
+        "position": 29,
+        "start": 217,
+        "end": 221
+      },
+      {
+        "term": "catalog",
+        "position": 30,
+        "start": 222,
+        "end": 229
+      },
+      {
+        "term": "bookshop",
+        "position": 31,
+        "start": 237,
+        "end": 245
+      },
+      {
+        "term": "project",
+        "position": 32,
+        "start": 246,
+        "end": 253
+      },
+      {
+        "term": "configur",
+        "position": 33,
+        "start": 254,
+        "end": 267
+      },
+      {
+        "term": "exampl",
+        "position": 34,
+        "start": 269,
+        "end": 276
+      },
+      {
+        "term": "project",
+        "position": 35,
+        "start": 278,
+        "end": 285
+      },
+      {
+        "term": "config.md",
+        "position": 36,
+        "start": 286,
+        "end": 295
+      },
+      {
+        "term": "fiction",
+        "position": 39,
+        "start": 303,
+        "end": 312
+      },
+      {
+        "term": "onlin",
+        "position": 40,
+        "start": 313,
+        "end": 319
+      },
+      {
+        "term": "bookshop",
+        "position": 41,
+        "start": 320,
+        "end": 328
+      },
+      {
+        "term": "start",
+        "position": 42,
+        "start": 330,
+        "end": 335
+      },
+      {
+        "term": "server",
+        "position": 44,
+        "start": 340,
+        "end": 346
+      },
+      {
+        "term": "shell",
+        "position": 47,
+        "start": 360,
+        "end": 365
+      },
+      {
+        "term": "docket",
+        "position": 48,
+        "start": 366,
+        "end": 372
+      },
+      {
+        "term": "mcp",
+        "position": 49,
+        "start": 373,
+        "end": 376
+      },
+      {
+        "term": "c",
+        "position": 50,
+        "start": 378,
+        "end": 379
+      },
+      {
+        "term": "exampl",
+        "position": 51,
+        "start": 380,
+        "end": 388
+      },
+      {
+        "term": "bookshop",
+        "position": 52,
+        "start": 389,
+        "end": 397
+      },
+      {
+        "term": "project",
+        "position": 53,
+        "start": 398,
+        "end": 405
+      },
+      {
+        "term": "config.md",
+        "position": 54,
+        "start": 406,
+        "end": 415
+      },
+      {
+        "term": "front",
+        "position": 56,
+        "start": 425,
+        "end": 430
+      },
+      {
+        "term": "matter",
+        "position": 57,
+        "start": 431,
+        "end": 437
+      },
+      {
+        "term": "hold",
+        "position": 58,
+        "start": 438,
+        "end": 443
+      },
+      {
+        "term": "flat",
+        "position": 59,
+        "start": 444,
+        "end": 448
+      },
+      {
+        "term": "kei",
+        "position": 60,
+        "start": 449,
+        "end": 453
+      },
+      {
+        "term": "text",
+        "position": 62,
+        "start": 460,
+        "end": 464
+      },
+      {
+        "term": "number",
+        "position": 63,
+        "start": 466,
+        "end": 472
+      },
+      {
+        "term": "checkbox",
+        "position": 64,
+        "start": 474,
+        "end": 482
+      },
+      {
+        "term": "list",
+        "position": 66,
+        "start": 487,
+        "end": 491
+      },
+      {
+        "term": "text",
+        "position": 68,
+        "start": 495,
+        "end": 499
+      },
+      {
+        "term": "obsidian",
+        "position": 70,
+        "start": 505,
+        "end": 515
+      },
+      {
+        "term": "properti",
+        "position": 71,
+        "start": 516,
+        "end": 526
+      },
+      {
+        "term": "view",
+        "position": 72,
+        "start": 527,
+        "end": 531
+      },
+      {
+        "term": "can",
+        "position": 73,
+        "start": 532,
+        "end": 535
+      },
+      {
+        "term": "edit",
+        "position": 74,
+        "start": 536,
+        "end": 540
+      },
+      {
+        "term": "everi",
+        "position": 76,
+        "start": 545,
+        "end": 550
+      },
+      {
+        "term": "path",
+        "position": 77,
+        "start": 551,
+        "end": 555
+      },
+      {
+        "term": "rel",
+        "position": 79,
+        "start": 559,
+        "end": 567
+      },
+      {
+        "term": "project",
+        "position": 82,
+        "start": 575,
+        "end": 582
+      },
+      {
+        "term": "root",
+        "position": 83,
+        "start": 583,
+        "end": 587
+      },
+      {
+        "term": "directori",
+        "position": 85,
+        "start": 593,
+        "end": 602
+      },
+      {
+        "term": "hold",
+        "position": 86,
+        "start": 603,
+        "end": 610
+      },
+      {
+        "term": "note",
+        "position": 88,
+        "start": 616,
+        "end": 620
+      },
+      {
+        "term": "absolut",
+        "position": 90,
+        "start": 625,
+        "end": 633
+      },
+      {
+        "term": "path",
+        "position": 91,
+        "start": 634,
+        "end": 638
+      },
+      {
+        "term": "on",
+        "position": 93,
+        "start": 643,
+        "end": 646
+      },
+      {
+        "term": "escap",
+        "position": 94,
+        "start": 647,
+        "end": 655
+      },
+      {
+        "term": "root",
+        "position": 96,
+        "start": 660,
+        "end": 664
+      },
+      {
+        "term": "stop",
+        "position": 98,
+        "start": 676,
+        "end": 681
+      },
+      {
+        "term": "server",
+        "position": 100,
+        "start": 686,
+        "end": 692
+      },
+      {
+        "term": "kei",
+        "position": 101,
+        "start": 694,
+        "end": 698
+      },
+      {
+        "term": "server",
+        "position": 103,
+        "start": 703,
+        "end": 709
+      },
+      {
+        "term": "us",
+        "position": 106,
+        "start": 719,
+        "end": 722
+      },
+      {
+        "term": "ignor",
+        "position": 108,
+        "start": 727,
+        "end": 734
+      },
+      {
+        "term": "note",
+        "position": 111,
+        "start": 743,
+        "end": 747
+      },
+      {
+        "term": "can",
+        "position": 112,
+        "start": 748,
+        "end": 751
+      },
+      {
+        "term": "carri",
+        "position": 113,
+        "start": 752,
+        "end": 757
+      },
+      {
+        "term": "set",
+        "position": 114,
+        "start": 758,
+        "end": 766
+      },
+      {
+        "term": "tool",
+        "position": 117,
+        "start": 777,
+        "end": 782
+      },
+      {
+        "term": "kb",
+        "position": 119,
+        "start": 789,
+        "end": 791
+      },
+      {
+        "term": "read",
+        "position": 121,
+        "start": 796,
+        "end": 800
+      },
+      {
+        "term": "companion",
+        "position": 124,
+        "start": 808,
+        "end": 817
+      },
+      {
+        "term": "srd",
+        "position": 125,
+        "start": 818,
+        "end": 821
+      },
+      {
+        "term": "skill",
+        "position": 126,
+        "start": 822,
+        "end": 828
+      },
+      {
+        "term": "server",
+        "position": 130,
+        "start": 841,
+        "end": 847
+      },
+      {
+        "term": "document",
+        "position": 132,
+        "start": 852,
+        "end": 862
+      },
+      {
+        "term": "path",
+        "position": 133,
+        "start": 863,
+        "end": 867
+      },
+      {
+        "term": "locat",
+        "position": 136,
+        "start": 875,
+        "end": 883
+      },
+      {
+        "term": "project",
+        "position": 139,
+        "start": 893,
+        "end": 900
+      },
+      {
+        "term": "root",
+        "position": 140,
+        "start": 901,
+        "end": 905
+      },
+      {
+        "term": "exampl",
+        "position": 142,
+        "start": 911,
+        "end": 918
+      },
+      {
+        "term": "doc",
+        "position": 143,
+        "start": 920,
+        "end": 924
+      },
+      {
+        "term": "catalog",
+        "position": 144,
+        "start": 925,
+        "end": 932
+      },
+      {
+        "term": "epub_delivery.md",
+        "position": 145,
+        "start": 933,
+        "end": 949
+      },
+      {
+        "term": "ident",
+        "position": 147,
+        "start": 956,
+        "end": 964
+      },
+      {
+        "term": "front",
+        "position": 150,
+        "start": 972,
+        "end": 977
+      },
+      {
+        "term": "matter",
+        "position": 151,
+        "start": 978,
+        "end": 984
+      },
+      {
+        "term": "id",
+        "position": 152,
+        "start": 986,
+        "end": 988
+      },
+      {
+        "term": "set",
+        "position": 154,
+        "start": 995,
+        "end": 998
+      },
+      {
+        "term": "document",
+        "position": 156,
+        "start": 1005,
+        "end": 1013
+      },
+      {
+        "term": "set",
+        "position": 157,
+        "start": 1014,
+        "end": 1018
+      },
+      {
+        "term": "epub",
+        "position": 158,
+        "start": 1020,
+        "end": 1024
+      },
+      {
+        "term": "deliveri",
+        "position": 159,
+        "start": 1025,
+        "end": 1033
+      },
+      {
+        "term": "els",
+        "position": 160,
+        "start": 1037,
+        "end": 1041
+      },
+      {
+        "term": "path",
+        "position": 162,
+        "start": 1046,
+        "end": 1050
+      },
+      {
+        "term": "mcp.json",
+        "position": 164,
+        "start": 1058,
+        "end": 1066
+      },
+      {
+        "term": "besid",
+        "position": 165,
+        "start": 1068,
+        "end": 1074
+      },
+      {
+        "term": "note",
+        "position": 167,
+        "start": 1080,
+        "end": 1084
+      },
+      {
+        "term": "regist",
+        "position": 168,
+        "start": 1085,
+        "end": 1094
+      },
+      {
+        "term": "srd",
+        "position": 169,
+        "start": 1096,
+        "end": 1099
+      },
+      {
+        "term": "port",
+        "position": 171,
+        "start": 1104,
+        "end": 1108
+      },
+      {
+        "term": "7777",
+        "position": 172,
+        "start": 1109,
+        "end": 1113
+      },
+      {
+        "term": "server",
+        "position": 174,
+        "start": 1119,
+        "end": 1125
+      },
+      {
+        "term": "refus",
+        "position": 175,
+        "start": 1126,
+        "end": 1133
+      },
+      {
+        "term": "start",
+        "position": 177,
+        "start": 1137,
+        "end": 1142
+      },
+      {
+        "term": "two",
+        "position": 180,
+        "start": 1152,
+        "end": 1155
+      },
+      {
+        "term": "disagre",
+        "position": 181,
+        "start": 1156,
+        "end": 1164
+      },
+      {
+        "term": "preced",
+        "position": 182,
+        "start": 1168,
+        "end": 1178
+      },
+      {
+        "term": "rank",
+        "position": 183,
+        "start": 1180,
+        "end": 1185
+      },
+      {
+        "term": "folder",
+        "position": 185,
+        "start": 1190,
+        "end": 1197
+      },
+      {
+        "term": "trust",
+        "position": 187,
+        "start": 1201,
+        "end": 1206
+      },
+      {
+        "term": "trust",
+        "position": 189,
+        "start": 1213,
+        "end": 1220
+      },
+      {
+        "term": "first",
+        "position": 190,
+        "start": 1221,
+        "end": 1226
+      },
+      {
+        "term": "everi",
+        "position": 192,
+        "start": 1232,
+        "end": 1237
+      },
+      {
+        "term": "search",
+        "position": 193,
+        "start": 1239,
+        "end": 1245
+      },
+      {
+        "term": "get_doc",
+        "position": 194,
+        "start": 1249,
+        "end": 1256
+      },
+      {
+        "term": "list_doc",
+        "position": 196,
+        "start": 1264,
+        "end": 1273
+      },
+      {
+        "term": "result",
+        "position": 197,
+        "start": 1275,
+        "end": 1281
+      },
+      {
+        "term": "carri",
+        "position": 198,
+        "start": 1282,
+        "end": 1289
+      },
+      {
+        "term": "document",
+        "position": 200,
+        "start": 1294,
+        "end": 1304
+      },
+      {
+        "term": "rank",
+        "position": 201,
+        "start": 1306,
+        "end": 1310
+      },
+      {
+        "term": "kb",
+        "position": 202,
+        "start": 1314,
+        "end": 1316
+      },
+      {
+        "term": "shipping_times.md",
+        "position": 203,
+        "start": 1317,
+        "end": 1334
+      },
+      {
+        "term": "get",
+        "position": 204,
+        "start": 1336,
+        "end": 1340
+      },
+      {
+        "term": "1",
+        "position": 205,
+        "start": 1341,
+        "end": 1342
+      },
+      {
+        "term": "doc",
+        "position": 206,
+        "start": 1345,
+        "end": 1349
+      },
+      {
+        "term": "catalog",
+        "position": 207,
+        "start": 1350,
+        "end": 1357
+      },
+      {
+        "term": "epub_delivery.md",
+        "position": 208,
+        "start": 1358,
+        "end": 1374
+      },
+      {
+        "term": "3",
+        "position": 209,
+        "start": 1376,
+        "end": 1377
+      },
+      {
+        "term": "unlist",
+        "position": 212,
+        "start": 1387,
+        "end": 1395
+      },
+      {
+        "term": "doc",
+        "position": 213,
+        "start": 1397,
+        "end": 1401
+      },
+      {
+        "term": "glossari",
+        "position": 214,
+        "start": 1402,
+        "end": 1410
+      },
+      {
+        "term": "folder",
+        "position": 215,
+        "start": 1412,
+        "end": 1418
+      },
+      {
+        "term": "rank",
+        "position": 216,
+        "start": 1419,
+        "end": 1424
+      },
+      {
+        "term": "last",
+        "position": 217,
+        "start": 1425,
+        "end": 1429
+      },
+      {
+        "term": "4",
+        "position": 218,
+        "start": 1431,
+        "end": 1432
+      },
+      {
+        "term": "document",
+        "position": 219,
+        "start": 1434,
+        "end": 1443
+      },
+      {
+        "term": "initi",
+        "position": 221,
+        "start": 1451,
+        "end": 1462
+      },
+      {
+        "term": "work",
+        "position": 223,
+        "start": 1468,
+        "end": 1472
+      },
+      {
+        "term": "progress",
+        "position": 225,
+        "start": 1476,
+        "end": 1484
+      },
+      {
+        "term": "carri",
+        "position": 227,
+        "start": 1489,
+        "end": 1494
+      },
+      {
+        "term": "rank",
+        "position": 229,
+        "start": 1498,
+        "end": 1502
+      },
+      {
+        "term": "rank",
+        "position": 230,
+        "start": 1504,
+        "end": 1508
+      },
+      {
+        "term": "never",
+        "position": 231,
+        "start": 1509,
+        "end": 1514
+      },
+      {
+        "term": "reorder",
+        "position": 232,
+        "start": 1515,
+        "end": 1523
+      },
+      {
+        "term": "search",
+        "position": 233,
+        "start": 1524,
+        "end": 1530
+      },
+      {
+        "term": "result",
+        "position": 234,
+        "start": 1531,
+        "end": 1538
+      },
+      {
+        "term": "agent",
+        "position": 235,
+        "start": 1540,
+        "end": 1546
+      },
+      {
+        "term": "us",
+        "position": 236,
+        "start": 1547,
+        "end": 1550
+      },
+      {
+        "term": "settl",
+        "position": 239,
+        "start": 1557,
+        "end": 1563
+      },
+      {
+        "term": "conflict",
+        "position": 240,
+        "start": 1564,
+        "end": 1575
+      },
+      {
+        "term": "statement",
+        "position": 241,
+        "start": 1576,
+        "end": 1586
+      },
+      {
+        "term": "gap",
+        "position": 242,
+        "start": 1590,
+        "end": 1594
+      },
+      {
+        "term": "name",
+        "position": 243,
+        "start": 1596,
+        "end": 1601
+      },
+      {
+        "term": "gap",
+        "position": 245,
+        "start": 1606,
+        "end": 1609
+      },
+      {
+        "term": "folder",
+        "position": 246,
+        "start": 1610,
+        "end": 1616
+      },
+      {
+        "term": "gap",
+        "position": 247,
+        "start": 1619,
+        "end": 1622
+      },
+      {
+        "term": "hold",
+        "position": 249,
+        "start": 1631,
+        "end": 1636
+      },
+      {
+        "term": "on",
+        "position": 250,
+        "start": 1637,
+        "end": 1640
+      },
+      {
+        "term": "markdown",
+        "position": 251,
+        "start": 1641,
+        "end": 1649
+      },
+      {
+        "term": "file",
+        "position": 252,
+        "start": 1650,
+        "end": 1654
+      },
+      {
+        "term": "per",
+        "position": 253,
+        "start": 1655,
+        "end": 1658
+      },
+      {
+        "term": "gap",
+        "position": 254,
+        "start": 1659,
+        "end": 1662
+      },
+      {
+        "term": "fill",
+        "position": 255,
+        "start": 1664,
+        "end": 1670
+      },
+      {
+        "term": "wontfix",
+        "position": 257,
+        "start": 1675,
+        "end": 1682
+      },
+      {
+        "term": "gap",
+        "position": 258,
+        "start": 1683,
+        "end": 1687
+      },
+      {
+        "term": "move",
+        "position": 259,
+        "start": 1688,
+        "end": 1692
+      },
+      {
+        "term": "close",
+        "position": 262,
+        "start": 1703,
+        "end": 1709
+      },
+      {
+        "term": "subfold",
+        "position": 263,
+        "start": 1712,
+        "end": 1721
+      },
+      {
+        "term": "sampl",
+        "position": 265,
+        "start": 1727,
+        "end": 1733
+      },
+      {
+        "term": "gap",
+        "position": 266,
+        "start": 1735,
+        "end": 1738
+      },
+      {
+        "term": "0001",
+        "position": 267,
+        "start": 1739,
+        "end": 1743
+      },
+      {
+        "term": "epub",
+        "position": 268,
+        "start": 1744,
+        "end": 1748
+      },
+      {
+        "term": "download",
+        "position": 269,
+        "start": 1749,
+        "end": 1757
+      },
+      {
+        "term": "link",
+        "position": 270,
+        "start": 1758,
+        "end": 1762
+      },
+      {
+        "term": "resend.md",
+        "position": 273,
+        "start": 1771,
+        "end": 1780
+      },
+      {
+        "term": "open",
+        "position": 276,
+        "start": 1788,
+        "end": 1792
+      },
+      {
+        "term": "gap",
+        "position": 277,
+        "start": 1793,
+        "end": 1796
+      },
+      {
+        "term": "partli",
+        "position": 278,
+        "start": 1798,
+        "end": 1804
+      },
+      {
+        "term": "fill",
+        "position": 279,
+        "start": 1805,
+        "end": 1811
+      },
+      {
+        "term": "download",
+        "position": 282,
+        "start": 1819,
+        "end": 1827
+      },
+      {
+        "term": "link",
+        "position": 283,
+        "start": 1828,
+        "end": 1832
+      },
+      {
+        "term": "section",
+        "position": 284,
+        "start": 1833,
+        "end": 1840
+      },
+      {
+        "term": "epub",
+        "position": 286,
+        "start": 1845,
+        "end": 1849
+      },
+      {
+        "term": "deliveri",
+        "position": 287,
+        "start": 1850,
+        "end": 1858
+      },
+      {
+        "term": "edit",
+        "position": 288,
+        "start": 1861,
+        "end": 1865
+      },
+      {
+        "term": "obsidian",
+        "position": 291,
+        "start": 1872,
+        "end": 1880
+      },
+      {
+        "term": "server",
+        "position": 294,
+        "start": 1889,
+        "end": 1895
+      },
+      {
+        "term": "keep",
+        "position": 295,
+        "start": 1896,
+        "end": 1901
+      },
+      {
+        "term": "chang",
+        "position": 297,
+        "start": 1907,
+        "end": 1914
+      }
+    ]
+  },
+  {
+    "name": "edge/apostrophes",
+    "text": "The bookshop's EPUB, Anna’s books, don't, rock'n'roll, O'Neil, ＇s alone, 's, cats' toys, it's, IT'S, James’S",
+    "tokens": [
+      {
+        "term": "bookshop",
+        "position": 2,
+        "start": 4,
+        "end": 14
+      },
+      {
+        "term": "epub",
+        "position": 3,
+        "start": 15,
+        "end": 19
+      },
+      {
+        "term": "anna",
+        "position": 4,
+        "start": 21,
+        "end": 29
+      },
+      {
+        "term": "book",
+        "position": 5,
+        "start": 30,
+        "end": 35
+      },
+      {
+        "term": "rock'n'rol",
+        "position": 7,
+        "start": 44,
+        "end": 55
+      },
+      {
+        "term": "o'neil",
+        "position": 8,
+        "start": 57,
+        "end": 63
+      },
+      {
+        "term": "s",
+        "position": 9,
+        "start": 68,
+        "end": 69
+      },
+      {
+        "term": "alon",
+        "position": 10,
+        "start": 70,
+        "end": 75
+      },
+      {
+        "term": "s",
+        "position": 11,
+        "start": 78,
+        "end": 79
+      },
+      {
+        "term": "cat",
+        "position": 12,
+        "start": 81,
+        "end": 85
+      },
+      {
+        "term": "toi",
+        "position": 13,
+        "start": 87,
+        "end": 91
+      },
+      {
+        "term": "jame",
+        "position": 16,
+        "start": 105,
+        "end": 114
+      }
+    ]
+  },
+  {
+    "name": "edge/numbers",
+    "text": "3.14 1,000,000 v1.2.3 12th 2026-07-14 10:00 1e3 0x1F 5% $20 €3,50 2,5 1.2.3.4 -7 +8",
+    "tokens": [
+      {
+        "term": "3.14",
+        "position": 1,
+        "start": 0,
+        "end": 4
+      },
+      {
+        "term": "1,000,000",
+        "position": 2,
+        "start": 5,
+        "end": 14
+      },
+      {
+        "term": "v1.2.3",
+        "position": 3,
+        "start": 15,
+        "end": 21
+      },
+      {
+        "term": "12th",
+        "position": 4,
+        "start": 22,
+        "end": 26
+      },
+      {
+        "term": "2026",
+        "position": 5,
+        "start": 27,
+        "end": 31
+      },
+      {
+        "term": "07",
+        "position": 6,
+        "start": 32,
+        "end": 34
+      },
+      {
+        "term": "14",
+        "position": 7,
+        "start": 35,
+        "end": 37
+      },
+      {
+        "term": "10",
+        "position": 8,
+        "start": 38,
+        "end": 40
+      },
+      {
+        "term": "00",
+        "position": 9,
+        "start": 41,
+        "end": 43
+      },
+      {
+        "term": "1e3",
+        "position": 10,
+        "start": 44,
+        "end": 47
+      },
+      {
+        "term": "0x1f",
+        "position": 11,
+        "start": 48,
+        "end": 52
+      },
+      {
+        "term": "5",
+        "position": 12,
+        "start": 53,
+        "end": 54
+      },
+      {
+        "term": "20",
+        "position": 13,
+        "start": 57,
+        "end": 59
+      },
+      {
+        "term": "3,50",
+        "position": 14,
+        "start": 63,
+        "end": 67
+      },
+      {
+        "term": "2,5",
+        "position": 15,
+        "start": 68,
+        "end": 71
+      },
+      {
+        "term": "1.2.3.4",
+        "position": 16,
+        "start": 72,
+        "end": 79
+      },
+      {
+        "term": "7",
+        "position": 17,
+        "start": 81,
+        "end": 82
+      },
+      {
+        "term": "8",
+        "position": 18,
+        "start": 84,
+        "end": 85
+      }
+    ]
+  },
+  {
+    "name": "edge/emails-urls",
+    "text": "e-mail mail@example.com https://ex.com/a_b?c=d#e www.example.org/x.y foo.bar baz:qux",
+    "tokens": [
+      {
+        "term": "e",
+        "position": 1,
+        "start": 0,
+        "end": 1
+      },
+      {
+        "term": "mail",
+        "position": 2,
+        "start": 2,
+        "end": 6
+      },
+      {
+        "term": "mail",
+        "position": 3,
+        "start": 7,
+        "end": 11
+      },
+      {
+        "term": "example.com",
+        "position": 4,
+        "start": 12,
+        "end": 23
+      },
+      {
+        "term": "http",
+        "position": 5,
+        "start": 24,
+        "end": 29
+      },
+      {
+        "term": "ex.com",
+        "position": 6,
+        "start": 32,
+        "end": 38
+      },
+      {
+        "term": "a_b",
+        "position": 7,
+        "start": 39,
+        "end": 42
+      },
+      {
+        "term": "c",
+        "position": 8,
+        "start": 43,
+        "end": 44
+      },
+      {
+        "term": "d",
+        "position": 9,
+        "start": 45,
+        "end": 46
+      },
+      {
+        "term": "e",
+        "position": 10,
+        "start": 47,
+        "end": 48
+      },
+      {
+        "term": "www.example.org",
+        "position": 11,
+        "start": 49,
+        "end": 64
+      },
+      {
+        "term": "x.y",
+        "position": 12,
+        "start": 65,
+        "end": 68
+      },
+      {
+        "term": "foo.bar",
+        "position": 13,
+        "start": 69,
+        "end": 76
+      },
+      {
+        "term": "baz:qux",
+        "position": 14,
+        "start": 77,
+        "end": 84
+      }
+    ]
+  },
+  {
+    "name": "edge/underscores",
+    "text": "file_name __init__ _x_ x__y snake_case_word _ __ a_1 1_a",
+    "tokens": [
+      {
+        "term": "file_nam",
+        "position": 1,
+        "start": 0,
+        "end": 9
+      },
+      {
+        "term": "__init__",
+        "position": 2,
+        "start": 10,
+        "end": 18
+      },
+      {
+        "term": "_x_",
+        "position": 3,
+        "start": 19,
+        "end": 22
+      },
+      {
+        "term": "x__y",
+        "position": 4,
+        "start": 23,
+        "end": 27
+      },
+      {
+        "term": "snake_case_word",
+        "position": 5,
+        "start": 28,
+        "end": 43
+      },
+      {
+        "term": "_",
+        "position": 6,
+        "start": 44,
+        "end": 45
+      },
+      {
+        "term": "__",
+        "position": 7,
+        "start": 46,
+        "end": 48
+      },
+      {
+        "term": "a_1",
+        "position": 8,
+        "start": 49,
+        "end": 52
+      },
+      {
+        "term": "1_a",
+        "position": 9,
+        "start": 53,
+        "end": 56
+      }
+    ]
+  },
+  {
+    "name": "edge/dotted-hyphen",
+    "text": "U.S.A. e.g. i.e. a.b.c state-of-the-art co-op re-enter x-ray 2-3 a--b a.-b",
+    "tokens": [
+      {
+        "term": "u.s.a",
+        "position": 1,
+        "start": 0,
+        "end": 5
+      },
+      {
+        "term": "e.g",
+        "position": 2,
+        "start": 7,
+        "end": 10
+      },
+      {
+        "term": "i.",
+        "position": 3,
+        "start": 12,
+        "end": 15
+      },
+      {
+        "term": "a.b.c",
+        "position": 4,
+        "start": 17,
+        "end": 22
+      },
+      {
+        "term": "state",
+        "position": 5,
+        "start": 23,
+        "end": 28
+      },
+      {
+        "term": "art",
+        "position": 8,
+        "start": 36,
+        "end": 39
+      },
+      {
+        "term": "co",
+        "position": 9,
+        "start": 40,
+        "end": 42
+      },
+      {
+        "term": "op",
+        "position": 10,
+        "start": 43,
+        "end": 45
+      },
+      {
+        "term": "re",
+        "position": 11,
+        "start": 46,
+        "end": 48
+      },
+      {
+        "term": "enter",
+        "position": 12,
+        "start": 49,
+        "end": 54
+      },
+      {
+        "term": "x",
+        "position": 13,
+        "start": 55,
+        "end": 56
+      },
+      {
+        "term": "rai",
+        "position": 14,
+        "start": 57,
+        "end": 60
+      },
+      {
+        "term": "2",
+        "position": 15,
+        "start": 61,
+        "end": 62
+      },
+      {
+        "term": "3",
+        "position": 16,
+        "start": 63,
+        "end": 64
+      },
+      {
+        "term": "b",
+        "position": 18,
+        "start": 68,
+        "end": 69
+      },
+      {
+        "term": "b",
+        "position": 20,
+        "start": 73,
+        "end": 74
+      }
+    ]
+  },
+  {
+    "name": "edge/cjk",
+    "text": "日本語のテキストです。漢字とひらがなとカタカナ。ラーメン・ソバ、ｶﾀｶﾅ 한국어 텍스트 中文文本",
+    "tokens": [
+      {
+        "term": "日",
+        "position": 1,
+        "start": 0,
+        "end": 3
+      },
+      {
+        "term": "本",
+        "position": 2,
+        "start": 3,
+        "end": 6
+      },
+      {
+        "term": "語",
+        "position": 3,
+        "start": 6,
+        "end": 9
+      },
+      {
+        "term": "の",
+        "position": 4,
+        "start": 9,
+        "end": 12
+      },
+      {
+        "term": "テキスト",
+        "position": 5,
+        "start": 12,
+        "end": 24
+      },
+      {
+        "term": "で",
+        "position": 6,
+        "start": 24,
+        "end": 27
+      },
+      {
+        "term": "す",
+        "position": 7,
+        "start": 27,
+        "end": 30
+      },
+      {
+        "term": "漢",
+        "position": 8,
+        "start": 33,
+        "end": 36
+      },
+      {
+        "term": "字",
+        "position": 9,
+        "start": 36,
+        "end": 39
+      },
+      {
+        "term": "と",
+        "position": 10,
+        "start": 39,
+        "end": 42
+      },
+      {
+        "term": "ひ",
+        "position": 11,
+        "start": 42,
+        "end": 45
+      },
+      {
+        "term": "ら",
+        "position": 12,
+        "start": 45,
+        "end": 48
+      },
+      {
+        "term": "が",
+        "position": 13,
+        "start": 48,
+        "end": 51
+      },
+      {
+        "term": "な",
+        "position": 14,
+        "start": 51,
+        "end": 54
+      },
+      {
+        "term": "と",
+        "position": 15,
+        "start": 54,
+        "end": 57
+      },
+      {
+        "term": "カタカナ",
+        "position": 16,
+        "start": 57,
+        "end": 69
+      },
+      {
+        "term": "ラーメン",
+        "position": 17,
+        "start": 72,
+        "end": 84
+      },
+      {
+        "term": "ソバ",
+        "position": 18,
+        "start": 87,
+        "end": 93
+      },
+      {
+        "term": "ｶﾀｶﾅ",
+        "position": 19,
+        "start": 96,
+        "end": 108
+      },
+      {
+        "term": "한국어",
+        "position": 20,
+        "start": 109,
+        "end": 118
+      },
+      {
+        "term": "텍스트",
+        "position": 21,
+        "start": 119,
+        "end": 128
+      },
+      {
+        "term": "中",
+        "position": 22,
+        "start": 129,
+        "end": 132
+      },
+      {
+        "term": "文",
+        "position": 23,
+        "start": 132,
+        "end": 135
+      },
+      {
+        "term": "文",
+        "position": 24,
+        "start": 135,
+        "end": 138
+      },
+      {
+        "term": "本",
+        "position": 25,
+        "start": 138,
+        "end": 141
+      }
+    ]
+  },
+  {
+    "name": "edge/scripts",
+    "text": "Ελληνικά ΟΔΟΣ οδος Русский текст עברית ה\"ש ה'ש العربية ไทยภาษา हिन्दी",
+    "tokens": [
+      {
+        "term": "ελληνικά",
+        "position": 1,
+        "start": 0,
+        "end": 16
+      },
+      {
+        "term": "οδος",
+        "position": 2,
+        "start": 17,
+        "end": 25
+      },
+      {
+        "term": "οδος",
+        "position": 3,
+        "start": 26,
+        "end": 34
+      },
+      {
+        "term": "русский",
+        "position": 4,
+        "start": 35,
+        "end": 49
+      },
+      {
+        "term": "текст",
+        "position": 5,
+        "start": 50,
+        "end": 60
+      },
+      {
+        "term": "עברית",
+        "position": 6,
+        "start": 61,
+        "end": 71
+      },
+      {
+        "term": "ה\"ש",
+        "position": 7,
+        "start": 72,
+        "end": 77
+      },
+      {
+        "term": "ה'ש",
+        "position": 8,
+        "start": 78,
+        "end": 83
+      },
+      {
+        "term": "العربية",
+        "position": 9,
+        "start": 84,
+        "end": 98
+      },
+      {
+        "term": "हिन्दी",
+        "position": 10,
+        "start": 121,
+        "end": 139
+      }
+    ]
+  },
+  {
+    "name": "edge/emoji",
+    "text": "I ❤ emoji 😀😀 👍🏽 👨‍👩‍👧 🇩🇪🇫🇷 flag ✈️ ok",
+    "tokens": [
+      {
+        "term": "emoji",
+        "position": 2,
+        "start": 6,
+        "end": 11
+      },
+      {
+        "term": "flag",
+        "position": 3,
+        "start": 66,
+        "end": 70
+      },
+      {
+        "term": "ok",
+        "position": 4,
+        "start": 78,
+        "end": 80
+      }
+    ]
+  },
+  {
+    "name": "edge/combining",
+    "text": "café café naïve a‍b x­hyphen z​w ﬁle ﬂow",
+    "tokens": [
+      {
+        "term": "café",
+        "position": 1,
+        "start": 0,
+        "end": 5
+      },
+      {
+        "term": "café",
+        "position": 2,
+        "start": 6,
+        "end": 12
+      },
+      {
+        "term": "naïv",
+        "position": 3,
+        "start": 13,
+        "end": 20
+      },
+      {
+        "term": "a‍b",
+        "position": 4,
+        "start": 21,
+        "end": 26
+      },
+      {
+        "term": "x­hyphen",
+        "position": 5,
+        "start": 27,
+        "end": 36
+      },
+      {
+        "term": "z",
+        "position": 6,
+        "start": 37,
+        "end": 38
+      },
+      {
+        "term": "w",
+        "position": 7,
+        "start": 41,
+        "end": 42
+      },
+      {
+        "term": "ﬁle",
+        "position": 8,
+        "start": 43,
+        "end": 48
+      },
+      {
+        "term": "ﬂow",
+        "position": 9,
+        "start": 49,
+        "end": 54
+      }
+    ]
+  },
+  {
+    "name": "edge/case",
+    "text": "İstanbul ẞTRASSE Ⱥpple ȾEST K-Kelvin Ω ǅungla ＡＢＣ ΣΑΣ ΑΣ Σ",
+    "tokens": [
+      {
+        "term": "i�stanbu",
+        "position": 1,
+        "start": 0,
+        "end": 9
+      },
+      {
+        "term": "ßtrass",
+        "position": 2,
+        "start": 10,
+        "end": 19
+      },
+      {
+        "term": "ⱥpple",
+        "position": 3,
+        "start": 20,
+        "end": 26
+      },
+      {
+        "term": "ⱦest",
+        "position": 4,
+        "start": 27,
+        "end": 32
+      },
+      {
+        "term": "k",
+        "position": 5,
+        "start": 33,
+        "end": 34
+      },
+      {
+        "term": "kelvin",
+        "position": 6,
+        "start": 35,
+        "end": 41
+      },
+      {
+        "term": "ω",
+        "position": 7,
+        "start": 42,
+        "end": 44
+      },
+      {
+        "term": "ǆungla",
+        "position": 8,
+        "start": 45,
+        "end": 52
+      },
+      {
+        "term": "ａｂｃ",
+        "position": 9,
+        "start": 53,
+        "end": 62
+      },
+      {
+        "term": "σας",
+        "position": 10,
+        "start": 63,
+        "end": 69
+      },
+      {
+        "term": "ας",
+        "position": 11,
+        "start": 70,
+        "end": 74
+      },
+      {
+        "term": "ς",
+        "position": 12,
+        "start": 75,
+        "end": 77
+      }
+    ]
+  },
+  {
+    "name": "edge/spacing",
+    "text": "tabs\there\r\nwindows\rold sep paranel nbsp　ideo",
+    "tokens": [
+      {
+        "term": "tab",
+        "position": 1,
+        "start": 0,
+        "end": 4
+      },
+      {
+        "term": "window",
+        "position": 3,
+        "start": 11,
+        "end": 18
+      },
+      {
+        "term": "old",
+        "position": 4,
+        "start": 19,
+        "end": 22
+      },
+      {
+        "term": "sep",
+        "position": 5,
+        "start": 25,
+        "end": 28
+      },
+      {
+        "term": "para",
+        "position": 6,
+        "start": 31,
+        "end": 35
+      },
+      {
+        "term": "nel",
+        "position": 7,
+        "start": 37,
+        "end": 40
+      },
+      {
+        "term": "nbsp",
+        "position": 8,
+        "start": 42,
+        "end": 46
+      },
+      {
+        "term": "ideo",
+        "position": 9,
+        "start": 49,
+        "end": 53
+      }
+    ]
+  },
+  {
+    "name": "edge/stopwords",
+    "text": "The a an and are as at be but by for if in into is it no not of on or such that the their then there these they this to was will with",
+    "tokens": [
+      {
+        "term": "will",
+        "position": 33,
+        "start": 124,
+        "end": 128
+      }
+    ]
+  },
+  {
+    "name": "edge/stemming",
+    "text": "running runs ran easily fairly connection connected connecting generalizations hopefulness",
+    "tokens": [
+      {
+        "term": "run",
+        "position": 1,
+        "start": 0,
+        "end": 7
+      },
+      {
+        "term": "run",
+        "position": 2,
+        "start": 8,
+        "end": 12
+      },
+      {
+        "term": "ran",
+        "position": 3,
+        "start": 13,
+        "end": 16
+      },
+      {
+        "term": "easili",
+        "position": 4,
+        "start": 17,
+        "end": 23
+      },
+      {
+        "term": "fairli",
+        "position": 5,
+        "start": 24,
+        "end": 30
+      },
+      {
+        "term": "connect",
+        "position": 6,
+        "start": 31,
+        "end": 41
+      },
+      {
+        "term": "connect",
+        "position": 7,
+        "start": 42,
+        "end": 51
+      },
+      {
+        "term": "connect",
+        "position": 8,
+        "start": 52,
+        "end": 62
+      },
+      {
+        "term": "gener",
+        "position": 9,
+        "start": 63,
+        "end": 78
+      },
+      {
+        "term": "hope",
+        "position": 10,
+        "start": 79,
+        "end": 90
+      }
+    ]
+  },
+  {
+    "name": "edge/markdown",
+    "text": "# Heading\n\n- [link](https://x.y/z) **bold** _it_ `code` > quote\n| a | b |\n|---|---|\n```go\nfunc main() {}\n```",
+    "tokens": [
+      {
+        "term": "head",
+        "position": 1,
+        "start": 2,
+        "end": 9
+      },
+      {
+        "term": "link",
+        "position": 2,
+        "start": 14,
+        "end": 18
+      },
+      {
+        "term": "http",
+        "position": 3,
+        "start": 20,
+        "end": 25
+      },
+      {
+        "term": "x.y",
+        "position": 4,
+        "start": 28,
+        "end": 31
+      },
+      {
+        "term": "z",
+        "position": 5,
+        "start": 32,
+        "end": 33
+      },
+      {
+        "term": "bold",
+        "position": 6,
+        "start": 37,
+        "end": 41
+      },
+      {
+        "term": "_it_",
+        "position": 7,
+        "start": 44,
+        "end": 48
+      },
+      {
+        "term": "code",
+        "position": 8,
+        "start": 50,
+        "end": 54
+      },
+      {
+        "term": "quot",
+        "position": 9,
+        "start": 58,
+        "end": 63
+      },
+      {
+        "term": "b",
+        "position": 11,
+        "start": 70,
+        "end": 71
+      },
+      {
+        "term": "go",
+        "position": 12,
+        "start": 87,
+        "end": 89
+      },
+      {
+        "term": "func",
+        "position": 13,
+        "start": 90,
+        "end": 94
+      },
+      {
+        "term": "main",
+        "position": 14,
+        "start": 95,
+        "end": 99
+      }
+    ]
+  },
+  {
+    "name": "edge/empty",
+    "text": "",
+    "tokens": []
+  },
+  {
+    "name": "edge/punct-only",
+    "text": "... --- !!! ??? ()[]{} ///",
+    "tokens": []
+  },
+  {
+    "name": "edge/mixed",
+    "text": "abc123 123abc a1b2 x²y³ ½ Ⅻ ٣٤ ३४",
+    "tokens": [
+      {
+        "term": "abc123",
+        "position": 1,
+        "start": 0,
+        "end": 6
+      },
+      {
+        "term": "123abc",
+        "position": 2,
+        "start": 7,
+        "end": 13
+      },
+      {
+        "term": "a1b2",
+        "position": 3,
+        "start": 14,
+        "end": 18
+      },
+      {
+        "term": "x",
+        "position": 4,
+        "start": 19,
+        "end": 20
+      },
+      {
+        "term": "y",
+        "position": 5,
+        "start": 22,
+        "end": 23
+      },
+      {
+        "term": "ⅻ",
+        "position": 6,
+        "start": 29,
+        "end": 32
+      },
+      {
+        "term": "٣٤",
+        "position": 7,
+        "start": 33,
+        "end": 37
+      },
+      {
+        "term": "३४",
+        "position": 8,
+        "start": 38,
+        "end": 44
+      }
+    ]
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "srd": { "type": "http", "url": "http://localhost:7777/mcp" }
+  }
+}

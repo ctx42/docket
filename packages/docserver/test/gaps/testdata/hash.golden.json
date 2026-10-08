@@ -1,0 +1,275 @@
+[
+  [
+    "## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n",
+    "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+  ],
+  [
+    "# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\n",
+    "daf32854bc20e5d40c9c066e8c888cdb33ec9e50decd17714eb6dffd35d9c208"
+  ],
+  [
+    "## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\n",
+    "58984d7e310c8ac08dfe32dd8a476715e503f33377c8b6bdf66b18ac12bac453"
+  ],
+  [
+    "## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.\n",
+    "148779d8e04a68be9ef984290edefd977632f326dcc27f337e7b8e7131fcdbd6"
+  ],
+  [
+    "## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n",
+    "68ab670b04f50656a675c403e799d308b2944c6573e76b6e037e7378224c8eb3"
+  ],
+  [
+    "## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n",
+    "e4ad9ad3462616773ff2357baef09eca8f8cf3bf48518af3f5c13bbe37d36196"
+  ],
+  [
+    "# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.\n",
+    "a716961319487c5d06ead209612f70bc19f5cc34036244181ebbfd8b458787b5"
+  ],
+  [
+    "## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.\n",
+    "3ebeebaab7ea3fd25755563d65da95ba9fd0189a135d6d8b478b1eeef6243768"
+  ],
+  [
+    "## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n",
+    "fb7dc526cb0bcb3cd34df6dea63ab4ff839e5df530e554fa7f730b9a3e5b594c"
+  ],
+  [
+    "## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n",
+    "fb509a7fffad35925bddd8b72225f45dce5687d82d37d3b1b86f108905aa6f9a"
+  ],
+  [
+    "## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n",
+    "18195a8d5ce4fd4d36ec60959d0716c0f4fe539d6d65e08b8b277df1b47b00c7"
+  ],
+  [
+    "# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+    "e4846dd94ffaca1ad290bec0ae15f1335b862d5144ffd214d4aec77bc411af50"
+  ],
+  [
+    "## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+    "3b1734e823206a655489afd4694076cbe8fb274b9e635c5878936019286ac4f7"
+  ],
+  [
+    "## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.\n",
+    "327bec278b3580973dc2a015230a839bceb38e45b4b000646b6f17bae44206af"
+  ],
+  [
+    "# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.\n",
+    "e641b5d917d3418dff2433b5b41742ba5b888562ebf873eb18c6a806b455435a"
+  ],
+  [
+    "# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.\n",
+    "632ba81776237ed4273a36022886f3fb6d96976c6c06c1bd25ef5e6d0be42e1c"
+  ],
+  [
+    "# Bookshop project configuration\n\nExample `project-config.md` for a fictional online bookshop. Start the server\nfrom it:\n\n```shell\ndocket mcp -c examples/bookshop/project-config.md\n```\n\nThe front matter holds flat keys only (text, number, checkbox, or list of\ntext), so Obsidian's Properties view can edit it. Every path is relative to\nthe project root, the directory holding this note; an absolute path, or one\nescaping the root with `..`, stops the server. Keys the server does not use are\nignored, so the note can carry settings for other tools too. `kb` is read by\nthe companion SRD skills, not by the server.\n\nA document's path is its location from the project root, for example\n`docs/catalog/epub_delivery.md`; its identity is its front-matter `id` when\nset (that document sets `epub-delivery`), else its path. The `.mcp.json`\nbeside this note registers `srd` on port 7777; the server refuses to\nstart when the two disagree.\n\n`precedence` ranks the folders by trust, most trusted first, and every\n`search`, `get_doc`, and `list_docs` result carries the document's `rank`:\n`kb/shipping_times.md` gets 1, `docs/catalog/epub_delivery.md` 3, and the\nunlisted `docs/glossary` folder ranks last, 4. Documents under `initiatives`\nare work in progress and carry no rank. Rank never reorders search results;\nagents use it to settle conflicting statements.\n\n`gaps` names the gap folder, `gap`, which holds one Markdown file per gap;\nfilled and wontfix gaps move into its `closed/` subfolder. The sample `gap-0001-epub-download-link-after-a-resend.md` is an open gap,\npartly filled by the Download Link section of `epub-delivery`; edit it in\nObsidian and the server keeps your changes.\n",
+    "b229b011008415b1e09dab9cb8b8939a14cc6052cd47df2845e587e10017ab24"
+  ],
+  [
+    "## Ⅻ roman ½ ٣ arabic",
+    "3b8a3846da20e2495a4ddac2a4fb3e581cb8927898752fbebc19fc2c2e6a310e"
+  ],
+  [
+    "##   edge  \n",
+    "5d570550847cd159b179aaf4b2accd1df83fa8f08912cf0961f6b07c084ca8ce"
+  ],
+  [
+    "## emoji 😀 ok",
+    "7bbfe530f086991ef6d5b35e00716865f8d6d6e8e48177edf291f5b50c099762"
+  ],
+  [
+    "# İstanbul ve IŞIK\n## ΣΑΣ ΟΔΟΣ\n## Ⅻ roman ½ ٣ arabic\n## ǅungla ẞig Kelvin Å\n## emoji 😀 ok\n## tab\there\n## nbsp inside\n##   edge  \n",
+    "a2a7de86570c198e3db50d33779539700e59de88990c5f5d733757aa49087ff8"
+  ],
+  [
+    "## nbsp inside",
+    "6bf28f0aa9aaa80718db5885907acc3c67d50f73ee066021c8a30f2b6a3a8ced"
+  ],
+  [
+    "## tab\there",
+    "2933526cf36ca0b8b2ea808379a07ae97a9399c52b185ac6d3fb8f6f821f1ccf"
+  ],
+  [
+    "## ǅungla ẞig Kelvin Å",
+    "31ff6f51f93233fcfe7534f84e3349924bb05c28eda5b0e820ae88bc31984c1a"
+  ],
+  [
+    "## ΣΑΣ ΟΔΟΣ",
+    "f5080907929da0433c9d4ecc8505b20448765f2cdbeb8f26239be90155c553a9"
+  ],
+  [
+    "## \ne",
+    "0ba85e056953a9550f5bfd820b5c3a03a75b18dc434c2e46be38fdb251de105c"
+  ],
+  [
+    "## \nf\n",
+    "dee43a3e5a313cc4a62518ca489b855255cee5510187d223730ca9b6d890ab34"
+  ],
+  [
+    "## FAQ\na",
+    "5ede3c5b49aded8f65c4e2f30b4d4ab34c3d9593203286368d4a54d3d62df572"
+  ],
+  [
+    "## faq\nb",
+    "8dd6856cfd41a26d22a5e3244848cb3aa43e158139e79de90d0cf649d0883672"
+  ],
+  [
+    "## FAQ\nd",
+    "496f458c66097ac0eb8b64f881dd6e78511e39fea4bd95fa28d9b9c01df6b2da"
+  ],
+  [
+    "# A\r\ntext\r\n## B\r\nb\r",
+    "07f95286b1a008df734836b543f1ffad290f6adf48217c51e89ca7608df1d2ab"
+  ],
+  [
+    "## B\r\nb\r",
+    "0ab31c8404d0b054d6cab39306a89546120efc95d3c28995f4896c4e4686b571"
+  ],
+  [
+    "# C\r\n",
+    "555fc820ecdc0ef529b81cb0639466e4a070b46678b176a887f62725c94abeae"
+  ],
+  [
+    "#### deep first\nx",
+    "6ec128a1509eb96319de0aa615275474a17db43b836bd89a7083cf24b6e0844d"
+  ],
+  [
+    "# one\nw\n### three\n",
+    "df3e9b9d08c3bb7ffeeea6218ee3508821d2ba9b3e29d029911ce9bb09d669f1"
+  ],
+  [
+    "###### six\nz",
+    "1f8224866585930f8fe31010fce38f39a76f164b0f1b0332561a21a6ed4b8810"
+  ],
+  [
+    "### three\n",
+    "cb9022e4c075e49c9db6ff22af899b9a7a189fab7a721c71415179bfe353248f"
+  ],
+  [
+    "## two\ny\n###### six\nz",
+    "6cd7259ceec37e116ab3d9fcb8978dcfc80a875f9f228db2ac68c1e80d7f7f74"
+  ],
+  [
+    "# A\n```\n# no\n~~~",
+    "5f6a6f4fa564068b287cd7f382912f7b9d06ed6948df0a94e96b4608668bec80"
+  ],
+  [
+    "## C\n",
+    "b77b62f869f8b35e37d593a7fed39d528ac1e0bc0b7505e070c8b2aa813e2a68"
+  ],
+  [
+    "# still no\n```\n## B\n~~~\n```\n## no\n~~~\n## C\n",
+    "82b8aa1b9470d69cf304198f00ee99b773329e893c3aaae4a92446ce025b5dec"
+  ],
+  [
+    "# A\n```\n## hidden\n",
+    "9902f006e29bc1dff2517fd2cfff2d0db44942e04535e654a5cd8c2eb6b59825"
+  ],
+  [
+    "# A\n\n\n",
+    "327f031b25e00b1a7cd9b0c18f05948b60f55d09f9b3d177d21083f83a3cb6df"
+  ],
+  [
+    "## 100% sure!\n",
+    "284838d1bae1e93fac44d81276aa40b81a64c97b96c8bcfe0dbeea6e8fdbab1c"
+  ],
+  [
+    "## a-b_c / d.e:f",
+    "24004326f7385dfa63a3cd7ed471ea7f2b49563c97de925a98e9d6ef1fec7707"
+  ],
+  [
+    "## C++ & C#",
+    "08e82ca03f1854cb928bcff06c2eec147200abe8cd0bf24060228d3f897861c8"
+  ],
+  [
+    "# What's new? (2026)\n## a-b_c / d.e:f\n## C++ & C#\n## 100% sure!\n",
+    "91af5daf15dd59c8114c4b9bc6948da7b59d95ed1d4de31a51721960d1d764fd"
+  ],
+  [
+    "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\n",
+    "bce06c5f63087f4144ab2fed7e8c5b0fb8d0d4962ba2387aee309806e66c55aa"
+  ],
+  [
+    "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.\n",
+    "86b7f7dd243a0a6fea27b86535c93d77ed42be1db6c282861aaad62031fcbd0c"
+  ],
+  [
+    "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.\n",
+    "4b5b250aac3751c0e771fcc71cde9e3fb1f3e778cfd60220331bd70f3cc2ed11"
+  ],
+  [
+    "# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+    "e4846dd94ffaca1ad290bec0ae15f1335b862d5144ffd214d4aec77bc411af50"
+  ],
+  [
+    "\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.\n",
+    "07d79b89643fea9489de683c6d41f3031c7fe7edb5b2753938b36ce9da4e2864"
+  ],
+  [
+    "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.\n",
+    "4e7c83815007c86058a06d8214bcd27055628e1feb6ffc29d1c0cf561619f028"
+  ],
+  [
+    "\n# Bookshop project configuration\n\nExample `project-config.md` for a fictional online bookshop. Start the server\nfrom it:\n\n```shell\ndocket mcp -c examples/bookshop/project-config.md\n```\n\nThe front matter holds flat keys only (text, number, checkbox, or list of\ntext), so Obsidian's Properties view can edit it. Every path is relative to\nthe project root, the directory holding this note; an absolute path, or one\nescaping the root with `..`, stops the server. Keys the server does not use are\nignored, so the note can carry settings for other tools too. `kb` is read by\nthe companion SRD skills, not by the server.\n\nA document's path is its location from the project root, for example\n`docs/catalog/epub_delivery.md`; its identity is its front-matter `id` when\nset (that document sets `epub-delivery`), else its path. The `.mcp.json`\nbeside this note registers `srd` on port 7777; the server refuses to\nstart when the two disagree.\n\n`precedence` ranks the folders by trust, most trusted first, and every\n`search`, `get_doc`, and `list_docs` result carries the document's `rank`:\n`kb/shipping_times.md` gets 1, `docs/catalog/epub_delivery.md` 3, and the\nunlisted `docs/glossary` folder ranks last, 4. Documents under `initiatives`\nare work in progress and carry no rank. Rank never reorders search results;\nagents use it to settle conflicting statements.\n\n`gaps` names the gap folder, `gap`, which holds one Markdown file per gap;\nfilled and wontfix gaps move into its `closed/` subfolder. The sample `gap-0001-epub-download-link-after-a-resend.md` is an open gap,\npartly filled by the Download Link section of `epub-delivery`; edit it in\nObsidian and the server keeps your changes.\n",
+    "c54610618d4d4d79717d2315bf147103deab5e5418e1df1adc9cd72afeabe768"
+  ],
+  [
+    "# İstanbul ve IŞIK\n## ΣΑΣ ΟΔΟΣ\n## Ⅻ roman ½ ٣ arabic\n## ǅungla ẞig Kelvin Å\n## emoji 😀 ok\n## tab\there\n## nbsp inside\n##   edge  \n",
+    "a2a7de86570c198e3db50d33779539700e59de88990c5f5d733757aa49087ff8"
+  ],
+  [
+    "## FAQ\na\n## faq\nb\n## FAQ-1\nc\n## FAQ\nd\n## \ne\n## \nf\n",
+    "4c4f35d4297cc9d7ea000342470f30eeb1c0265f5d9a97331f5555653cd24de5"
+  ],
+  [
+    "# A\r\ntext\r\n## B\r\nb\r\n# C\r\n",
+    "ecfc669d1f0b8b35d767e093b8f22d7ca062def9e16693a2f99b8cf19ed60d7d"
+  ],
+  [
+    "#### deep first\nx\n## two\ny\n###### six\nz\n# one\nw\n### three\n",
+    "2b8edfcf246bd49dfbdf55acc93db5b1533079fdc21664ee1f4b84364e6c2e01"
+  ],
+  [
+    "# A\n```\n# no\n~~~\n# still no\n```\n## B\n~~~\n```\n## no\n~~~\n## C\n",
+    "a2266869b90811a96a72445f311edff5796d215af22f8e0a3154036742ec2a11"
+  ],
+  [
+    "# A\n```\n## hidden\n",
+    "9902f006e29bc1dff2517fd2cfff2d0db44942e04535e654a5cd8c2eb6b59825"
+  ],
+  [
+    "plain text only\n",
+    "8cb08035bb391d53f352a23f145650590eae4e16398b6df3c2c2db96d29fc55b"
+  ],
+  ["", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
+  ["", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
+  [
+    "# A\n\n\n",
+    "327f031b25e00b1a7cd9b0c18f05948b60f55d09f9b3d177d21083f83a3cb6df"
+  ],
+  [
+    "# What's new? (2026)\n## a-b_c / d.e:f\n## C++ & C#\n## 100% sure!\n",
+    "91af5daf15dd59c8114c4b9bc6948da7b59d95ed1d4de31a51721960d1d764fd"
+  ],
+  ["", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
+  ["abc", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"],
+  [
+    "## A\r\n\r\ntext\r\n\r\n",
+    "59d4082467a673e00e33ac0572be1f78942ee8ffd7b672586206e22b32f5ba2e"
+  ],
+  [
+    "x \t\r\n",
+    "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+  ],
+  ["\r\n", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
+  [
+    "a\rb\r",
+    "af9081672dd5ef3247a30c2db5b0dafcc9bcf981a26aefb3c55d210d43fcc14e"
+  ],
+  [
+    "é漢😀\n",
+    "3ea0588400cb4af7b15d0edd7dc2fe1e359a94ab6822abe8c535f4281f330a20"
+  ]
+]

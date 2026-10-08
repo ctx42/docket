@@ -1,0 +1,287 @@
+[
+  {
+    "name": "read",
+    "calls": [
+      {
+        "name": "search",
+        "arguments": {
+          "query": "download link"
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "refund",
+          "k": 2
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": " "
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {}
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 101
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": -1
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": "abc"
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 1.5
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 2.0
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": 5
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "extra": 1
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": null
+        }
+      },
+      {
+        "name": "search"
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "<b> & </b>  "
+        }
+      },
+      {
+        "name": "get_doc",
+        "arguments": {
+          "id": "epub-delivery"
+        }
+      },
+      {
+        "name": "get_doc",
+        "arguments": {
+          "id": "docs/catalog/epub_delivery.md"
+        }
+      },
+      {
+        "name": "get_doc",
+        "arguments": {
+          "id": "nope"
+        }
+      },
+      {
+        "name": "get_doc",
+        "arguments": {}
+      },
+      {
+        "name": "get_doc",
+        "arguments": {
+          "id": 7
+        }
+      },
+      {
+        "name": "list_docs",
+        "arguments": {}
+      },
+      {
+        "name": "list_docs"
+      },
+      {
+        "name": "list_docs",
+        "arguments": {
+          "x": 1
+        }
+      },
+      {
+        "name": "glossary_terms",
+        "arguments": {}
+      },
+      {
+        "name": "glossary_terms",
+        "arguments": {
+          "term": "EP"
+        }
+      },
+      {
+        "name": "glossary_terms",
+        "arguments": {
+          "term": 1
+        }
+      },
+      {
+        "name": "nope",
+        "arguments": {}
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 9007199254740993
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 1e19
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 9223372036854775807
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": -9223372036854775808
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "ebook epub delivery download"
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "gift",
+          "k": 1
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "order",
+          "k": 100
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "glossary"
+        }
+      },
+      {
+        "name": "get_doc",
+        "arguments": {
+          "id": "kb/refunds.md"
+        }
+      },
+      {
+        "name": "glossary_terms",
+        "arguments": {
+          "term": "zzz"
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": 1000000
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": [
+            1,
+            "a",
+            null,
+            {
+              "b": [2]
+            }
+          ]
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": 0.0001
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": 1.25e-7
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 1e21
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 1e300
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "k": 1e19,
+          "query": "a much longer query string here"
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": -0.0
+        }
+      },
+      {
+        "name": "search",
+        "arguments": {
+          "query": "x",
+          "k": 1e19,
+          "zz": "é€😀 long tail that goes on"
+        }
+      }
+    ]
+  }
+]

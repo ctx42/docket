@@ -1,0 +1,26 @@
+[
+  {
+    "name": "bookshop",
+    "path": "docs/glossary",
+    "filters": ["", "isbn", "  E ", "zzz"],
+    "docs": [
+      {
+        "id": "docs/glossary/glossary.md",
+        "path": "docs/glossary/glossary.md",
+        "text": "---\ntitle: Bookshop Glossary\n---\n\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.\n"
+      }
+    ]
+  },
+  {
+    "name": "synthetic",
+    "path": "g",
+    "filters": ["", "x"],
+    "docs": [
+      {
+        "id": "g/a.md",
+        "path": "g/a.md",
+        "text": "## A (X)\n\nNbsp before abbreviation.\n\n## B (Y)\n\nLine separator.\n\n## C [Syn] (Z) \n\nTrailing.\n\n## İSTANBUL\n\ncity\n\n## D\n> quote\n![img](x)\n\n**bold** [l](a(b)c) [x]( y ) \n"
+      }
+    ]
+  }
+]

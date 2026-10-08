@@ -1,0 +1,352 @@
+[
+  {
+    "name": "gaps",
+    "requests": [
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": ""
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "   "
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\""
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "nul"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "[]"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "\"x\""
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "1"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "null"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":1,\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"nope\":1}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"KIND\":\"missing\",\"Topic\":\"t\",\"DEMAND\":\"d\",\"detail\":\"x\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"heading_path\":[1]}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"heading_path\":\"A\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"draft\":\"yes\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"draft\":1}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"ask\":null,\"doc_id\":null}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\"} trailing"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\"}{"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"kind\":\"wrong\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"nope\":1,\"kind\":2}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":2,\"nope\":1}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"heading_path\":[1,{\"a\":1}]}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"heading_path\":{}}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"x\\u00e9\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{'kind':1}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\" \"topic\":\"t\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"a\":tru}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"\\x\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"draft\":true}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\"}"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002",
+        "body": "{\"add_hit\":true,\"topic\":null}"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002",
+        "body": "{\"add_hit\":\"yes\"}"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002",
+        "body": "{\"kind\":null}"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002",
+        "body": "{\"ask\":[1]}"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002",
+        "body": "{\"ask\":\"A\"}"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002",
+        "body": "{\"zz\":1}"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002",
+        "body": ""
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0404",
+        "body": "{\"topic\":\"T2\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/fill",
+        "body": "{\"filled_by\":\"x\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/fill",
+        "body": "{\"filled_by\":null}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/fill",
+        "body": "{\"complete\":true}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/fill",
+        "body": "{\"filled_by\":[\"epub-delivery#download-link\"],\"remaining\":1}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/reopen",
+        "body": "{\"reason\":1}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/reopen",
+        "body": "{}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/wontfix",
+        "body": "{\"reason\":\"no\",\"extra\":true}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/submit",
+        "body": ""
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/submit",
+        "body": "{garbage"
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/",
+        "body": "{}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps//submit",
+        "body": ""
+      },
+      {
+        "method": "PUT",
+        "target": "/gaps/gap-0002/",
+        "body": "{}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps/gap-0002/nope",
+        "body": ""
+      },
+      {
+        "method": "PATCH",
+        "target": "/gaps",
+        "body": ""
+      },
+      {
+        "method": "PATCH",
+        "target": "/gaps/gap-0002",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps/gap-0002/fill",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?status=draft",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?stale=yes",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?asked=maybe",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?asked=1&stale=t",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?status=nope",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?query=gift",
+        "body": ""
+      },
+      {
+        "method": "DELETE",
+        "target": "/gaps/gap-0002",
+        "body": ""
+      },
+      {
+        "method": "DELETE",
+        "target": "/gaps/gap-0003",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps",
+        "body": ""
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"<<pad:d:1048576>>\",\"detail\":\"x\"}"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\"}<<pad: :1048586>>"
+      },
+      {
+        "method": "POST",
+        "target": "/gaps",
+        "body": "{\"kind\":\"missing\",\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"<<pad:x:1048516>>\"}"
+      }
+    ]
+  }
+]

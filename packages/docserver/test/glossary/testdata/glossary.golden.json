@@ -1,0 +1,144 @@
+[
+  {
+    "name": "bookshop",
+    "filter": "",
+    "terms": [
+      {
+        "term": "Stock Keeping Unit (SKU)",
+        "name": "Stock Keeping Unit",
+        "abbreviation": "SKU",
+        "id": "docs/glossary/glossary.md",
+        "path": "docs/glossary/glossary.md",
+        "anchor": "stock-keeping-unit-sku",
+        "definition": "Identifier of one edition of a title, unique across the catalog."
+      },
+      {
+        "term": "Retail Price (RP)",
+        "name": "Retail Price",
+        "abbreviation": "RP",
+        "id": "docs/glossary/glossary.md",
+        "path": "docs/glossary/glossary.md",
+        "anchor": "retail-price-rp",
+        "definition": "Price a customer pays for a title before discounts."
+      },
+      {
+        "term": "Backorder",
+        "name": "Backorder",
+        "abbreviation": "",
+        "id": "docs/glossary/glossary.md",
+        "path": "docs/glossary/glossary.md",
+        "anchor": "backorder",
+        "definition": "Order for a title that is out of stock, shipped when stock arrives."
+      }
+    ]
+  },
+  {
+    "name": "bookshop",
+    "filter": "isbn",
+    "terms": []
+  },
+  {
+    "name": "bookshop",
+    "filter": "  E ",
+    "terms": [
+      {
+        "term": "Stock Keeping Unit (SKU)",
+        "name": "Stock Keeping Unit",
+        "abbreviation": "SKU",
+        "id": "docs/glossary/glossary.md",
+        "path": "docs/glossary/glossary.md",
+        "anchor": "stock-keeping-unit-sku",
+        "definition": "Identifier of one edition of a title, unique across the catalog."
+      },
+      {
+        "term": "Retail Price (RP)",
+        "name": "Retail Price",
+        "abbreviation": "RP",
+        "id": "docs/glossary/glossary.md",
+        "path": "docs/glossary/glossary.md",
+        "anchor": "retail-price-rp",
+        "definition": "Price a customer pays for a title before discounts."
+      },
+      {
+        "term": "Backorder",
+        "name": "Backorder",
+        "abbreviation": "",
+        "id": "docs/glossary/glossary.md",
+        "path": "docs/glossary/glossary.md",
+        "anchor": "backorder",
+        "definition": "Order for a title that is out of stock, shipped when stock arrives."
+      }
+    ]
+  },
+  {
+    "name": "bookshop",
+    "filter": "zzz",
+    "terms": []
+  },
+  {
+    "name": "synthetic",
+    "filter": "",
+    "terms": [
+      {
+        "term": "A (X)",
+        "name": "A ",
+        "abbreviation": "X",
+        "id": "g/a.md",
+        "path": "g/a.md",
+        "anchor": "ax",
+        "definition": "Nbsp before abbreviation."
+      },
+      {
+        "term": "B\u2028(Y)",
+        "name": "B\u2028",
+        "abbreviation": "Y",
+        "id": "g/a.md",
+        "path": "g/a.md",
+        "anchor": "by",
+        "definition": "Line separator."
+      },
+      {
+        "term": "C [Syn] (Z)",
+        "name": "C [Syn]",
+        "abbreviation": "Z",
+        "id": "g/a.md",
+        "path": "g/a.md",
+        "anchor": "c-syn-z",
+        "definition": "Trailing."
+      },
+      {
+        "term": "İSTANBUL",
+        "name": "İSTANBUL",
+        "abbreviation": "",
+        "id": "g/a.md",
+        "path": "g/a.md",
+        "anchor": "istanbul",
+        "definition": "city"
+      },
+      {
+        "term": "D",
+        "name": "D",
+        "abbreviation": "",
+        "id": "g/a.md",
+        "path": "g/a.md",
+        "anchor": "d",
+        "definition": "bold l [x]( y )"
+      }
+    ]
+  },
+  {
+    "name": "synthetic",
+    "filter": "x",
+    "terms": [
+      {
+        "term": "A (X)",
+        "name": "A ",
+        "abbreviation": "X",
+        "id": "g/a.md",
+        "path": "g/a.md",
+        "anchor": "ax",
+        "definition": "Nbsp before abbreviation."
+      }
+    ]
+  }
+]

@@ -1,0 +1,4 @@
+# Gaps the example server records stay local; only the sample gap ships.
+*
+!.gitignore
+!gap-0001-epub-download-link-after-a-resend.md

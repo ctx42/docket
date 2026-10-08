@@ -1,0 +1,1224 @@
+[
+  {
+    "name": "lifecycle",
+    "results": [
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"open\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "open",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gap_id\":\"gap-0002\"}"
+          }
+        ],
+        "structuredContent": {
+          "gap_id": "gap-0002"
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gap_id\":\"gap-0003\"}"
+          }
+        ],
+        "structuredContent": {
+          "gap_id": "gap-0003"
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"open\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"},{\"answer\":\"unknown\",\"ask\":[\"Anna M\",\"Bob\"],\"asked\":\"2026-10-04\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"docs/ordering/checkout.md\",\"file\":\"gap-0002-gift-card-refunds.md\",\"filled_by\":[],\"heading_path\":[\"Checkout\",\"Payment Methods\"],\"hits\":1,\"id\":\"gap-0002\",\"kind\":\"missing\",\"search_terms\":[\"refund gift card\"],\"srd_ref\":\"SRD-4 §2\",\"status\":\"open\",\"target_claim\":\"Refunds go to the gift card.\",\"topic\":\"Gift card refunds\"},{\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"\",\"file\":\"gap-0003-draft-b-co.md\",\"filled_by\":[],\"heading_path\":[],\"hits\":1,\"id\":\"gap-0003\",\"kind\":\"missing\",\"search_terms\":[],\"srd_ref\":\"\",\"status\":\"draft\",\"target_claim\":\"\",\"topic\":\"Draft \\u003cb\\u003e \\u0026 co\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "open",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            },
+            {
+              "answer": "unknown",
+              "ask": ["Anna M", "Bob"],
+              "asked": "2026-10-04",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "docs/ordering/checkout.md",
+              "file": "gap-0002-gift-card-refunds.md",
+              "filled_by": [],
+              "heading_path": ["Checkout", "Payment Methods"],
+              "hits": 1,
+              "id": "gap-0002",
+              "kind": "missing",
+              "search_terms": ["refund gift card"],
+              "srd_ref": "SRD-4 §2",
+              "status": "open",
+              "target_claim": "Refunds go to the gift card.",
+              "topic": "Gift card refunds"
+            },
+            {
+              "answer": "",
+              "ask": [],
+              "asked": "",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "",
+              "file": "gap-0003-draft-b-co.md",
+              "filled_by": [],
+              "heading_path": [],
+              "hits": 1,
+              "id": "gap-0003",
+              "kind": "missing",
+              "search_terms": [],
+              "srd_ref": "",
+              "status": "draft",
+              "target_claim": "",
+              "topic": "Draft \u003cb\u003e \u0026 co"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"\",\"file\":\"gap-0003-draft-b-co.md\",\"filled_by\":[],\"heading_path\":[],\"hits\":1,\"id\":\"gap-0003\",\"kind\":\"missing\",\"search_terms\":[],\"srd_ref\":\"\",\"status\":\"draft\",\"target_claim\":\"\",\"topic\":\"Draft \\u003cb\\u003e \\u0026 co\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "",
+              "ask": [],
+              "asked": "",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "",
+              "file": "gap-0003-draft-b-co.md",
+              "filled_by": [],
+              "heading_path": [],
+              "hits": 1,
+              "id": "gap-0003",
+              "kind": "missing",
+              "search_terms": [],
+              "srd_ref": "",
+              "status": "draft",
+              "target_claim": "",
+              "topic": "Draft \u003cb\u003e \u0026 co"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"unknown\",\"ask\":[\"Anna M\",\"Bob\"],\"asked\":\"2026-10-04\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"docs/ordering/checkout.md\",\"file\":\"gap-0002-gift-card-refunds.md\",\"filled_by\":[],\"heading_path\":[\"Checkout\",\"Payment Methods\"],\"hits\":1,\"id\":\"gap-0002\",\"kind\":\"missing\",\"score\":0.8567367686238653,\"search_terms\":[\"refund gift card\"],\"srd_ref\":\"SRD-4 §2\",\"status\":\"open\",\"target_claim\":\"Refunds go to the gift card.\",\"topic\":\"Gift card refunds\"},{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"score\":0.001953193758143577,\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"open\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"},{\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"\",\"file\":\"gap-0003-draft-b-co.md\",\"filled_by\":[],\"heading_path\":[],\"hits\":1,\"id\":\"gap-0003\",\"kind\":\"missing\",\"score\":0.0007749789045931245,\"search_terms\":[],\"srd_ref\":\"\",\"status\":\"draft\",\"target_claim\":\"\",\"topic\":\"Draft \\u003cb\\u003e \\u0026 co\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "unknown",
+              "ask": ["Anna M", "Bob"],
+              "asked": "2026-10-04",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "docs/ordering/checkout.md",
+              "file": "gap-0002-gift-card-refunds.md",
+              "filled_by": [],
+              "heading_path": ["Checkout", "Payment Methods"],
+              "hits": 1,
+              "id": "gap-0002",
+              "kind": "missing",
+              "score": 0.8567367686238653,
+              "search_terms": ["refund gift card"],
+              "srd_ref": "SRD-4 §2",
+              "status": "open",
+              "target_claim": "Refunds go to the gift card.",
+              "topic": "Gift card refunds"
+            },
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "score": 0.001953193758143577,
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "open",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            },
+            {
+              "answer": "",
+              "ask": [],
+              "asked": "",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "",
+              "file": "gap-0003-draft-b-co.md",
+              "filled_by": [],
+              "heading_path": [],
+              "hits": 1,
+              "id": "gap-0003",
+              "kind": "missing",
+              "score": 0.0007749789045931245,
+              "search_terms": [],
+              "srd_ref": "",
+              "status": "draft",
+              "target_claim": "",
+              "topic": "Draft \u003cb\u003e \u0026 co"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"unknown\",\"ask\":[\"Anna M\",\"Bob\"],\"asked\":\"2026-10-04\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"docs/ordering/checkout.md\",\"file\":\"gap-0002-gift-card-refunds.md\",\"filled_by\":[],\"heading_path\":[\"Checkout\",\"Payment Methods\"],\"hits\":1,\"id\":\"gap-0002\",\"kind\":\"missing\",\"search_terms\":[\"refund gift card\"],\"srd_ref\":\"SRD-4 §2\",\"status\":\"open\",\"target_claim\":\"Refunds go to the gift card.\",\"topic\":\"Gift card refunds\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "unknown",
+              "ask": ["Anna M", "Bob"],
+              "asked": "2026-10-04",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "docs/ordering/checkout.md",
+              "file": "gap-0002-gift-card-refunds.md",
+              "filled_by": [],
+              "heading_path": ["Checkout", "Payment Methods"],
+              "hits": 1,
+              "id": "gap-0002",
+              "kind": "missing",
+              "search_terms": ["refund gift card"],
+              "srd_ref": "SRD-4 §2",
+              "status": "open",
+              "target_claim": "Refunds go to the gift card.",
+              "topic": "Gift card refunds"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"open\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"},{\"answer\":\"unknown\",\"ask\":[\"Anna M\",\"Bob\"],\"asked\":\"2026-10-04\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"docs/ordering/checkout.md\",\"file\":\"gap-0002-gift-card-refunds.md\",\"filled_by\":[],\"heading_path\":[\"Checkout\",\"Payment Methods\"],\"hits\":1,\"id\":\"gap-0002\",\"kind\":\"missing\",\"search_terms\":[\"refund gift card\"],\"srd_ref\":\"SRD-4 §2\",\"status\":\"open\",\"target_claim\":\"Refunds go to the gift card.\",\"topic\":\"Gift card refunds\"},{\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"\",\"file\":\"gap-0003-draft-b-co.md\",\"filled_by\":[],\"heading_path\":[],\"hits\":1,\"id\":\"gap-0003\",\"kind\":\"missing\",\"search_terms\":[],\"srd_ref\":\"\",\"status\":\"draft\",\"target_claim\":\"\",\"topic\":\"Draft \\u003cb\\u003e \\u0026 co\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "open",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            },
+            {
+              "answer": "unknown",
+              "ask": ["Anna M", "Bob"],
+              "asked": "2026-10-04",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "docs/ordering/checkout.md",
+              "file": "gap-0002-gift-card-refunds.md",
+              "filled_by": [],
+              "heading_path": ["Checkout", "Payment Methods"],
+              "hits": 1,
+              "id": "gap-0002",
+              "kind": "missing",
+              "search_terms": ["refund gift card"],
+              "srd_ref": "SRD-4 §2",
+              "status": "open",
+              "target_claim": "Refunds go to the gift card.",
+              "topic": "Gift card refunds"
+            },
+            {
+              "answer": "",
+              "ask": [],
+              "asked": "",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "",
+              "file": "gap-0003-draft-b-co.md",
+              "filled_by": [],
+              "heading_path": [],
+              "hits": 1,
+              "id": "gap-0003",
+              "kind": "missing",
+              "search_terms": [],
+              "srd_ref": "",
+              "status": "draft",
+              "target_claim": "",
+              "topic": "Draft \u003cb\u003e \u0026 co"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: unknown status \"resolved\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: asked: want a YYYY-MM-DD date, have \"yesterday\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: nothing to update"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: unknown kind \"bogus\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: doc_id \"epub-delivery#download-link\" must name a document, not a section"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "submit gap-0003: gap status does not allow the operation: it is open, the operation needs draft"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "submit gap-0404: gap not found"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gap_id\":\"gap-0004\"}"
+          }
+        ],
+        "structuredContent": {
+          "gap_id": "gap-0004"
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "discard gap-0002: gap status does not allow the operation: it is open, the operation needs draft"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: filled_by is required"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: filled_by is required"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: \"https://ex.com/a\" names no corpus document"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: \"srd-wishlist-sharing#requirements\" names initiatives/wishlist_sharing.md, a document under the initiatives folder; only a corpus document outside it fills a gap"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: document \"epub-delivery\" has no heading with anchor \"nope\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "reopen gap-0002: gap status does not allow the operation: it is open, the operation needs filled"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "invalid gap input: reason is required"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"reason\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"closed/gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"filled\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"},{\"answer\":\"unknown\",\"ask\":[\"Anna M\",\"Bob\"],\"asked\":\"2026-10-04\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"The unit is unknown.\\n\\nReopened 2026-07-14: Section rewritten.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0002-gift-card-refunds.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"},{\"hash\":\"58984d7e310c8ac08dfe32dd8a476715e503f33377c8b6bdf66b18ac12bac453\",\"ref\":\"epub-delivery#supported-readers\"},{\"hash\":\"4e7c83815007c86058a06d8214bcd27055628e1feb6ffc29d1c0cf561619f028\",\"ref\":\"kb/shipping_times.md\"}],\"heading_path\":[\"Checkout\",\"Payment Methods\"],\"hits\":2,\"id\":\"gap-0002\",\"kind\":\"missing\",\"search_terms\":[\"refund gift card\"],\"srd_ref\":\"SRD-4 §2\",\"status\":\"open\",\"target_claim\":\"Refunds go to the gift card.\",\"topic\":\"Gift card refunds\"},{\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\\n\\nWon't fix 2026-07-14: Internal only.\",\"doc_id\":\"\",\"file\":\"closed/gap-0003-draft-b-co.md\",\"filled_by\":[],\"heading_path\":[],\"hits\":1,\"id\":\"gap-0003\",\"kind\":\"missing\",\"search_terms\":[],\"srd_ref\":\"\",\"status\":\"wontfix\",\"target_claim\":\"\",\"topic\":\"Draft \\u003cb\\u003e \\u0026 co\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "closed/gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "filled",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            },
+            {
+              "answer": "unknown",
+              "ask": ["Anna M", "Bob"],
+              "asked": "2026-10-04",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "The unit is unknown.\n\nReopened 2026-07-14: Section rewritten.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0002-gift-card-refunds.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                },
+                {
+                  "hash": "58984d7e310c8ac08dfe32dd8a476715e503f33377c8b6bdf66b18ac12bac453",
+                  "ref": "epub-delivery#supported-readers"
+                },
+                {
+                  "hash": "4e7c83815007c86058a06d8214bcd27055628e1feb6ffc29d1c0cf561619f028",
+                  "ref": "kb/shipping_times.md"
+                }
+              ],
+              "heading_path": ["Checkout", "Payment Methods"],
+              "hits": 2,
+              "id": "gap-0002",
+              "kind": "missing",
+              "search_terms": ["refund gift card"],
+              "srd_ref": "SRD-4 §2",
+              "status": "open",
+              "target_claim": "Refunds go to the gift card.",
+              "topic": "Gift card refunds"
+            },
+            {
+              "answer": "",
+              "ask": [],
+              "asked": "",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.\n\nWon't fix 2026-07-14: Internal only.",
+              "doc_id": "",
+              "file": "closed/gap-0003-draft-b-co.md",
+              "filled_by": [],
+              "heading_path": [],
+              "hits": 1,
+              "id": "gap-0003",
+              "kind": "missing",
+              "search_terms": [],
+              "srd_ref": "",
+              "status": "wontfix",
+              "target_claim": "",
+              "topic": "Draft \u003cb\u003e \u0026 co"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"closed/gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"score\":0.6665354265034222,\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"filled\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "closed/gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "score": 0.6665354265034222,
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "filled",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"detail\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/heading_path: type: A has type \"string\", want one of \"null, array\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/heading_path: validating /properties/heading_path/items: type: 1 has type \"integer\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gap_id\":\"gap-0004\"}"
+          }
+        ],
+        "structuredContent": {
+          "gap_id": "gap-0004"
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/draft: type: yes has type \"string\", want \"boolean\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"gap_id\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/ask: type: x has type \"string\", want one of \"null, array\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/add_hit: type: 1 has type \"integer\", want \"boolean\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"filled_by\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/filled_by: type: x has type \"string\", want one of \"null, array\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/asked: type: yes has type \"string\", want one of \"null, boolean\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: unexpected additional properties [\"x\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"reason\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"gap_id\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"gap_id\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"closed/gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"filled\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"},{\"answer\":\"unknown\",\"ask\":[\"Anna M\",\"Bob\"],\"asked\":\"2026-10-04\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"The unit is unknown.\\n\\nReopened 2026-07-14: Section rewritten.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0002-gift-card-refunds.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"},{\"hash\":\"58984d7e310c8ac08dfe32dd8a476715e503f33377c8b6bdf66b18ac12bac453\",\"ref\":\"epub-delivery#supported-readers\"},{\"hash\":\"4e7c83815007c86058a06d8214bcd27055628e1feb6ffc29d1c0cf561619f028\",\"ref\":\"kb/shipping_times.md\"}],\"heading_path\":[\"Checkout\",\"Payment Methods\"],\"hits\":2,\"id\":\"gap-0002\",\"kind\":\"missing\",\"search_terms\":[\"refund gift card\"],\"srd_ref\":\"SRD-4 §2\",\"status\":\"open\",\"target_claim\":\"Refunds go to the gift card.\",\"topic\":\"Gift card refunds\"},{\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\\n\\nWon't fix 2026-07-14: Internal only.\",\"doc_id\":\"\",\"file\":\"closed/gap-0003-draft-b-co.md\",\"filled_by\":[],\"heading_path\":[],\"hits\":1,\"id\":\"gap-0003\",\"kind\":\"missing\",\"search_terms\":[],\"srd_ref\":\"\",\"status\":\"wontfix\",\"target_claim\":\"\",\"topic\":\"Draft \\u003cb\\u003e \\u0026 co\"},{\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-07-14T10:00:00Z\",\"demand\":\"SRD-4 needs the refund rule.\",\"detail\":\"Not stated.\",\"doc_id\":\"\",\"file\":\"gap-0004-gift-card-refunds.md\",\"filled_by\":[],\"heading_path\":[],\"hits\":1,\"id\":\"gap-0004\",\"kind\":\"missing\",\"search_terms\":[],\"srd_ref\":\"\",\"status\":\"open\",\"target_claim\":\"\",\"topic\":\"Gift card refunds\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "closed/gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "filled",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            },
+            {
+              "answer": "unknown",
+              "ask": ["Anna M", "Bob"],
+              "asked": "2026-10-04",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "The unit is unknown.\n\nReopened 2026-07-14: Section rewritten.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0002-gift-card-refunds.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                },
+                {
+                  "hash": "58984d7e310c8ac08dfe32dd8a476715e503f33377c8b6bdf66b18ac12bac453",
+                  "ref": "epub-delivery#supported-readers"
+                },
+                {
+                  "hash": "4e7c83815007c86058a06d8214bcd27055628e1feb6ffc29d1c0cf561619f028",
+                  "ref": "kb/shipping_times.md"
+                }
+              ],
+              "heading_path": ["Checkout", "Payment Methods"],
+              "hits": 2,
+              "id": "gap-0002",
+              "kind": "missing",
+              "search_terms": ["refund gift card"],
+              "srd_ref": "SRD-4 §2",
+              "status": "open",
+              "target_claim": "Refunds go to the gift card.",
+              "topic": "Gift card refunds"
+            },
+            {
+              "answer": "",
+              "ask": [],
+              "asked": "",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.\n\nWon't fix 2026-07-14: Internal only.",
+              "doc_id": "",
+              "file": "closed/gap-0003-draft-b-co.md",
+              "filled_by": [],
+              "heading_path": [],
+              "hits": 1,
+              "id": "gap-0003",
+              "kind": "missing",
+              "search_terms": [],
+              "srd_ref": "",
+              "status": "wontfix",
+              "target_claim": "",
+              "topic": "Draft \u003cb\u003e \u0026 co"
+            },
+            {
+              "answer": "",
+              "ask": [],
+              "asked": "",
+              "created": "2026-07-14T10:00:00Z",
+              "demand": "SRD-4 needs the refund rule.",
+              "detail": "Not stated.",
+              "doc_id": "",
+              "file": "gap-0004-gift-card-refunds.md",
+              "filled_by": [],
+              "heading_path": [],
+              "hits": 1,
+              "id": "gap-0004",
+              "kind": "missing",
+              "search_terms": [],
+              "srd_ref": "",
+              "status": "open",
+              "target_claim": "",
+              "topic": "Gift card refunds"
+            }
+          ],
+          "invalid": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "invalid-files",
+    "results": [
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[],\"invalid\":[{\"file\":\"gap-0002-junk.md\",\"reason\":\"no front matter\"},{\"file\":\"gap-0003-x.md\",\"reason\":\"front matter: yaml: line 1: did not find expected ',' or ']'\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [],
+          "invalid": [
+            {
+              "file": "gap-0002-junk.md",
+              "reason": "no front matter"
+            },
+            {
+              "file": "gap-0003-x.md",
+              "reason": "front matter: yaml: line 1: did not find expected ',' or ']'"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "submit gap-0002: invalid gap file gap-0002-junk.md: no front matter"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "update gap-0003: invalid gap file gap-0003-x.md: front matter: yaml: line 1: did not find expected ',' or ']'"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"status\":\"open\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"}],\"invalid\":[{\"file\":\"gap-0002-junk.md\",\"reason\":\"no front matter\"},{\"file\":\"gap-0003-x.md\",\"reason\":\"front matter: yaml: line 1: did not find expected ',' or ']'\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "status": "open",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            }
+          ],
+          "invalid": [
+            {
+              "file": "gap-0002-junk.md",
+              "reason": "no front matter"
+            },
+            {
+              "file": "gap-0003-x.md",
+              "reason": "front matter: yaml: line 1: did not find expected ',' or ']'"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "stale",
+    "results": [
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"stale\":true,\"stale_refs\":[{\"reason\":\"changed\",\"ref\":\"epub-delivery#download-link\"}],\"status\":\"open\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "stale": true,
+              "stale_refs": [
+                {
+                  "reason": "changed",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "status": "open",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[{\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"created\":\"2026-10-04T09:30:00Z\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"doc_id\":\"epub-delivery\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"filled_by\":[{\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\",\"ref\":\"epub-delivery#download-link\"}],\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"hits\":1,\"id\":\"gap-0001\",\"kind\":\"incomplete\",\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"srd_ref\":\"srd-wishlist-sharing\",\"stale\":true,\"stale_refs\":[{\"reason\":\"changed\",\"ref\":\"epub-delivery#download-link\"}],\"status\":\"open\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"topic\":\"EPUB download link after a resend\"}],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [
+            {
+              "answer": "deferred",
+              "ask": [],
+              "asked": "",
+              "created": "2026-10-04T09:30:00Z",
+              "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+              "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+              "doc_id": "epub-delivery",
+              "file": "gap-0001-epub-download-link-after-a-resend.md",
+              "filled_by": [
+                {
+                  "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "heading_path": ["EPUB Delivery", "Download Link"],
+              "hits": 1,
+              "id": "gap-0001",
+              "kind": "incomplete",
+              "search_terms": ["resend download link", "EPUB link expiry"],
+              "srd_ref": "srd-wishlist-sharing",
+              "stale": true,
+              "stale_refs": [
+                {
+                  "reason": "changed",
+                  "ref": "epub-delivery#download-link"
+                }
+              ],
+              "status": "open",
+              "target_claim": "A resent download link is valid for 48 hours from the resend.",
+              "topic": "EPUB download link after a resend"
+            }
+          ],
+          "invalid": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"ok\":true}"
+          }
+        ],
+        "structuredContent": {
+          "ok": true
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"gaps\":[],\"invalid\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "gaps": [],
+          "invalid": []
+        }
+      }
+    ]
+  }
+]

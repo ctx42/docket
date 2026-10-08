@@ -1,0 +1,3 @@
+GET /search?q=EPUB response body.
+---
+{"results":[{"title":"EPUB Editions","id":"shop/catalog/epub.md","path":"shop/catalog/epub.md","text":"\nReaders download book data as EPUB.\nSee https://docs.example.com/epub","score":0.17610081964600727,"source_url":"https://docs.example.com/epub"}]}

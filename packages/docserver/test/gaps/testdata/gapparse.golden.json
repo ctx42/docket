@@ -1,0 +1,787 @@
+[
+  {
+    "name": "gap-0003-topic.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 2,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "Topic",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-topic.md"
+    }
+  },
+  {
+    "name": "gap-0001-epub-download-link-after-a-resend.md",
+    "src": "---\nid: gap-0001\nstatus: open\nkind: incomplete\nanswer: deferred\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - EPUB Delivery\n  - Download Link\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 1\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+    "gap": {
+      "id": "gap-0001",
+      "status": "open",
+      "kind": "incomplete",
+      "answer": "deferred",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "srd-wishlist-sharing",
+      "doc_id": "epub-delivery",
+      "heading_path": ["EPUB Delivery", "Download Link"],
+      "search_terms": ["resend download link", "EPUB link expiry"],
+      "hits": 1,
+      "created": "2026-10-04T09:30:00Z",
+      "filled_by": [
+        {
+          "ref": "epub-delivery#download-link",
+          "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+        }
+      ],
+      "topic": "EPUB download link after a resend",
+      "demand": "Gifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.",
+      "detail": "The Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.",
+      "target_claim": "A resent download link is valid for 48 hours from the resend.",
+      "file": "gap-0001-epub-download-link-after-a-resend.md"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "# T\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "no front matter"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: x\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "front matter not closed"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\n: [\n---\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "front matter: yaml: did not find expected key"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\n- a\n---\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "front matter is not a mapping"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\n---\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "front matter is not a mapping"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "missing required key \"status\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nkind: wrong\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "duplicate key \"kind\""
+    }
+  },
+  {
+    "name": "gap-3.md",
+    "src": "---\nid: gap-3\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-3.md",
+      "reason": "key \"id\": want gap-NNNN, have \"gap-3\""
+    }
+  },
+  {
+    "name": "gap-0004-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0004-t.md",
+      "reason": "file name does not match id \"gap-0003\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nstatus: kb\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"status\": unknown status \"kb\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nkind: x\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"kind\": unknown kind \"x\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nanswer: x\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"answer\": unknown answer \"x\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nask: Anna M\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"ask\": want a list"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nasked: last week\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"asked\": want a YYYY-MM-DD date, have \"last week\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nasked: 2026-10-04T10:00\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"asked\": want a YYYY-MM-DD date, have \"2026-10-04T10:00\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nhits: 0\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"hits\": want at least 1, have 0"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\ncreated: today\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"created\": parsing time \"today\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"today\" as \"2006\""
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nsearch_terms: x\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"search_terms\": want a list"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nfilled_by: [{hash: x}]\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "key \"filled_by\": entry without ref"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\nstatus: filled\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "filled gap without filled_by"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\ntext\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "missing topic heading"
+    }
+  },
+  {
+    "name": "gap-0003.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003.md",
+      "reason": "missing \"## Detail\" heading"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: filled\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ref: kb/a.md#b\n    hash: 9f2c\n  - ref: kb/c.md\nanswer: ~\nheading_path: ~\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "filled",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [
+        {
+          "ref": "kb/a.md#b",
+          "hash": "9f2c"
+        },
+        {
+          "ref": "kb/c.md"
+        }
+      ],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nask:\n  - Anna M\n  - \"Bob: support lead\"\n  -\n  - anna m\nasked: 2026-10-04\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": ["Anna M", "Bob: support lead"],
+      "asked": "2026-10-04",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nask:\nasked:\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nask: []\nasked: \"\"\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nhits: x\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "duplicate key \"hits\""
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2.7\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 2,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: ~\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"hits\": want at least 1, have 0"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T12:30:15+02:00\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T12:30:15+02:00",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: \"2026-07-14T10:00:00.5Z\"\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00.5Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\r\nid: gap-0003\r\nstatus: open\r\nkind: wrong\r\nhits: 1\r\ncreated: 2026-07-14T10:00:00Z\r\n---\r\n# CRLF topic\r\n## Demand\r\nd\r\n## Detail\r\ne\r\n## Target claim\r\nc\r\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "CRLF topic",
+      "demand": "d",
+      "detail": "e",
+      "target_claim": "c",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\n# leading comment\nid: gap-0003  # trailing comment\nstatus: open\n\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\ncustom: keep me\nnested:\n  a: 1\n---\nlead\n# Topic here\nintro text\n## Demand\n\nWhy.\n\n## Detail\n\n```\n## not a heading\n```\n\n## Target claim\n\nClaim.\n\n## Notes\n\nextra\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "Topic here",
+      "demand": "Why.",
+      "detail": "```\n## not a heading\n```",
+      "target_claim": "Claim.",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\n{id: gap-0003, status: open, kind: wrong, hits: 1, created: 2026-07-14T10:00:00Z}\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nsrd_ref: \"SRD-7 §4\"\ndoc_id: 12\nheading_path: [A, B]\nsearch_terms:\n  - x\n  - 2\n---\n# Zażółć 漢字\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "SRD-7 §4",
+      "doc_id": "12",
+      "heading_path": ["A", "B"],
+      "search_terms": ["x", "2"],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "Zażółć 漢字",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nask: [&a Anna, *a]\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"ask\": want a scalar"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: x\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"filled_by\": want a list"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - x\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"filled_by\": want a mapping with ref and hash"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ref: [a]\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"filled_by\": want a mapping with ref and hash"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - {ref: a, ref: b}\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"filled_by\": want a mapping with ref and hash"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ~\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"filled_by\": entry without ref"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nid: [x]\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "duplicate key \"id\""
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: [x]\nstatus: open\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"id\": want a scalar"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nstatus: [open]\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "bad": {
+      "file": "gap-0003-t.md",
+      "reason": "key \"status\": want a scalar"
+    }
+  },
+  {
+    "name": "closed/gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: filled\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: [{ref: kb/a.md}]\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "filled",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [
+        {
+          "ref": "kb/a.md"
+        }
+      ],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "closed/gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: wontfix\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "wontfix",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-00003-t.md",
+    "src": "---\nid: gap-00003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-00003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-00003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand  \n## Detail\t\n## Target claim\n### deeper\n# Trailing H1\nmore\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "### deeper",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n#\n## Demand\n## Detail\n## Target claim",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n## Demand\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n   first line indented\n\n## Detail\n\n\n## Target claim\n  \n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "   first line indented",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: \"gap-0003\"\nstatus: 'open'\nkind: !!str wrong\nhits: !!int 1\ncreated: !!str 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "gap": {
+      "id": "gap-0003",
+      "status": "open",
+      "kind": "wrong",
+      "answer": "",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": [],
+      "search_terms": [],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "T",
+      "demand": "",
+      "detail": "",
+      "target_claim": "",
+      "file": "gap-0003-t.md"
+    }
+  }
+]

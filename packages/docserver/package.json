@@ -1,0 +1,27 @@
+{
+  "name": "@docket/docserver",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Runtime-neutral doc server: corpus, BM25 search, gaps, MCP and REST surfaces. No node:/bun:/obsidian imports.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -b",
+    "typecheck:test": "tsc --noEmit -p tsconfig.test.json"
+  },
+  "dependencies": {
+    "@docket/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1"
+  }
+}

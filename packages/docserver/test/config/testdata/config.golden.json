@@ -1,0 +1,1028 @@
+[
+  {
+    "name": "full",
+    "file": "config.yaml",
+    "content": "listen: \":7777\"\nsources:\n  shop-docs:\n    dir: /srv/doc\n  notes:\n    file: /srv/notes/arch.md\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "notes": {
+            "dir": "",
+            "file": "/srv/notes/arch.md"
+          },
+          "shop-docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "relative",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: corpus/docs\n  notes:\n    file: ../notes/arch.md\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "$ROOT/corpus/docs",
+            "file": ""
+          },
+          "notes": {
+            "dir": "",
+            "file": "/tmp/notes/arch.md"
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "gaps",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\ngaps: /var/lib/docket/gaps\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "/var/lib/docket/gaps",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "gaps-relative",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\ngaps: state/gaps\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "$ROOT/state/gaps",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "gaps-dotted",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\ngaps: ./state/../gaps/\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "$ROOT/gaps",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "gaps-in-dir",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\ngaps: /srv/doc/gaps\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: gaps folder \"/srv/doc/gaps\" is inside source \"docs\""
+    }
+  },
+  {
+    "name": "gaps-is-file",
+    "file": "config.yaml",
+    "content": "sources:\n  notes:\n    file: /srv/notes.md\ngaps: /srv/notes.md\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: gaps folder \"/srv/notes.md\" is source file \"notes\""
+    }
+  },
+  {
+    "name": "src-in-gaps-dir",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/gaps/docs\ngaps: /srv/gaps\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: source \"docs\" lies inside gaps folder \"/srv/gaps\""
+    }
+  },
+  {
+    "name": "src-in-gaps-file",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    file: /srv/gaps/a.md\ngaps: /srv/gaps\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: source \"docs\" lies inside gaps folder \"/srv/gaps\""
+    }
+  },
+  {
+    "name": "same-dir",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/gaps\ngaps: /srv/gaps\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: gaps folder \"/srv/gaps\" is inside source \"docs\""
+    }
+  },
+  {
+    "name": "beside",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\ngaps: /srv/docs\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "/srv/docs",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "watch-enabled",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enabled: true\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": true,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "watch-debounce",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enabled: true\n  debounce: 2s\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": true,
+          "debounce": 2000000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "watch-disabled-debounce",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enabled: false\n  debounce: 1500ms\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 1500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "watch-yes",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enabled: yes\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": true,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "watch-on",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enabled: On\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": true,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "watch-1",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enabled: 1\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 5: cannot unmarshal !!int `1` into bool"
+    }
+  },
+  {
+    "name": "watch-str",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enabled: \"true\"\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `true` into bool"
+    }
+  },
+  {
+    "name": "debounce-int",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: 5\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 5: cannot unmarshal !!int `5` into time.Duration"
+    }
+  },
+  {
+    "name": "debounce-bad",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: abc\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 5: cannot unmarshal !!str `abc` into time.Duration"
+    }
+  },
+  {
+    "name": "debounce-quoted",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: \"750ms\"\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 750000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "debounce-1m",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: 1m\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 60000000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "debounce-0",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: 0s\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: watch: debounce must be positive"
+    }
+  },
+  {
+    "name": "debounce-neg",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: -1s\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: watch: debounce must be positive"
+    }
+  },
+  {
+    "name": "debounce-2m",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: 2m\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: watch: debounce must not exceed 1m0s"
+    }
+  },
+  {
+    "name": "debounce-null",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  debounce: ~\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "bad-yaml",
+    "file": "config.yaml",
+    "content": "listen: [",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: line 1: did not find expected node content"
+    }
+  },
+  {
+    "name": "unknown",
+    "file": "config.yaml",
+    "content": "listne: \":7777\"\nsources:\n  docs:\n    dir: /srv/doc\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 1: field listne not found in type config.Config"
+    }
+  },
+  {
+    "name": "unknown-nested",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dri: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 3: field dri not found in type config.Source"
+    }
+  },
+  {
+    "name": "unknown-watch",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch:\n  enable: true\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 5: field enable not found in type config.Watch"
+    }
+  },
+  {
+    "name": "two-unknown",
+    "file": "config.yaml",
+    "content": "a: 1\nb: 2\nsources:\n  docs:\n    dir: /srv/doc\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 1: field a not found in type config.Config\n  line 2: field b not found in type config.Config"
+    }
+  },
+  {
+    "name": "multi-doc",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\n---\nwatch:\n  enabled: true\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: more than one YAML document"
+    }
+  },
+  {
+    "name": "trailing-sep",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\n---\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: more than one YAML document"
+    }
+  },
+  {
+    "name": "leading-sep",
+    "file": "config.yaml",
+    "content": "---\nsources:\n  docs:\n    dir: /srv/doc\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "doc-end",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\n...\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "doc-end-more",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\n...\n---\nx: 1\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: more than one YAML document"
+    }
+  },
+  {
+    "name": "dup-source",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/a\n  docs:\n    dir: /srv/b\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 4: mapping key \"docs\" already defined at line 2"
+    }
+  },
+  {
+    "name": "dup-top",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nlisten: a\nlisten: b\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 5: mapping key \"listen\" already defined at line 4"
+    }
+  },
+  {
+    "name": "missing-sources",
+    "file": "config.yaml",
+    "content": "listen: \":7777\"\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: cannot be blank"
+    }
+  },
+  {
+    "name": "empty-sources",
+    "file": "config.yaml",
+    "content": "sources: {}\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: cannot be blank"
+    }
+  },
+  {
+    "name": "empty-file",
+    "file": "config.yaml",
+    "content": "",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: cannot be blank"
+    }
+  },
+  {
+    "name": "null-sources",
+    "file": "config.yaml",
+    "content": "sources: ~\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: cannot be blank"
+    }
+  },
+  {
+    "name": "comment-only",
+    "file": "config.yaml",
+    "content": "# nothing\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: cannot be blank"
+    }
+  },
+  {
+    "name": "both",
+    "file": "config.yaml",
+    "content": "sources:\n  a:\n    dir: /x\n    file: /y.md\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources.a: must set exactly one of dir or file"
+    }
+  },
+  {
+    "name": "neither",
+    "file": "config.yaml",
+    "content": "sources:\n  a: {}\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources.a: cannot be blank"
+    }
+  },
+  {
+    "name": "null-source",
+    "file": "config.yaml",
+    "content": "sources:\n  a:\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources.a: cannot be blank"
+    }
+  },
+  {
+    "name": "name-slash",
+    "file": "config.yaml",
+    "content": "sources:\n  a/b:\n    dir: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: source name \"a/b\" must match ^[A-Za-z0-9._-]*[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+    }
+  },
+  {
+    "name": "name-space",
+    "file": "config.yaml",
+    "content": "sources:\n  \"a b\":\n    dir: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: source name \"a b\" must match ^[A-Za-z0-9._-]*[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+    }
+  },
+  {
+    "name": "name-dot",
+    "file": "config.yaml",
+    "content": "sources:\n  \".\":\n    dir: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: source name \".\" must match ^[A-Za-z0-9._-]*[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+    }
+  },
+  {
+    "name": "name-dotdot",
+    "file": "config.yaml",
+    "content": "sources:\n  \"..\":\n    dir: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: source name \"..\" must match ^[A-Za-z0-9._-]*[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+    }
+  },
+  {
+    "name": "name-empty",
+    "file": "config.yaml",
+    "content": "sources:\n  \"\":\n    dir: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources: source name \"\" must match ^[A-Za-z0-9._-]*[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+    }
+  },
+  {
+    "name": "name-ok",
+    "file": "config.yaml",
+    "content": "sources:\n  .a_b-1:\n    dir: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          ".a_b-1": {
+            "dir": "/x",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "file-txt",
+    "file": "config.yaml",
+    "content": "sources:\n  a:\n    file: /x.txt\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources.a: file must be a Markdown (.md) document"
+    }
+  },
+  {
+    "name": "multi-invalid",
+    "file": "config.yaml",
+    "content": "sources:\n  a:\n    dir: /x\n    file: /y.md\n  b: {}\n  c:\n    file: /z.txt\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "validate config: sources.a: must set exactly one of dir or file; sources.b: cannot be blank; sources.c: file must be a Markdown (.md) document"
+    }
+  },
+  {
+    "name": "listen-seq",
+    "file": "config.yaml",
+    "content": "listen: [a]\nsources:\n  docs:\n    dir: /srv/doc\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into string"
+    }
+  },
+  {
+    "name": "listen-int",
+    "file": "config.yaml",
+    "content": "listen: 7777\nsources:\n  docs:\n    dir: /srv/doc\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "7777",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "sources-seq",
+    "file": "config.yaml",
+    "content": "sources:\n  - docs\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 2: cannot unmarshal !!seq into map[string]config.Source"
+    }
+  },
+  {
+    "name": "source-str",
+    "file": "config.yaml",
+    "content": "sources:\n  docs: /srv/doc\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 2: cannot unmarshal !!str `/srv/doc` into config.Source"
+    }
+  },
+  {
+    "name": "dir-int",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: 12\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "$ROOT/12",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "name-int",
+    "file": "config.yaml",
+    "content": "sources:\n  12:\n    dir: /x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "12": {
+            "dir": "/x",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "watch-seq",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\nwatch: [1]\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 4: cannot unmarshal !!seq into config.Watch"
+    }
+  },
+  {
+    "name": "gaps-null",
+    "file": "config.yaml",
+    "content": "sources:\n  docs:\n    dir: /srv/doc\ngaps: ~\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": "",
+        "sources": {
+          "docs": {
+            "dir": "/srv/doc",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": null
+      }
+    }
+  },
+  {
+    "name": "tab",
+    "file": "config.yaml",
+    "content": "sources:\n\tdocs: x\n",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "parse config: yaml: line 2: found character that cannot start any token"
+    }
+  },
+  {
+    "name": "missing-file",
+    "file": "no.yaml",
+    "content": "\u0000absent",
+    "dirs": [],
+    "files": {},
+    "want": {
+      "err": "read config: open $ROOT/no.yaml: no such file or directory"
+    }
+  }
+]

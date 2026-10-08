@@ -1,0 +1,627 @@
+{
+  "docs": [
+    {
+      "ID": "epub-delivery",
+      "Path": "docs/catalog/epub_delivery.md",
+      "Title": "EPUB Delivery",
+      "SourceURL": "https://help.example.com/epub-delivery",
+      "Aliases": ["ebook", "digital edition"],
+      "Chunks": [
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Aliases": ["ebook", "digital edition"],
+          "StartLine": 1
+        }
+      ]
+    },
+    {
+      "ID": "docs/glossary/glossary.md",
+      "Path": "docs/glossary/glossary.md",
+      "Title": "Bookshop Glossary",
+      "SourceURL": "",
+      "Aliases": null,
+      "Chunks": [
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Aliases": null,
+          "StartLine": 1
+        }
+      ]
+    },
+    {
+      "ID": "docs/ordering/checkout.md",
+      "Path": "docs/ordering/checkout.md",
+      "Title": "Checkout",
+      "SourceURL": "",
+      "Aliases": null,
+      "Chunks": [
+        {
+          "DocID": "docs/ordering/checkout.md",
+          "DocPath": "docs/ordering/checkout.md",
+          "Title": "Checkout",
+          "HeadingPath": null,
+          "Text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+          "SourceURL": "",
+          "Aliases": null,
+          "StartLine": 1
+        }
+      ]
+    },
+    {
+      "ID": "srd-wishlist-sharing",
+      "Path": "initiatives/wishlist_sharing.md",
+      "Title": "SRD: Wishlist Sharing",
+      "SourceURL": "",
+      "Aliases": null,
+      "Chunks": [
+        {
+          "DocID": "srd-wishlist-sharing",
+          "DocPath": "initiatives/wishlist_sharing.md",
+          "Title": "SRD: Wishlist Sharing",
+          "HeadingPath": null,
+          "Text": "\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.",
+          "SourceURL": "",
+          "Aliases": null,
+          "StartLine": 1
+        }
+      ]
+    },
+    {
+      "ID": "kb/shipping_times.md",
+      "Path": "kb/shipping_times.md",
+      "Title": "Shipping Times",
+      "SourceURL": "",
+      "Aliases": null,
+      "Chunks": [
+        {
+          "DocID": "kb/shipping_times.md",
+          "DocPath": "kb/shipping_times.md",
+          "Title": "Shipping Times",
+          "HeadingPath": null,
+          "Text": "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.",
+          "SourceURL": "",
+          "Aliases": null,
+          "StartLine": 1
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "query": {
+        "Text": "epub",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.3580099594570989,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "EPUB download link",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.15790024119128931,
+          "Rank": 0
+        },
+        {
+          "DocID": "srd-wishlist-sharing",
+          "DocPath": "initiatives/wishlist_sharing.md",
+          "Title": "SRD: Wishlist Sharing",
+          "HeadingPath": null,
+          "Text": "\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.",
+          "SourceURL": "",
+          "Score": 0.003044627044941895,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "checkout",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/ordering/checkout.md",
+          "DocPath": "docs/ordering/checkout.md",
+          "Title": "Checkout",
+          "HeadingPath": null,
+          "Text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+          "SourceURL": "",
+          "Score": 0.5273566491622941,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "shipping times",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "kb/shipping_times.md",
+          "DocPath": "kb/shipping_times.md",
+          "Title": "Shipping Times",
+          "HeadingPath": null,
+          "Text": "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.",
+          "SourceURL": "",
+          "Score": 0.6121769075381168,
+          "Rank": 0
+        },
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.002334589016939096,
+          "Rank": 0
+        },
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.0019618078829281454,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "wishlist sharing",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "srd-wishlist-sharing",
+          "DocPath": "initiatives/wishlist_sharing.md",
+          "Title": "SRD: Wishlist Sharing",
+          "HeadingPath": null,
+          "Text": "\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.",
+          "SourceURL": "",
+          "Score": 0.5799771714456725,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "glossary",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.46182578752821285,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "resend",
+        "K": 0
+      },
+      "results": []
+    },
+    {
+      "query": {
+        "Text": "the",
+        "K": 0
+      },
+      "results": []
+    },
+    {
+      "query": {
+        "Text": "delivery",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.33246085831966854,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "books ordering payment",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/ordering/checkout.md",
+          "DocPath": "docs/ordering/checkout.md",
+          "Title": "Checkout",
+          "HeadingPath": null,
+          "Text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+          "SourceURL": "",
+          "Score": 0.007940588220615961,
+          "Rank": 0
+        },
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.002061705857216712,
+          "Rank": 0
+        },
+        {
+          "DocID": "kb/shipping_times.md",
+          "DocPath": "kb/shipping_times.md",
+          "Title": "Shipping Times",
+          "HeadingPath": null,
+          "Text": "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.",
+          "SourceURL": "",
+          "Score": 0.0011241693183661602,
+          "Rank": 0
+        },
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.0009299750013436749,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "kb shipping",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "kb/shipping_times.md",
+          "DocPath": "kb/shipping_times.md",
+          "Title": "Shipping Times",
+          "HeadingPath": null,
+          "Text": "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.",
+          "SourceURL": "",
+          "Score": 0.18226155262542365,
+          "Rank": 0
+        },
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.0019595997251160373,
+          "Rank": 0
+        },
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.0016466959110245654,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "catalog",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.01287338787139608,
+          "Rank": 0
+        },
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.01081779860303149,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "refund",
+        "K": 0
+      },
+      "results": []
+    },
+    {
+      "query": {
+        "Text": "download link expires",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.020200224840810507,
+          "Rank": 0
+        },
+        {
+          "DocID": "srd-wishlist-sharing",
+          "DocPath": "initiatives/wishlist_sharing.md",
+          "Title": "SRD: Wishlist Sharing",
+          "HeadingPath": null,
+          "Text": "\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.",
+          "SourceURL": "",
+          "Score": 0.0027816348682878746,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "basket",
+        "K": 0
+      },
+      "results": []
+    },
+    {
+      "query": {
+        "Text": "order",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/ordering/checkout.md",
+          "DocPath": "docs/ordering/checkout.md",
+          "Title": "Checkout",
+          "HeadingPath": null,
+          "Text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+          "SourceURL": "",
+          "Score": 0.007001994014112832,
+          "Rank": 0
+        },
+        {
+          "DocID": "kb/shipping_times.md",
+          "DocPath": "kb/shipping_times.md",
+          "Title": "Shipping Times",
+          "HeadingPath": null,
+          "Text": "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.",
+          "SourceURL": "",
+          "Score": 0.005915398505730204,
+          "Rank": 0
+        },
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.004893544631968864,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "customer",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.01287338787139608,
+          "Rank": 0
+        },
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.01081779860303149,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "email",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/ordering/checkout.md",
+          "DocPath": "docs/ordering/checkout.md",
+          "Title": "Checkout",
+          "HeadingPath": null,
+          "Text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+          "SourceURL": "",
+          "Score": 0.011141254126655634,
+          "Rank": 0
+        },
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.01081779860303149,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "gift card",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "docs/ordering/checkout.md",
+          "DocPath": "docs/ordering/checkout.md",
+          "Title": "Checkout",
+          "HeadingPath": null,
+          "Text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+          "SourceURL": "",
+          "Score": 0.05384098655928846,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "initiatives wishlist",
+        "K": 0
+      },
+      "results": [
+        {
+          "DocID": "srd-wishlist-sharing",
+          "DocPath": "initiatives/wishlist_sharing.md",
+          "Title": "SRD: Wishlist Sharing",
+          "HeadingPath": null,
+          "Text": "\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.",
+          "SourceURL": "",
+          "Score": 0.19640762849132112,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "book",
+        "K": 2
+      },
+      "results": []
+    },
+    {
+      "query": {
+        "Text": "epub",
+        "K": 1
+      },
+      "results": [
+        {
+          "DocID": "epub-delivery",
+          "DocPath": "docs/catalog/epub_delivery.md",
+          "Title": "EPUB Delivery",
+          "HeadingPath": null,
+          "Text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+          "SourceURL": "https://help.example.com/epub-delivery",
+          "Score": 0.3580099594570989,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "order",
+        "K": 100
+      },
+      "results": [
+        {
+          "DocID": "docs/ordering/checkout.md",
+          "DocPath": "docs/ordering/checkout.md",
+          "Title": "Checkout",
+          "HeadingPath": null,
+          "Text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+          "SourceURL": "",
+          "Score": 0.007001994014112832,
+          "Rank": 0
+        },
+        {
+          "DocID": "kb/shipping_times.md",
+          "DocPath": "kb/shipping_times.md",
+          "Title": "Shipping Times",
+          "HeadingPath": null,
+          "Text": "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.",
+          "SourceURL": "",
+          "Score": 0.005915398505730204,
+          "Rank": 0
+        },
+        {
+          "DocID": "docs/glossary/glossary.md",
+          "DocPath": "docs/glossary/glossary.md",
+          "Title": "Bookshop Glossary",
+          "HeadingPath": null,
+          "Text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+          "SourceURL": "",
+          "Score": 0.004893544631968864,
+          "Rank": 0
+        }
+      ]
+    },
+    {
+      "query": {
+        "Text": "",
+        "K": 5
+      },
+      "results": []
+    }
+  ]
+}

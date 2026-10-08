@@ -1,0 +1,493 @@
+[
+  {
+    "name": "gaps",
+    "responses": [
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: EOF\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: EOF\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: unexpected EOF\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: unexpected EOF\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: unexpected EOF\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: unexpected EOF\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal array into Go value of type restapi.reportRequest\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal string into Go value of type restapi.reportRequest\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go value of type restapi.reportRequest\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"invalid gap input: unknown kind \\\"\\\"\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field reportRequest.kind of type string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: unknown field \\\"nope\\\"\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0002\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field reportRequest.heading_path of type string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal string into Go struct field reportRequest.heading_path of type []string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal string into Go struct field reportRequest.draft of type bool\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field reportRequest.draft of type bool\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0003\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0004\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0005\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0006\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: unknown field \\\"nope\\\"\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field reportRequest.kind of type string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field reportRequest.heading_path of type string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal object into Go struct field reportRequest.heading_path of type []string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"invalid gap input: unknown kind \\\"xé\\\"\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: invalid character '}' looking for beginning of object key string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: invalid character '\\\\'' looking for beginning of object key string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: invalid character '\\\"' after object key:value pair\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: invalid character '}' in literal true (expecting 'e')\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: invalid character 'x' in string escape code\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0007\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0008\"}\n"
+      },
+      {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"ok\":true}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal string into Go struct field updateRequest.add_hit of type bool\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"invalid gap input: nothing to update\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field updateRequest.ask of type string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal string into Go struct field updateRequest.ask of type []string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: unknown field \\\"zz\\\"\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: EOF\"}\n"
+      },
+      {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"update gap-0404: gap not found\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal string into Go struct field fillRequest.filled_by of type []string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"invalid gap input: filled_by is required\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"invalid gap input: filled_by is required\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field fillRequest.remaining of type string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: cannot unmarshal number into Go struct field reasonRequest.reason of type string\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"invalid gap input: reason is required\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"decode request body: json: unknown field \\\"extra\\\"\"}\n"
+      },
+      {
+        "status": 409,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"submit gap-0002: gap status does not allow the operation: it is open, the operation needs draft\"}\n"
+      },
+      {
+        "status": 409,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"submit gap-0002: gap status does not allow the operation: it is open, the operation needs draft\"}\n"
+      },
+      {
+        "status": 404,
+        "headers": {
+          "Content-Type": "text/plain; charset=utf-8"
+        },
+        "body": "404 page not found\n"
+      },
+      {
+        "status": 307,
+        "headers": {
+          "Location": "/gaps/submit"
+        },
+        "body": ""
+      },
+      {
+        "status": 404,
+        "headers": {
+          "Content-Type": "text/plain; charset=utf-8"
+        },
+        "body": "404 page not found\n"
+      },
+      {
+        "status": 404,
+        "headers": {
+          "Content-Type": "text/plain; charset=utf-8"
+        },
+        "body": "404 page not found\n"
+      },
+      {
+        "status": 405,
+        "headers": {
+          "Allow": "GET, HEAD, POST",
+          "Content-Type": "text/plain; charset=utf-8"
+        },
+        "body": "Method Not Allowed\n"
+      },
+      {
+        "status": 405,
+        "headers": {
+          "Allow": "DELETE, PUT",
+          "Content-Type": "text/plain; charset=utf-8"
+        },
+        "body": "Method Not Allowed\n"
+      },
+      {
+        "status": 405,
+        "headers": {
+          "Allow": "POST",
+          "Content-Type": "text/plain; charset=utf-8"
+        },
+        "body": "Method Not Allowed\n"
+      },
+      {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gaps\":[{\"id\":\"gap-0007\",\"status\":\"draft\",\"kind\":\"missing\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":1,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0007-t.md\"}],\"invalid\":[]}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"stale must be true or false\"}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"asked must be true or false\"}\n"
+      },
+      {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gaps\":[],\"invalid\":[]}\n"
+      },
+      {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"invalid gap input: unknown status \\\"nope\\\"\"}\n"
+      },
+      {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gaps\":[{\"id\":\"gap-0001\",\"status\":\"open\",\"kind\":\"incomplete\",\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"srd-wishlist-sharing\",\"doc_id\":\"epub-delivery\",\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"hits\":1,\"created\":\"2026-10-04T09:30:00Z\",\"filled_by\":[{\"ref\":\"epub-delivery#download-link\",\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\"}],\"topic\":\"EPUB download link after a resend\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\",\"score\":0.005265587232556525}],\"invalid\":[]}\n"
+      },
+      {
+        "status": 409,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"discard gap-0002: gap status does not allow the operation: it is open, the operation needs draft\"}\n"
+      },
+      {
+        "status": 409,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"discard gap-0003: gap status does not allow the operation: it is open, the operation needs draft\"}\n"
+      },
+      {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gaps\":[{\"id\":\"gap-0001\",\"status\":\"open\",\"kind\":\"incomplete\",\"answer\":\"deferred\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"srd-wishlist-sharing\",\"doc_id\":\"epub-delivery\",\"heading_path\":[\"EPUB Delivery\",\"Download Link\"],\"search_terms\":[\"resend download link\",\"EPUB link expiry\"],\"hits\":1,\"created\":\"2026-10-04T09:30:00Z\",\"filled_by\":[{\"ref\":\"epub-delivery#download-link\",\"hash\":\"9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\"}],\"topic\":\"EPUB download link after a resend\",\"demand\":\"Gifting an EPUB from a shared wishlist resends the download link to the\\nrecipient; the SRD must say how long the resent link stays valid.\",\"detail\":\"The Download Link section states a 48-hour lifetime and five downloads for\\nthe link sent after payment. It does not say whether a resend starts a new\\n48-hour window or reuses the original one. Support knows; not yet asked.\",\"target_claim\":\"A resent download link is valid for 48 hours from the resend.\",\"file\":\"gap-0001-epub-download-link-after-a-resend.md\"},{\"id\":\"gap-0002\",\"status\":\"open\",\"kind\":\"missing\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":2,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0002-t.md\"},{\"id\":\"gap-0003\",\"status\":\"open\",\"kind\":\"missing\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":1,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0003-t.md\"},{\"id\":\"gap-0004\",\"status\":\"open\",\"kind\":\"missing\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":1,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0004-t.md\"},{\"id\":\"gap-0005\",\"status\":\"open\",\"kind\":\"missing\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":1,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0005-t.md\"},{\"id\":\"gap-0006\",\"status\":\"open\",\"kind\":\"wrong\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":1,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0006-t.md\"},{\"id\":\"gap-0007\",\"status\":\"draft\",\"kind\":\"missing\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":1,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0007-t.md\"},{\"id\":\"gap-0008\",\"status\":\"open\",\"kind\":\"missing\",\"answer\":\"\",\"ask\":[],\"asked\":\"\",\"srd_ref\":\"\",\"doc_id\":\"\",\"heading_path\":[],\"search_terms\":[],\"hits\":1,\"created\":\"2026-07-14T10:00:00Z\",\"filled_by\":[],\"topic\":\"t\",\"demand\":\"d\",\"detail\":\"x\",\"target_claim\":\"\",\"file\":\"gap-0008-t.md\"}],\"invalid\":[]}\n"
+      },
+      {
+        "status": 413,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"error\":\"request body too large: limit 1048576 bytes\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0009\"}\n"
+      },
+      {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"gap_id\":\"gap-0010\"}\n"
+      }
+    ]
+  }
+]

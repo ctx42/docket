@@ -1,0 +1,319 @@
+[
+  {
+    "name": "read",
+    "requests": [
+      {
+        "method": "GET",
+        "target": "/healthz",
+        "body": ""
+      },
+      {
+        "method": "HEAD",
+        "target": "/healthz",
+        "body": ""
+      },
+      {
+        "method": "POST",
+        "target": "/healthz",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/healthz/",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/nope",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=download+link",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=download%20link&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=EPUB&k=2&k=5",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=abc",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=0",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=-2",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=101",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=+3",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=007",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=%201",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=x&k=99999999999999999999",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=gift;k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=%zz&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=%3Cb%3E+%26",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?k=1&q=checkout",
+        "body": ""
+      },
+      {
+        "method": "POST",
+        "target": "/search",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/epub-delivery",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/docs/catalog/epub_delivery.md",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/kb/shipping_times.md",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/srd-wishlist-sharing",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/nope",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/..%2F..%2Fetc%2Fpasswd",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/shop/../../x",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "//docs",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/./kb/shipping_times.md",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/kb/shipping_times.md?x=1",
+        "body": ""
+      },
+      {
+        "method": "DELETE",
+        "target": "/docs",
+        "body": ""
+      },
+      {
+        "method": "PUT",
+        "target": "/docs/epub-delivery",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/epub%2Ddelivery",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/glossary",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/glossary?term=SKU",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/glossary?term=zzz",
+        "body": ""
+      },
+      {
+        "method": "POST",
+        "target": "/glossary",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/openapi.yaml",
+        "body": ""
+      },
+      {
+        "method": "HEAD",
+        "target": "/openapi.yaml",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/DOCS",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/healthz?x=%",
+        "body": ""
+      }
+    ]
+  },
+  {
+    "name": "no-glossary-no-store",
+    "no_store": true,
+    "no_glossary": true,
+    "requests": [
+      {
+        "method": "GET",
+        "target": "/glossary",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/healthz",
+        "body": ""
+      }
+    ]
+  },
+  {
+    "name": "escapes",
+    "requests": [
+      {
+        "method": "GET",
+        "target": "/search?q=%E9t%E9&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=download%FFlink&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=caf%C3%A9&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/%FF",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/docs/epub%FFdelivery",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/glossary?term=%E9",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=%zz&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/search?q=a+b%2Bc&k=1",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?status=%FF",
+        "body": ""
+      },
+      {
+        "method": "GET",
+        "target": "/gaps?q=%E9t%E9",
+        "body": ""
+      }
+    ]
+  }
+]

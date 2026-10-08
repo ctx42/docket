@@ -1,0 +1,1157 @@
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
+// SPDX-License-Identifier: MIT
+
+// The Confluence REST client, ported from the net layer of `pkg/docket`
+// (connection/pull/spaces/folders/assets). It talks to a Site only through the
+// injected {@link HttpClient} port — never `fetch` or `node:http` — so the CLI
+// backs it with `fetch` and the plugin with Obsidian's `requestUrl`. Every call
+// is an authenticated GET against the Confluence v2 API; list endpoints follow
+// the `_links.next` cursor to completion. Per-request timeout, retry/backoff, and
+// bounded concurrency wrap the underlying HttpClient in M9.1; source-string
+// parsing (page/folder/space ids) and the discovery walk are M7.
+
+import type { HttpClient, HttpResponse } from "../ports/http.ts";
+import { responseText } from "../ports/http.ts";
+
+/** The Confluence current-user endpoint (v1; returns the authenticated account). */
+const USER_ENDPOINT = "/wiki/rest/api/user/current";
+/** The Confluence v2 page-by-id endpoint prefix. */
+export const PAGE_ENDPOINT = "/wiki/api/v2/pages/";
+/** The Confluence v2 pages-list endpoint (no trailing id): multi-`id` + cursor. */
+const PAGES_LIST_ENDPOINT = "/wiki/api/v2/pages";
+/** The max page ids per {@link ConfluenceClient.fetchPageVersions} request. */
+const VERSION_BATCH = 250;
+/** The Confluence v2 folder-by-id endpoint prefix. */
+export const FOLDER_ENDPOINT = "/wiki/api/v2/folders/";
+/** The Confluence v2 spaces list endpoint (by `keys`, or every visible space). */
+const SPACES_ENDPOINT = "/wiki/api/v2/spaces";
+/** The Confluence v2 page-create endpoint (no trailing id). */
+const CREATE_PAGE_ENDPOINT = "/wiki/api/v2/pages";
+/** The Confluence v2 folder-create endpoint (no trailing id). */
+const CREATE_FOLDER_ENDPOINT = "/wiki/api/v2/folders";
+/** The Confluence v1 per-page restriction endpoint prefix and suffix. */
+const RESTRICTION_PREFIX = "/wiki/rest/api/content/";
+const RESTRICTION_SUFFIX = "/restriction";
+/** The direct-children suffix appended to a page or folder path. */
+export const CHILDREN_PATH = "/direct-children";
+/** The v2 page inline-comments suffix (appended to a page path). */
+const INLINE_COMMENTS_PATH = "/inline-comments";
+/** The v2 page footer-comments suffix (appended to a page path). */
+const FOOTER_COMMENTS_PATH = "/footer-comments";
+/** The v2 inline-comments collection endpoint (create; `/{id}` for one comment). */
+const INLINE_COMMENTS_ENDPOINT = "/wiki/api/v2/inline-comments";
+/** The v2 footer-comments collection endpoint (create; `/{id}` for one comment). */
+const FOOTER_COMMENTS_ENDPOINT = "/wiki/api/v2/footer-comments";
+/** The v2 inline-comment-by-id endpoint prefix, for a comment's replies. */
+const INLINE_COMMENT_ENDPOINT = `${INLINE_COMMENTS_ENDPOINT}/`;
+/** The v2 footer-comment-by-id endpoint prefix, for a comment's replies. */
+const FOOTER_COMMENT_ENDPOINT = `${FOOTER_COMMENTS_ENDPOINT}/`;
+/** The children suffix appended to a comment path to list its replies. */
+const COMMENT_CHILDREN_PATH = "/children";
+
+/**
+ * FolderTitleTakenError reports that a folder create was rejected because a
+ * folder with the same title already exists in the space. Confluence requires
+ * folder titles to be unique per space, not merely per parent, so the caller
+ * reuses the existing folder when it sits under the intended parent and refuses
+ * otherwise. The counterpart of Go's `errFolderTitleTaken` sentinel.
+ */
+export class FolderTitleTakenError extends Error {
+    constructor(detail: string) {
+        super(detail);
+        this.name = "FolderTitleTakenError";
+    }
+}
+
+/** The Site credentials a {@link ConfluenceClient} authenticates with. */
+export interface ConfluenceClientConfig {
+    /** The Site base URL, e.g. `https://ex.atlassian.net`. */
+    host: string;
+    /** The account (email) for Basic auth. */
+    account: string;
+    /** The API token for Basic auth. */
+    token: string;
+}
+
+/** PageData is the subset of a Confluence v2 page the sync layer reads. */
+export interface PageData {
+    id: string;
+    title: string;
+    version: number;
+    spaceId: string;
+    parentId: string;
+    /** The page body as a raw ADF JSON string (validated as parseable JSON). */
+    adf: string;
+}
+
+/** SpaceRef identifies a space by its numeric id and homepage id. */
+export interface SpaceRef {
+    id: string;
+    homepageId: string;
+    /** The space's display name, or `""` when the response has none. */
+    name: string;
+}
+
+/** SPACES_PAGE is the page size the space-level list calls ask for. */
+const SPACES_PAGE = 250;
+
+/** Space is one entry of the spaces list, as the picker shows and expands it. */
+export interface Space {
+    id: string;
+    key: string;
+    name: string;
+    /** The space type, e.g. `global` or `personal`. */
+    type: string;
+    /** The space status, e.g. `current` or `archived`. */
+    status: string;
+    /** The space homepage id, or `""` when the space has none. */
+    homepageId: string;
+}
+
+/** ChildNode is one entry of a direct-children response. */
+export interface ChildNode {
+    id: string;
+    type: string;
+    title: string;
+    status: string;
+}
+
+/** ChildrenPage is one page of a direct-children response with its next cursor. */
+export interface ChildrenPage {
+    results: ChildNode[];
+    /** The resolved absolute URL of the next page, or `""` when there is none. */
+    next: string;
+}
+
+/** Attachment is the subset of a Confluence v2 attachment the sync layer reads. */
+export interface Attachment {
+    fileId: string;
+    title: string;
+    mediaType: string;
+    /** Site-relative download path; it lacks the `/wiki` prefix and redirects. */
+    downloadLink: string;
+}
+
+/**
+ * PageComment is one Confluence comment as the sync layer reads it — an inline
+ * comment (anchored to a run of body text) or a footer comment (page-level),
+ * with its reply thread nested under {@link PageComment.replies} in order. The
+ * body arrives as a raw ADF JSON string so the same ADF→Markdown renderer that
+ * produces the page body can render the comment into its `[!comment]` callout.
+ */
+export interface PageComment {
+    /** The comment's own numeric id (the handle for a reply or a resolve). */
+    id: string;
+    /** Whether the comment is anchored to body text (`inline`) or page-level (`footer`). */
+    kind: "inline" | "footer";
+    /**
+     * The comment's resolution (`resolutionStatus`): `open`, `resolved`,
+     * `reopened`, or — inline only — `dangling` (its anchor text no longer
+     * exists in the body). Empty when Confluence reports none.
+     */
+    resolution: string;
+    /**
+     * The id of the body `annotation` mark this inline comment anchors to
+     * (`properties.inlineMarkerRef`, equal to the mark's `attrs.id`), which is how
+     * a rendered footnote ref is tied back to its thread. Empty for a footer comment.
+     */
+    markerRef: string;
+    /**
+     * The exact body text the inline comment highlights
+     * (`properties.inlineOriginalSelection`), a human-readable fallback anchor when
+     * the marker id is not present in the body. Empty for a footer comment.
+     */
+    anchorText: string;
+    /** The account id of the comment's author (`version.authorId`). */
+    authorId: string;
+    /** The ISO-8601 creation timestamp of the comment (`version.createdAt`). */
+    createdAt: string;
+    /** The comment's current version number (`version.number`), bumped when resolving. */
+    version: number;
+    /** The comment body as a raw ADF JSON string (validated as parseable JSON). */
+    adf: string;
+    /** The comment's replies, in thread order; each may itself carry replies. */
+    replies: PageComment[];
+}
+
+/** PageComments is a page's inline and footer comment threads, fetched together. */
+export interface PageComments {
+    /** Inline comments, each anchored to the body via its {@link PageComment.markerRef}. */
+    inline: PageComment[];
+    /** Footer (page-level) comments, in thread order. */
+    footer: PageComment[];
+}
+
+/**
+ * basicAuth builds the HTTP `Authorization` header value for the given
+ * credentials — `Basic <base64(account:token)>` — mirroring Go's
+ * `Request.SetBasicAuth`. Exported so adapter and client tests can assert it.
+ */
+export function basicAuth(account: string, token: string): string {
+    return `Basic ${base64(`${account}:${token}`)}`;
+}
+
+/** CurrentUser is the authenticated user, as the user endpoint reports it. */
+export interface CurrentUser {
+    accountId: string;
+    /** The user's display name, or `""` when the Site does not expose it. */
+    displayName: string;
+}
+
+/**
+ * ConfluenceClient wraps a Site's v2 REST API over an {@link HttpClient}. It is
+ * constructed once per run with the credentials and issues authenticated GETs;
+ * it holds no per-request state and never mutates its inputs.
+ */
+export class ConfluenceClient {
+    private readonly auth: string;
+
+    constructor(
+        private readonly http: HttpClient,
+        private readonly cfg: ConfluenceClientConfig,
+    ) {
+        this.auth = basicAuth(cfg.account, cfg.token);
+    }
+
+    /**
+     * currentAccountID returns the account id of the authenticated user, the
+     * account a created page is restricted to. It distinguishes a rejected
+     * credential (401/403) from other failures.
+     */
+    async currentAccountID(): Promise<string> {
+        return (await this.currentUser()).accountId;
+    }
+
+    /**
+     * currentUser returns the authenticated user's account id and display name
+     * (empty when the Site hides it). It fails like {@link currentAccountID}.
+     */
+    async currentUser(): Promise<CurrentUser> {
+        const host = this.cfg.host;
+        const resp = await this.get(`${host}${USER_ENDPOINT}`);
+        if (resp.status === 401 || resp.status === 403) {
+            throw new Error(
+                `authentication rejected by ${host} (HTTP ${resp.status})`,
+            );
+        }
+        if (!ok(resp.status)) {
+            throw new Error(`connecting to ${host}: HTTP ${resp.status}`);
+        }
+        let user: unknown;
+        try {
+            user = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(
+                `connecting to ${host}: invalid response: ${message(err)}`,
+            );
+        }
+        const o = asObj(user);
+        const accountId = asStr(o["accountId"]);
+        if (accountId === "") {
+            throw new Error(`connecting to ${host}: response has no accountId`);
+        }
+        return { accountId, displayName: asStr(o["displayName"]) };
+    }
+
+    /**
+     * fetchPage requests the page with the numeric id, asking for its body in
+     * Atlassian Document Format, and returns the fields the lens needs. With
+     * `version` it fetches that historical version instead of the current one
+     * (e.g. a note's base version missing from the cache). It throws when the
+     * ADF body is not parseable JSON.
+     */
+    async fetchPage(id: string, version?: number): Promise<PageData> {
+        const url =
+            `${this.cfg.host}${PAGE_ENDPOINT}${id}` +
+            "?body-format=atlas_doc_format" +
+            (version === undefined ? "" : `&version=${version}`);
+        const resp = await this.get(url);
+        if (!ok(resp.status)) {
+            throw new Error(`page ${id}: HTTP ${resp.status}`);
+        }
+        let pr: unknown;
+        try {
+            pr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding page ${id}: ${message(err)}`);
+        }
+        const o = asObj(pr);
+        const adf = asStr(asObj(asObj(o["body"])["atlas_doc_format"])["value"]);
+        try {
+            JSON.parse(adf);
+        } catch {
+            throw new Error(`page ${id}: invalid ADF body`);
+        }
+        return {
+            id: asStr(o["id"]),
+            title: asStr(o["title"]),
+            version: asInt(asObj(o["version"])["number"]),
+            spaceId: asStr(o["spaceId"]),
+            parentId: asStr(o["parentId"]),
+            adf,
+        };
+    }
+
+    /**
+     * fetchPageVersions returns the current version number of each given page id,
+     * keyed by id. It is the bulk counterpart of {@link fetchPage}: it queries the
+     * pages-list endpoint with a batch of `id` filters (no body) so one request
+     * carries up to {@link VERSION_BATCH} ids, following the `_links.next` cursor
+     * to completion, and issues one such request per batch. An id that is absent
+     * from the responses — deleted, or not visible to the account — is simply
+     * omitted from the map, so the caller distinguishes it by lookup. It throws
+     * only on a transport or decode failure, never for a merely missing page.
+     */
+    async fetchPageVersions(ids: string[]): Promise<Map<string, number>> {
+        const out = new Map<string, number>();
+        for (let i = 0; i < ids.length; i += VERSION_BATCH) {
+            const batch = ids.slice(i, i + VERSION_BATCH);
+            const query = batch
+                .map((id) => `id=${encodeURIComponent(id)}`)
+                .join("&");
+            let addr =
+                `${this.cfg.host}${PAGES_LIST_ENDPOINT}` +
+                `?${query}&limit=${VERSION_BATCH}`;
+            while (addr !== "") {
+                const resp = await this.get(addr);
+                if (!ok(resp.status)) {
+                    throw new Error(`page versions: HTTP ${resp.status}`);
+                }
+                let pr: unknown;
+                try {
+                    pr = JSON.parse(responseText(resp));
+                } catch (err) {
+                    throw new Error(`decoding page versions: ${message(err)}`);
+                }
+                const o = asObj(pr);
+                for (const r of asArr(o["results"])) {
+                    const p = asObj(r);
+                    const id = asStr(p["id"]);
+                    if (id !== "") {
+                        out.set(id, asInt(asObj(p["version"])["number"]));
+                    }
+                }
+                addr = nextURL(
+                    this.cfg.host,
+                    asStr(asObj(o["_links"])["next"]),
+                );
+            }
+        }
+        return out;
+    }
+
+    /**
+     * resolveSpace looks up the numeric space id, homepage id, and name for a
+     * space key via the spaces-by-key endpoint. It throws when no space matches
+     * the key.
+     */
+    async resolveSpace(key: string): Promise<SpaceRef> {
+        const url =
+            `${this.cfg.host}${SPACES_ENDPOINT}` +
+            `?keys=${encodeURIComponent(key)}`;
+        const resp = await this.get(url);
+        if (!ok(resp.status)) {
+            throw new Error(`space "${key}": HTTP ${resp.status}`);
+        }
+        let sr: unknown;
+        try {
+            sr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding space "${key}": ${message(err)}`);
+        }
+        const results = asArr(asObj(sr)["results"]);
+        const first = results[0];
+        if (first === undefined) {
+            throw new Error(`space "${key}" not found`);
+        }
+        const r = asObj(first);
+        return {
+            id: asStr(r["id"]),
+            homepageId: asStr(r["homepageId"]),
+            name: asStr(r["name"]),
+        };
+    }
+
+    /**
+     * listSpaces returns every space the account can see — global and personal,
+     * current and archived — following the pagination cursor to completion,
+     * sorted by name and then key.
+     */
+    async listSpaces(): Promise<Space[]> {
+        const out: Space[] = [];
+        let addr = `${this.cfg.host}${SPACES_ENDPOINT}?limit=${SPACES_PAGE}`;
+        while (addr !== "") {
+            const resp = await this.get(addr);
+            if (!ok(resp.status)) {
+                throw new Error(`spaces: HTTP ${resp.status}`);
+            }
+            let sr: unknown;
+            try {
+                sr = JSON.parse(responseText(resp));
+            } catch (err) {
+                throw new Error(`decoding spaces: ${message(err)}`);
+            }
+            const o = asObj(sr);
+            for (const r of asArr(o["results"])) {
+                const sp = asObj(r);
+                out.push({
+                    id: asStr(sp["id"]),
+                    key: asStr(sp["key"]),
+                    name: asStr(sp["name"]),
+                    type: asStr(sp["type"]),
+                    status: asStr(sp["status"]),
+                    homepageId: asStr(sp["homepageId"]),
+                });
+            }
+            addr = nextURL(this.cfg.host, asStr(asObj(o["_links"])["next"]));
+        }
+        return out.sort(
+            (a, b) =>
+                a.name.localeCompare(b.name) || a.key.localeCompare(b.key),
+        );
+    }
+
+    /**
+     * fetchRootPages lists a space's root-level pages — the homepage and any page
+     * that sits beside it — following the pagination cursor to completion, as
+     * {@link ChildNode}s typed `page`.
+     */
+    async fetchRootPages(spaceId: string): Promise<ChildNode[]> {
+        const out: ChildNode[] = [];
+        let addr =
+            `${this.cfg.host}${SPACES_ENDPOINT}/` +
+            `${encodeURIComponent(spaceId)}/pages?depth=root&limit=${SPACES_PAGE}`;
+        while (addr !== "") {
+            const resp = await this.get(addr);
+            if (!ok(resp.status)) {
+                throw new Error(`root pages: HTTP ${resp.status}`);
+            }
+            let rr: unknown;
+            try {
+                rr = JSON.parse(responseText(resp));
+            } catch (err) {
+                throw new Error(`decoding root pages: ${message(err)}`);
+            }
+            const o = asObj(rr);
+            for (const r of asArr(o["results"])) {
+                const p = asObj(r);
+                out.push({
+                    id: asStr(p["id"]),
+                    type: "page",
+                    title: asStr(p["title"]),
+                    status: asStr(p["status"]),
+                });
+            }
+            addr = nextURL(this.cfg.host, asStr(asObj(o["_links"])["next"]));
+        }
+        return out;
+    }
+
+    /**
+     * fetchChildren requests one page of a node's direct children from a
+     * host-relative path or an absolute next-cursor URL, returning the child
+     * nodes and the resolved URL of the next page. Compose the path from
+     * {@link PAGE_ENDPOINT}/{@link FOLDER_ENDPOINT} + id + {@link CHILDREN_PATH};
+     * the walk (M7) chooses folder-vs-page and paginates.
+     */
+    async fetchChildren(pathOrUrl: string): Promise<ChildrenPage> {
+        const url = isAbsUrl(pathOrUrl)
+            ? pathOrUrl
+            : `${this.cfg.host}${pathOrUrl}`;
+        const resp = await this.get(url);
+        if (!ok(resp.status)) {
+            throw new Error(`children: HTTP ${resp.status}`);
+        }
+        let cr: unknown;
+        try {
+            cr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding children: ${message(err)}`);
+        }
+        const o = asObj(cr);
+        const results = asArr(o["results"]).map((n) => {
+            const c = asObj(n);
+            return {
+                id: asStr(c["id"]),
+                type: asStr(c["type"]),
+                title: asStr(c["title"]),
+                status: asStr(c["status"]),
+            };
+        });
+        const next = nextURL(this.cfg.host, asStr(asObj(o["_links"])["next"]));
+        return { results, next };
+    }
+
+    /**
+     * fetchAttachments lists every attachment of a page, following the pagination
+     * cursor to completion, and returns them keyed by their `fileId` (equal to a
+     * media node's `attrs.id`).
+     */
+    async fetchAttachments(pageId: string): Promise<Map<string, Attachment>> {
+        const out = new Map<string, Attachment>();
+        let addr = `${this.cfg.host}${PAGE_ENDPOINT}${pageId}/attachments`;
+        while (addr !== "") {
+            const resp = await this.get(addr);
+            if (!ok(resp.status)) {
+                throw new Error(
+                    `attachments for ${pageId}: HTTP ${resp.status}`,
+                );
+            }
+            let apg: unknown;
+            try {
+                apg = JSON.parse(responseText(resp));
+            } catch (err) {
+                throw new Error(
+                    `decoding attachments for ${pageId}: ${message(err)}`,
+                );
+            }
+            const o = asObj(apg);
+            for (const r of asArr(o["results"])) {
+                const a = asObj(r);
+                const att: Attachment = {
+                    fileId: asStr(a["fileId"]),
+                    title: asStr(a["title"]),
+                    mediaType: asStr(a["mediaType"]),
+                    downloadLink: asStr(a["downloadLink"]),
+                };
+                out.set(att.fileId, att);
+            }
+            addr = nextURL(this.cfg.host, asStr(asObj(o["_links"])["next"]));
+        }
+        return out;
+    }
+
+    /**
+     * fetchComments lists a page's inline and footer comments — each with its
+     * reply thread — as {@link PageComments}. It queries the two v2 per-page
+     * comment endpoints for the top-level comments (following the pagination
+     * cursor to completion, asking for each body in ADF), then fetches every
+     * comment's replies recursively via {@link fetchReplies}. Inline comments
+     * carry the `markerRef` that ties them to a body `annotation` mark; footer
+     * comments are page-level. A page with no comments yields two empty arrays.
+     */
+    async fetchComments(pageId: string): Promise<PageComments> {
+        const inlineBase =
+            `${this.cfg.host}${PAGE_ENDPOINT}${pageId}` +
+            `${INLINE_COMMENTS_PATH}?body-format=atlas_doc_format`;
+        const footerBase =
+            `${this.cfg.host}${PAGE_ENDPOINT}${pageId}` +
+            `${FOOTER_COMMENTS_PATH}?body-format=atlas_doc_format`;
+        const [inline, footer] = await Promise.all([
+            this.listComments(inlineBase, "inline"),
+            this.listComments(footerBase, "footer"),
+        ]);
+        return { inline, footer };
+    }
+
+    /**
+     * listComments pages through a comment listing at `url`, parsing each result
+     * into a {@link PageComment} of the given `kind` and attaching its recursively
+     * fetched replies. Shared by the inline and footer top-level fetches; the
+     * reply fetch dispatches on `kind` for the correct children endpoint.
+     */
+    private async listComments(
+        url: string,
+        kind: "inline" | "footer",
+    ): Promise<PageComment[]> {
+        const out: PageComment[] = [];
+        let addr = url;
+        while (addr !== "") {
+            const resp = await this.get(addr);
+            if (!ok(resp.status)) {
+                throw new Error(`${kind} comments: HTTP ${resp.status}`);
+            }
+            let cr: unknown;
+            try {
+                cr = JSON.parse(responseText(resp));
+            } catch (err) {
+                throw new Error(`decoding ${kind} comments: ${message(err)}`);
+            }
+            const o = asObj(cr);
+            for (const r of asArr(o["results"])) {
+                const comment = parseComment(asObj(r), kind);
+                comment.replies = await this.fetchReplies(comment.id, kind);
+                out.push(comment);
+            }
+            addr = nextURL(this.cfg.host, asStr(asObj(o["_links"])["next"]));
+        }
+        return out;
+    }
+
+    /**
+     * fetchReplies returns the reply thread of the comment `id` of the given
+     * `kind`, each reply carrying its own replies (a thread nests). It pages the
+     * comment's children endpoint to completion, asking for each body in ADF. A
+     * reply inherits its parent's kind; its `markerRef`/`anchorText` are empty (a
+     * reply anchors to its parent, not to the body).
+     */
+    private async fetchReplies(
+        id: string,
+        kind: "inline" | "footer",
+    ): Promise<PageComment[]> {
+        const prefix =
+            kind === "inline"
+                ? INLINE_COMMENT_ENDPOINT
+                : FOOTER_COMMENT_ENDPOINT;
+        const url =
+            `${this.cfg.host}${prefix}${id}${COMMENT_CHILDREN_PATH}` +
+            "?body-format=atlas_doc_format";
+        return this.listComments(url, kind);
+    }
+
+    /**
+     * createReply posts a reply to an existing comment: a new comment of the same
+     * `kind` carrying the parent's id as `parentCommentId`, with `adf` (a raw ADF
+     * JSON string) as its body. It returns the new comment's id. The payload
+     * carries `parentCommentId` alone — the v2 create endpoint rejects a request
+     * that also specifies `pageId` ("one and only one of blogPostId, pageId, or
+     * parentCommentId"). An inline reply inherits its parent's text anchor, so it
+     * needs no marker properties. Throws on a non-2xx status or a response with no
+     * id.
+     */
+    async createReply(input: {
+        parentId: string;
+        kind: "inline" | "footer";
+        adf: string;
+    }): Promise<string> {
+        const path =
+            input.kind === "inline"
+                ? INLINE_COMMENTS_ENDPOINT
+                : FOOTER_COMMENTS_ENDPOINT;
+        const payload = {
+            parentCommentId: input.parentId,
+            body: { representation: "atlas_doc_format", value: input.adf },
+        };
+        const resp = await this.http.do({
+            method: "POST",
+            url: `${this.cfg.host}${path}`,
+            headers: {
+                Authorization: this.auth,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!ok(resp.status)) {
+            throw new Error(
+                `reply to comment ${input.parentId}: HTTP ${resp.status}`,
+            );
+        }
+        let cr: unknown;
+        try {
+            cr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding reply response: ${message(err)}`);
+        }
+        const id = asStr(asObj(cr)["id"]);
+        if (id === "") {
+            throw new Error(
+                `reply to comment ${input.parentId}: response has no id`,
+            );
+        }
+        return id;
+    }
+
+    /**
+     * resolveInlineComment marks the inline comment resolved via the v2 update
+     * endpoint, which takes the next version number and the comment body (sent
+     * back unchanged from `comment.adf`). Throws on a non-2xx status.
+     */
+    async resolveInlineComment(comment: PageComment): Promise<void> {
+        const payload = {
+            version: { number: comment.version + 1 },
+            body: { representation: "atlas_doc_format", value: comment.adf },
+            resolved: true,
+        };
+        const resp = await this.http.do({
+            method: "PUT",
+            url: `${this.cfg.host}${INLINE_COMMENT_ENDPOINT}${comment.id}`,
+            headers: {
+                Authorization: this.auth,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!ok(resp.status)) {
+            throw new Error(
+                `resolve comment ${comment.id}: HTTP ${resp.status}`,
+            );
+        }
+    }
+
+    /**
+     * updatePage sends the authenticated v2 update for a page: its new title,
+     * version number, and ADF body (as a raw JSON string). It throws on a non-2xx
+     * status.
+     */
+    async updatePage(
+        pageId: string,
+        title: string,
+        version: number,
+        docJSON: string,
+    ): Promise<void> {
+        const payload = {
+            id: pageId,
+            status: "current",
+            title,
+            version: { number: version, message: "Updated by docket" },
+            body: { representation: "atlas_doc_format", value: docJSON },
+        };
+        const resp = await this.http.do({
+            method: "PUT",
+            url: `${this.cfg.host}${PAGE_ENDPOINT}${pageId}`,
+            headers: {
+                Authorization: this.auth,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!ok(resp.status)) {
+            throw new Error(`push page ${pageId}: HTTP ${resp.status}`);
+        }
+    }
+
+    /**
+     * uploadAttachment uploads `bytes` as a new attachment named `filename` on the
+     * page and returns its `fileId` (the value a media node carries as `attrs.id`)
+     * and its content id (the v1 handle used to delete it if the push later
+     * fails). It POSTs the multipart form the v1 API expects, with the
+     * CSRF-exempting header. It throws on a non-2xx status or a response with no
+     * fileId.
+     */
+    async uploadAttachment(
+        pageId: string,
+        filename: string,
+        bytes: Uint8Array,
+    ): Promise<{ fileId: string; contentId: string }> {
+        const boundary = "----docketFormBoundary7MA4YWxkTrZu0gW";
+        const enc = (s: string): Uint8Array => new TextEncoder().encode(s);
+        const head = enc(
+            `--${boundary}\r\n` +
+                `Content-Disposition: form-data; name="file"; filename="${escapeFormFilename(filename)}"\r\n` +
+                "Content-Type: application/octet-stream\r\n\r\n",
+        );
+        const body = concatBytes(head, bytes, enc(`\r\n--${boundary}--\r\n`));
+        const resp = await this.http.do({
+            method: "POST",
+            url: `${this.cfg.host}/wiki/rest/api/content/${pageId}/child/attachment`,
+            headers: {
+                Authorization: this.auth,
+                "Content-Type": `multipart/form-data; boundary=${boundary}`,
+                "X-Atlassian-Token": "no-check",
+            },
+            body,
+        });
+        if (!ok(resp.status)) {
+            throw new Error(`upload ${filename}: HTTP ${resp.status}`);
+        }
+        let ur: unknown;
+        try {
+            ur = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding upload response: ${message(err)}`);
+        }
+        const first = asObj(asArr(asObj(ur)["results"])[0]);
+        const fileId = asStr(asObj(first["extensions"])["fileId"]);
+        if (fileId === "") {
+            throw new Error(`upload ${filename}: response carried no fileId`);
+        }
+        return { fileId, contentId: asStr(first["id"]) };
+    }
+
+    /**
+     * deleteAttachment removes the attachment with the given v1 content id, the
+     * counterpart of {@link uploadAttachment}'s create. It throws on a non-2xx
+     * status.
+     */
+    async deleteAttachment(contentId: string): Promise<void> {
+        const resp = await this.http.do({
+            method: "DELETE",
+            url: `${this.cfg.host}/wiki/rest/api/content/${contentId}`,
+            headers: {
+                Authorization: this.auth,
+                "X-Atlassian-Token": "no-check",
+            },
+        });
+        if (!ok(resp.status)) {
+            throw new Error(
+                `delete attachment ${contentId}: HTTP ${resp.status}`,
+            );
+        }
+    }
+
+    /**
+     * createPage POSTs a new page from its space, title, parent, and rendered ADF
+     * body (a raw JSON string), and returns the new numeric id and version. A
+     * response without an id is an error, as the page cannot then be restricted or
+     * tracked. `parentId` is omitted from the payload when empty (a space root).
+     */
+    async createPage(input: {
+        spaceId: string;
+        title: string;
+        parentId: string;
+        docJSON: string;
+    }): Promise<{ id: string; version: number }> {
+        const payload: Record<string, unknown> = {
+            spaceId: input.spaceId,
+            status: "current",
+            title: input.title,
+            body: { representation: "atlas_doc_format", value: input.docJSON },
+        };
+        if (input.parentId !== "") {
+            payload["parentId"] = input.parentId;
+        }
+        const resp = await this.http.do({
+            method: "POST",
+            url: `${this.cfg.host}${CREATE_PAGE_ENDPOINT}`,
+            headers: {
+                Authorization: this.auth,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!ok(resp.status)) {
+            throw new Error(
+                `create page "${input.title}": HTTP ${resp.status}`,
+            );
+        }
+        let cr: unknown;
+        try {
+            cr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding create response: ${message(err)}`);
+        }
+        const res = asObj(cr);
+        const id = asStr(res["id"]);
+        if (id === "") {
+            throw new Error(`create page "${input.title}": response has no id`);
+        }
+        const ver = asInt(asObj(res["version"])["number"]);
+        return { id, version: ver === 0 ? 1 : ver };
+    }
+
+    /**
+     * restrictToAuthor replaces the page's content restrictions so only
+     * `accountId` may read or update it, via the v1 restriction endpoint. Space and
+     * site admins retain access regardless, so the page is visible to the author
+     * plus those admins, never to nobody else. It throws on a non-2xx status.
+     */
+    async restrictToAuthor(pageId: string, accountId: string): Promise<void> {
+        const user = [{ type: "known", accountId }];
+        const payload = {
+            results: [
+                { operation: "read", restrictions: { user } },
+                { operation: "update", restrictions: { user } },
+            ],
+        };
+        const resp = await this.http.do({
+            method: "PUT",
+            url: `${this.cfg.host}${RESTRICTION_PREFIX}${pageId}${RESTRICTION_SUFFIX}`,
+            headers: {
+                Authorization: this.auth,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!ok(resp.status)) {
+            throw new Error(`restrict page ${pageId}: HTTP ${resp.status}`);
+        }
+    }
+
+    /**
+     * deletePage deletes the page with the numeric id from the Site, used to roll
+     * back a page created but not restricted. It throws on a non-2xx status.
+     */
+    async deletePage(pageId: string): Promise<void> {
+        const resp = await this.http.do({
+            method: "DELETE",
+            url: `${this.cfg.host}${PAGE_ENDPOINT}${pageId}`,
+            headers: { Authorization: this.auth },
+        });
+        if (!ok(resp.status)) {
+            throw new Error(`delete page ${pageId}: HTTP ${resp.status}`);
+        }
+    }
+
+    /**
+     * createFolder POSTs a new folder titled `title` in `spaceId` under
+     * `parentId` and returns its numeric id, parenting new local sub-directories
+     * so a page created inside one has a real parent. `parentId` is omitted when
+     * empty. A rejection for a duplicate title throws {@link FolderTitleTakenError}
+     * so the caller can reuse or refuse; a response without an id is an error.
+     */
+    async createFolder(
+        spaceId: string,
+        parentId: string,
+        title: string,
+    ): Promise<string> {
+        const payload: Record<string, unknown> = { spaceId, title };
+        if (parentId !== "") {
+            payload["parentId"] = parentId;
+        }
+        const resp = await this.http.do({
+            method: "POST",
+            url: `${this.cfg.host}${CREATE_FOLDER_ENDPOINT}`,
+            headers: {
+                Authorization: this.auth,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!ok(resp.status)) {
+            const body = responseText(resp);
+            if (
+                resp.status === 400 &&
+                body.toLowerCase().includes("same title")
+            ) {
+                throw new FolderTitleTakenError(
+                    `create folder "${title}": a folder with this title ` +
+                        `already exists in the space`,
+                );
+            }
+            throw new Error(`create folder "${title}": HTTP ${resp.status}`);
+        }
+        let fr: unknown;
+        try {
+            fr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding folder response: ${message(err)}`);
+        }
+        const id = asStr(asObj(fr)["id"]);
+        if (id === "") {
+            throw new Error(`create folder "${title}": response has no id`);
+        }
+        return id;
+    }
+
+    /**
+     * deleteFolder deletes the folder with the numeric id from the Site, used to
+     * roll back folders created for a page whose own create then failed. An
+     * already-absent folder (404) is not an error.
+     */
+    async deleteFolder(folderId: string): Promise<void> {
+        const resp = await this.http.do({
+            method: "DELETE",
+            url: `${this.cfg.host}${FOLDER_ENDPOINT}${folderId}`,
+            headers: { Authorization: this.auth },
+        });
+        if (resp.status >= 300 && resp.status !== 404) {
+            throw new Error(`delete folder ${folderId}: HTTP ${resp.status}`);
+        }
+    }
+
+    /**
+     * childFolderTitled returns the id of the direct child folder of `parentId`
+     * titled `title`, or `""` when no such folder exists. `parentId` may be a page
+     * or a folder, so the folder direct-children endpoint is tried first and the
+     * page endpoint second; a 404 from one means `parentId` is the other kind.
+     */
+    async childFolderTitled(parentId: string, title: string): Promise<string> {
+        for (const base of [FOLDER_ENDPOINT, PAGE_ENDPOINT]) {
+            const { id, matched } = await this.scanChildFolders(
+                `${this.cfg.host}${base}${parentId}${CHILDREN_PATH}`,
+                title,
+            );
+            if (matched) {
+                return id;
+            }
+        }
+        return "";
+    }
+
+    /**
+     * scanChildFolders pages through the direct-children listing at `url` and
+     * returns the id of the first current folder titled `title`. `matched` reports
+     * whether the endpoint fit the node kind: a 404 yields `false` so the caller
+     * can try the other endpoint, while a 2xx yields `true` even when no folder
+     * matches (id `""`). A non-404 error status or a decode failure throws.
+     */
+    private async scanChildFolders(
+        url: string,
+        title: string,
+    ): Promise<{ id: string; matched: boolean }> {
+        let addr = url;
+        while (addr !== "") {
+            const resp = await this.get(addr);
+            if (resp.status === 404) {
+                return { id: "", matched: false };
+            }
+            if (!ok(resp.status)) {
+                throw new Error(`listing children: HTTP ${resp.status}`);
+            }
+            let cr: unknown;
+            try {
+                cr = JSON.parse(responseText(resp));
+            } catch (err) {
+                throw new Error(`listing children: ${message(err)}`);
+            }
+            const o = asObj(cr);
+            for (const r of asArr(o["results"])) {
+                const c = asObj(r);
+                if (
+                    asStr(c["type"]) === "folder" &&
+                    asStr(c["status"]) === "current" &&
+                    asStr(c["title"]) === title
+                ) {
+                    return { id: asStr(c["id"]), matched: true };
+                }
+            }
+            addr = nextURL(this.cfg.host, asStr(asObj(o["_links"])["next"]));
+        }
+        return { id: "", matched: true };
+    }
+
+    /**
+     * download fetches the raw bytes at a site-relative attachment download link.
+     * The link lacks the `/wiki` prefix and redirects to the media store, so the
+     * prefix is restored when absent, mirroring Go's `ensureAsset`.
+     */
+    async download(downloadLink: string): Promise<Uint8Array> {
+        const suffix = downloadLink.startsWith("/wiki")
+            ? downloadLink
+            : `/wiki${downloadLink}`;
+        const resp = await this.get(`${this.cfg.host}${suffix}`);
+        if (!ok(resp.status)) {
+            throw new Error(`downloading ${downloadLink}: HTTP ${resp.status}`);
+        }
+        return resp.body;
+    }
+
+    /** get sends an authenticated GET to url and resolves with its response. */
+    private get(url: string): Promise<HttpResponse> {
+        return this.http.do({
+            method: "GET",
+            url,
+            headers: { Authorization: this.auth },
+        });
+    }
+}
+
+/** ok reports whether status is a 2xx success code. */
+function ok(status: number): boolean {
+    return status >= 200 && status < 300;
+}
+
+/** isAbsUrl reports whether u is an absolute http(s) URL. */
+function isAbsUrl(u: string): boolean {
+    return u.startsWith("http://") || u.startsWith("https://");
+}
+
+/**
+ * nextURL resolves a v2 pagination `next` link against host, returning `""` when
+ * there is no next page and the link unchanged when it is already absolute.
+ */
+function nextURL(host: string, next: string): string {
+    if (next === "") {
+        return "";
+    }
+    return isAbsUrl(next) ? next : `${host}${next}`;
+}
+
+/** message returns an unknown thrown value's message. */
+function message(err: unknown): string {
+    return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * escapeFormFilename escapes a filename for a multipart Content-Disposition
+ * header, mirroring Go's `mime/multipart` writer: a backslash becomes `\\` and a
+ * double-quote becomes `\"`, so a quote in the name cannot close the field early.
+ * CR and LF are dropped first, as either would break the header/boundary framing.
+ */
+function escapeFormFilename(name: string): string {
+    return name
+        .replace(/[\r\n]/g, "")
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"');
+}
+
+/** concatBytes joins byte arrays into one, for building a multipart body. */
+function concatBytes(...parts: Uint8Array[]): Uint8Array {
+    const total = parts.reduce((n, p) => n + p.length, 0);
+    const out = new Uint8Array(total);
+    let offset = 0;
+    for (const part of parts) {
+        out.set(part, offset);
+        offset += part.length;
+    }
+    return out;
+}
+
+/**
+ * parseComment reads one v2 comment result into a {@link PageComment} of `kind`,
+ * with an empty `replies` the caller fills. The body is the ADF value under
+ * `body.atlas_doc_format`, kept as its raw JSON string; author and timestamp
+ * come from `version`. For an inline comment the anchor fields are read from the
+ * `properties` object — `inlineMarkerRef` (the body annotation-mark id) and
+ * `inlineOriginalSelection` (the highlighted text) — and are empty for a footer
+ * comment, which has no such properties. Confluence returns each under both a
+ * camelCase and a kebab-case key (`inline-marker-ref`); the camelCase is read
+ * first, the kebab-case a fallback. `resolutionStatus` is read for both kinds.
+ */
+function parseComment(
+    o: Record<string, unknown>,
+    kind: "inline" | "footer",
+): PageComment {
+    const version = asObj(o["version"]);
+    const props = asObj(o["properties"]);
+    const prop = (camel: string, kebab: string): string =>
+        asStr(props[camel]) || asStr(props[kebab]);
+    return {
+        id: asStr(o["id"]),
+        kind,
+        resolution: asStr(o["resolutionStatus"]),
+        markerRef: prop("inlineMarkerRef", "inline-marker-ref"),
+        anchorText: prop(
+            "inlineOriginalSelection",
+            "inline-original-selection",
+        ),
+        authorId: asStr(version["authorId"]),
+        createdAt: asStr(version["createdAt"]),
+        version: asInt(version["number"]),
+        adf: asStr(asObj(asObj(o["body"])["atlas_doc_format"])["value"]),
+        replies: [],
+    };
+}
+
+/** asObj narrows a parsed JSON value to a record, or `{}`. */
+function asObj(v: unknown): Record<string, unknown> {
+    return typeof v === "object" && v !== null
+        ? (v as Record<string, unknown>)
+        : {};
+}
+
+/** asStr reads a JSON string, or `""`. */
+function asStr(v: unknown): string {
+    return typeof v === "string" ? v : "";
+}
+
+/** asInt reads a JSON number truncated toward zero, or `0`. */
+function asInt(v: unknown): number {
+    return typeof v === "number" ? Math.trunc(v) : 0;
+}
+
+/** asArr narrows a parsed JSON value to an array, or `[]`. */
+function asArr(v: unknown): unknown[] {
+    return Array.isArray(v) ? v : [];
+}
+
+/** base64 encodes a UTF-8 string as standard (padded) Base64, no `node:`/`btoa`. */
+function base64(s: string): string {
+    const bytes = new TextEncoder().encode(s);
+    const alpha =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let out = "";
+    for (let i = 0; i < bytes.length; i += 3) {
+        const b0 = bytes[i] ?? 0;
+        const b1 = bytes[i + 1] ?? 0;
+        const b2 = bytes[i + 2] ?? 0;
+        out += alpha.charAt(b0 >> 2);
+        out += alpha.charAt(((b0 & 0b11) << 4) | (b1 >> 4));
+        out +=
+            i + 1 < bytes.length
+                ? alpha.charAt(((b1 & 0b1111) << 2) | (b2 >> 6))
+                : "=";
+        out += i + 2 < bytes.length ? alpha.charAt(b2 & 0b111111) : "=";
+    }
+    return out;
+}

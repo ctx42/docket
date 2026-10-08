@@ -1,0 +1,3 @@
+GET /glossary response body.
+---
+{"terms":[{"term":"Stock Keeping Unit (SKU)","name":"Stock Keeping Unit","abbreviation":"SKU","id":"shop/glossary/main.md","path":"shop/glossary/main.md","anchor":"stock-keeping-unit-sku","definition":"Identifier of a book edition."},{"term":"Backorder","name":"Backorder","abbreviation":"","id":"shop/glossary/main.md","path":"shop/glossary/main.md","anchor":"backorder","definition":"Order for an out-of-stock title."}]}

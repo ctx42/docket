@@ -1,0 +1,1152 @@
+[
+  {
+    "src": "# Title\n\nbody",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "# Title\n\nbody"
+  },
+  {
+    "src": "---\ntitle: \"T\"\n---\n\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "\nbody\n"
+  },
+  {
+    "src": "---\nid: doc-12\ntitle: \"T\"\n---\nbody",
+    "fm": {
+      "id": "doc-12",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\nid: 12\n---\nbody",
+    "fm": {
+      "id": "12",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\nid:\ntitle: \"T\"\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\ntitle: \"T\"\nupstream_version: 7\nupstream_space: \"SHOP\"\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\ntitle: \"T\"\nunknown: x\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\ntitle: \"T\"\naliases: [eBook, \"e-book\"]\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": ["eBook", "e-book"],
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\ntitle: \"T\"\nurl: \"https://ex.com/t\"\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": "https://ex.com/t"
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\ntitle: T\nbody continues",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "---\ntitle: T\nbody continues"
+  },
+  {
+    "src": "---\nSome prose.\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "---\nSome prose.\n---\nbody"
+  },
+  {
+    "src": "﻿---\ntitle: \"T\"\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\ntitle: \"unterminated\ncount: [1, 2\n---\nbody",
+    "err": "front-matter: yaml: line 3: found unexpected end of stream",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: [a, b]\n---\nbody",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nid: \"doc#12\"\n---\nbody",
+    "err": "front-matter: id must not contain \"#\" or whitespace",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\r\ntitle: T\r\n---\r\nbody\r\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\r\n"
+  },
+  {
+    "src": "---\ntitle: T\n---",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": ""
+  },
+  {
+    "src": "---\ntitle: T\n--- \nmore\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body"
+  },
+  {
+    "src": "---\ntitle: T\n----\n---\nbody",
+    "err": "front-matter: yaml: line 2: could not find expected ':'",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "--- \ntitle: T\n---\nbody",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "--- \ntitle: T\n---\nbody"
+  },
+  {
+    "src": "---",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "---"
+  },
+  {
+    "src": "---\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "---\n"
+  },
+  {
+    "src": "",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": ""
+  },
+  {
+    "src": "---\nid: 0x1F\n---\nbody\n",
+    "fm": {
+      "id": "31",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 017\n---\nbody\n",
+    "fm": {
+      "id": "15",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 08\n---\nbody\n",
+    "fm": {
+      "id": "08",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 0o17\n---\nbody\n",
+    "fm": {
+      "id": "15",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 0b101\n---\nbody\n",
+    "fm": {
+      "id": "5",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 1_000\n---\nbody\n",
+    "fm": {
+      "id": "1000",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: -5\n---\nbody\n",
+    "fm": {
+      "id": "-5",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: +5\n---\nbody\n",
+    "fm": {
+      "id": "5",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 9223372036854775807\n---\nbody\n",
+    "fm": {
+      "id": "9223372036854775807",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 9223372036854775808\n---\nbody\n",
+    "fm": {
+      "id": "9223372036854775808",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 18446744073709551615\n---\nbody\n",
+    "fm": {
+      "id": "18446744073709551615",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 18446744073709551616\n---\nbody\n",
+    "fm": {
+      "id": "18446744073709551616",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 1.5\n---\nbody\n",
+    "fm": {
+      "id": "1.5",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 1e3\n---\nbody\n",
+    "fm": {
+      "id": "1e3",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: .inf\n---\nbody\n",
+    "fm": {
+      "id": ".inf",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: true\n---\nbody\n",
+    "fm": {
+      "id": "true",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: yes\n---\nbody\n",
+    "fm": {
+      "id": "yes",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: ~\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: null\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: \"\"\n---\nbody\n",
+    "err": "front-matter: id must not be empty",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nid: !!str 12\n---\nbody\n",
+    "fm": {
+      "id": "12",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: !!int \"12\"\n---\nbody\n",
+    "fm": {
+      "id": "12",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: '012'\n---\nbody\n",
+    "fm": {
+      "id": "012",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: doc 12\n---\nbody\n",
+    "err": "front-matter: id must not contain \"#\" or whitespace",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nid: \"doc\\u00a012\"\n---\nbody\n",
+    "err": "front-matter: id must not contain \"#\" or whitespace",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nid: \"doc\\u200b12\"\n---\nbody\n",
+    "fm": {
+      "id": "doc​12",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: [a]\n---\nbody\n",
+    "err": "front-matter: id must be a scalar",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nid: {a: b}\n---\nbody\n",
+    "err": "front-matter: id must be a scalar",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nid: &x anchored\ntitle: *x\n---\nbody\n",
+    "fm": {
+      "id": "anchored",
+      "title": "anchored",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 0x\n---\nbody\n",
+    "fm": {
+      "id": "0x",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 0_1\n---\nbody\n",
+    "fm": {
+      "id": "1",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: -0b11\n---\nbody\n",
+    "fm": {
+      "id": "-3",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 1__0\n---\nbody\n",
+    "fm": {
+      "id": "10",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: _1\n---\nbody\n",
+    "fm": {
+      "id": "_1",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 1_\n---\nbody\n",
+    "fm": {
+      "id": "1",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 0x_1F\n---\nbody\n",
+    "fm": {
+      "id": "31",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: -0x1F\n---\nbody\n",
+    "fm": {
+      "id": "-31",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 00\n---\nbody\n",
+    "fm": {
+      "id": "0",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: -0\n---\nbody\n",
+    "fm": {
+      "id": "0",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 0o\n---\nbody\n",
+    "fm": {
+      "id": "0o",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: ０１\n---\nbody\n",
+    "fm": {
+      "id": "０１",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: 123\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "123",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: true\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "true",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: ~\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: 1.50\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "1.50",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: 0x1F\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "0x1F",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: \"\"\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: {a: b}\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!map into string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: >\n  folded\n  text\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "folded text\n",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: |\n  lit\n  text\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "lit\ntext\n",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: 'it''s'\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "it's",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: \"tab\\there\"\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "tab\there",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\naliases: single\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `single` into []string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\naliases: a very long alias string here\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `a very ...` into []string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\naliases:\n  - one\n  - 2\n  - true\n  - ~\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": ["one", "2", "true"],
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\naliases: []\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": [],
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\naliases: ~\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\naliases: [[a]]\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\naliases: [{a: b}]\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!map into string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nurl: 12\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": "12"
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nurl: [x]\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: A\ntitle: B\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 2: mapping key \"title\" already defined at line 1",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nunknown: 1\nunknown: 2\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 2: mapping key \"unknown\" already defined at line 1",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: A\nTitle: B\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "A",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\n- a\n- b\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "---\n- a\n- b\n---\nbody\n"
+  },
+  {
+    "src": "---\njust text\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "---\njust text\n---\nbody\n"
+  },
+  {
+    "src": "---\n42\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "---\n42\n---\nbody\n"
+  },
+  {
+    "src": "---\n# only a comment\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\na: b: c\n---\nbody\n",
+    "err": "front-matter: yaml: mapping values are not allowed in this context",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: T\n\ttab: x\n---\nbody\n",
+    "err": "front-matter: yaml: line 2: found a tab character that violates indentation",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: T\n  indented: x\n---\nbody\n",
+    "err": "front-matter: yaml: line 2: mapping values are not allowed in this context",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\n? title\n: T\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\n{title: T, id: x}\n---\nbody\n",
+    "fm": {
+      "id": "x",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: T\n...\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: T\n---\nsecond: doc\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "second: doc\n---\nbody\n"
+  },
+  {
+    "src": "---\ntitle: @at\n---\nbody\n",
+    "err": "front-matter: yaml: found character that cannot start any token",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: `tick\n---\nbody\n",
+    "err": "front-matter: yaml: found character that cannot start any token",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: %pct\n---\nbody\n",
+    "err": "front-matter: yaml: found character that cannot start any token",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\n<<: {title: M}\nid: z\n---\nbody\n",
+    "fm": {
+      "id": "z",
+      "title": "M",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: !custom x\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "x",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: !!binary aGVsbG8=\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "hello",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: \"\\x41\"\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "A",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: \"bad \\q escape\"\n---\nbody\n",
+    "err": "front-matter: yaml: found unknown escape character",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: 'unterminated\n---\nbody\n",
+    "err": "front-matter: yaml: line 2: found unexpected end of stream",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: [a, b\n---\nbody\n",
+    "err": "front-matter: yaml: line 1: did not find expected ',' or ']'",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: T # comment\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: T #notcomment\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: a#b\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "a#b",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: x\n  y\n---\nbody\n",
+    "err": "front-matter: id must not contain \"#\" or whitespace",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: multi\n  line plain\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "multi line plain",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: \"Zażółć 漢字 😀\"\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "Zażółć 漢字 😀",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nid: 漢字\n---\nbody\n",
+    "fm": {
+      "id": "漢字",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: |-\n  x\n\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "x",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\ntitle: &a T\naliases: [*a]\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "T",
+      "aliases": ["T"],
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\naliases: *nope\n---\nbody\n",
+    "err": "front-matter: yaml: unknown anchor 'nope' referenced",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\n<<: x\n---\nbody\n",
+    "err": "front-matter: yaml: map merge requires map or sequence of maps as the value",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\n<<: [{title: A}, {title: B}]\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "A",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\nbase: &b {title: B}\n<<: *b\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "B",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\n<<: [x]\n---\nbody\n",
+    "err": "front-matter: yaml: map merge requires map or sequence of maps as the value",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\n<<: ~\n---\nbody\n",
+    "err": "front-matter: yaml: map merge requires map or sequence of maps as the value",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: own\n<<: {title: M, url: u}\n---\nbody\n",
+    "fm": {
+      "id": "",
+      "title": "own",
+      "aliases": null,
+      "url": "u"
+    },
+    "body": "body\n"
+  },
+  {
+    "src": "---\n<<: {title: A, title: B}\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: mapping key \"title\" already defined at line 1",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\n<<: {aliases: x}\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `x` into []string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\n? [a]\n: x\ntitle: T\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\naliases: [a, [b], {c: d}]\n---\nbody\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into string\n  line 1: cannot unmarshal !!map into string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: !!binary 'a#=='\n---\nbody\n",
+    "err": "front-matter: yaml: !!binary value contains invalid base64 data",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\ntitle: !!binary aGVs\n  bG8=\n---\nb\n",
+    "err": "front-matter: yaml: !!binary value contains invalid base64 data",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\naliases: !!binary aGVsbG8gd29ybGQ=\n---\nb\n",
+    "err": "front-matter: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!binary `aGVsbG8...` into []string",
+    "code": "ECFrontMatter"
+  },
+  {
+    "src": "---\nid: !!binary aGVsbG8=\n---\nb\n",
+    "fm": {
+      "id": "aGVsbG8=",
+      "title": "",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "b\n"
+  },
+  {
+    "src": "---\ntitle: !!binary |\n  aGVs\n  bG8=\n---\nb\n",
+    "fm": {
+      "id": "",
+      "title": "hello",
+      "aliases": null,
+      "url": ""
+    },
+    "body": "b\n"
+  }
+]

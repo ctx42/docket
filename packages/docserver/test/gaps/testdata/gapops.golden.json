@@ -1,0 +1,1137 @@
+[
+  {
+    "name": "lifecycle",
+    "results": [
+      {
+        "ok": "gap-0001",
+        "op": "report"
+      },
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": null,
+        "op": "fill"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-epub-download-token-ttl.md",
+            "filled_by": [
+              {
+                "ref": "epub#delivery",
+                "hash": "1d77724183e01c0f5090e76300802feba76a4bf77fb81d8dbf0ba3b8ceed07b0"
+              }
+            ],
+            "hits": 2,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Express shipping"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": null,
+        "op": "fill"
+      },
+      {
+        "err": "wontfix gap-0001: gap status does not allow the operation: it is filled, the operation needs open",
+        "op": "wontfix"
+      },
+      {
+        "ok": null,
+        "op": "reopen"
+      },
+      {
+        "ok": null,
+        "op": "wontfix"
+      },
+      {
+        "err": "reopen gap-0001: gap status does not allow the operation: it is wontfix, the operation needs filled",
+        "op": "reopen"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0001-epub-download-token-ttl.md",
+            "filled_by": [
+              {
+                "ref": "epub#tokens",
+                "hash": "cf1c80922c4eb56c33b4aebdfe73054512c21d19944ba75958e4c1984c0b45d7"
+              },
+              {
+                "ref": "epub",
+                "hash": "83e895b8f0af41ca0905b4e89c6979eab60b36a62bdb8efc4730dfd446aded7f"
+              }
+            ],
+            "hits": 2,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "wontfix",
+            "topic": "Express shipping"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [],
+        "op": "bad_files"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "closed/gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: wontfix\nkind: wrong\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: SRD-8\ndoc_id: kb/shipping.md\nheading_path:\n  - Express\nsearch_terms: []\nhits: 2\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: cf1c80922c4eb56c33b4aebdfe73054512c21d19944ba75958e4c1984c0b45d7\n  - ref: epub\n    hash: 83e895b8f0af41ca0905b4e89c6979eab60b36a62bdb8efc4730dfd446aded7f\n---\n# Express shipping\n\n## Demand\n\nSRD-8 needs it.\n\n## Detail\n\nTTL unit.\n\nReopened 2026-07-14:   The section moved.\n\nWon't fix 2026-07-14: Internal detail.\n\n## Target claim\n"
+    }
+  },
+  {
+    "name": "drafts",
+    "results": [
+      {
+        "ok": "gap-0001",
+        "op": "draft"
+      },
+      {
+        "ok": "gap-0002",
+        "op": "draft"
+      },
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": null,
+        "op": "submit"
+      },
+      {
+        "err": "submit gap-0001: gap status does not allow the operation: it is open, the operation needs draft",
+        "op": "submit"
+      },
+      {
+        "err": "discard gap-0001: gap status does not allow the operation: it is open, the operation needs draft",
+        "op": "discard"
+      },
+      {
+        "ok": null,
+        "op": "discard"
+      },
+      {
+        "ok": "gap-0002",
+        "op": "report"
+      },
+      {
+        "ok": [],
+        "op": "list"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-epub-download-token-ttl.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download token TTL"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0002-third.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0002",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Third"
+          }
+        ],
+        "op": "list"
+      }
+    ],
+    "files": {
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "gap-0002-third.md": "---\nid: gap-0002\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# Third\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n"
+    }
+  },
+  {
+    "name": "hand-edited",
+    "results": [
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": null,
+        "op": "fill"
+      },
+      {
+        "ok": null,
+        "op": "reopen"
+      },
+      {
+        "ok": [
+          {
+            "ask": ["Bob"],
+            "asked": "2026-10-05",
+            "file": "gap-0001-epub-download-token-ttl.md",
+            "filled_by": [
+              {
+                "ref": "epub#tokens",
+                "hash": "cf1c80922c4eb56c33b4aebdfe73054512c21d19944ba75958e4c1984c0b45d7"
+              }
+            ],
+            "hits": 2,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download token TTL"
+          }
+        ],
+        "op": "list"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\ntags: [srd, epub]   # Obsidian tags.\nstatus: open\nkind: missing\nanswer: deferred\nask:\n  - Bob\nasked: 2026-10-05\nsrd_ref: 'SRD-7 §4.3'\ndoc_id: epub\nheading_path:\n  - One\n  - Two\nsearch_terms:\n    - token\n    - ttl\n\n# Counted by the server.\nhits: 2\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: cf1c80922c4eb56c33b4aebdfe73054512c21d19944ba75958e4c1984c0b45d7\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nThe FAQ hints at 24h; asked the support lead.\n\n```text\n## Target claim\n```\n\nReopened 2026-07-14: Moved.\n\n## Target claim\n\nToken valid 48h.\n\n## Notes\n\n- call on Monday\n"
+    }
+  },
+  {
+    "name": "flow-crlf-legacy",
+    "results": [
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": null,
+        "op": "wontfix"
+      },
+      {
+        "ok": null,
+        "op": "add_hit"
+      },
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": null,
+        "op": "fill"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0003-t.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0003",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "wontfix",
+            "topic": "T"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0004-t.md",
+            "filled_by": [],
+            "hits": 3,
+            "id": "gap-0004",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "CRLF topic"
+          },
+          {
+            "ask": ["Anna"],
+            "asked": "2026-10-04",
+            "file": "gap-0005-t.md",
+            "filled_by": [
+              {
+                "ref": "kb/shipping.md#express-times",
+                "hash": "77a61ab19fe641849b53899caa3239cfdc23c5989a77f720472d7fd4e83a8f8c"
+              }
+            ],
+            "hits": 1,
+            "id": "gap-0005",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "T"
+          }
+        ],
+        "op": "list"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "closed/gap-0003-t.md": "---\n{id: gap-0003, status: wontfix, kind: wrong, hits: 1, created: '2026-07-14T10:00:00Z', x: y, srd_ref: SRD-1}\n---\n# T\n\n## Demand\n\nd\n\n## Detail\n\nx\n\nWon't fix 2026-07-14: Flow.\n\n## Target claim\n",
+      "gap-0004-t.md": "---\nid: gap-0004\r\nstatus: open\r\nkind: wrong\r\nanswer: unknown\nhits: 3\ncreated: 2026-07-14T10:00:00Z\r\n---\n# CRLF topic\n## Demand\r\nd\r\n## Detail\r\nx\r\n## Target claim\r\n",
+      "gap-0005-t.md": "---\nid: gap-0005\nstatus: open\nkind: missing\nanswer: deferred\nask:\n  - Anna\nasked: 2026-10-04\nsrd_ref: SRD-7\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ref: kb/shipping.md#express-times\n    hash: 77a61ab19fe641849b53899caa3239cfdc23c5989a77f720472d7fd4e83a8f8c\n---\n# T\n## Demand\n## Detail\n## Target claim\n"
+    }
+  },
+  {
+    "name": "misplaced-tidy",
+    "results": [
+      {
+        "ok": 2,
+        "op": "reindex"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0001-epub-download-token-ttl.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download token TTL"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0007-epub-token-lifetime.md",
+            "filled_by": [
+              {
+                "ref": "epub#tokens",
+                "hash": "ab"
+              }
+            ],
+            "hits": 3,
+            "id": "gap-0007",
+            "score": 0,
+            "stale": true,
+            "stale_refs": [
+              {
+                "ref": "epub#tokens",
+                "reason": "changed"
+              }
+            ],
+            "status": "filled",
+            "topic": "EPUB token lifetime"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [
+          [
+            "closed/gap-0001-epub-download-token-ttl.md",
+            "gap-0001-epub-download-token-ttl.md"
+          ],
+          [
+            "gap-0007-epub-token-lifetime.md",
+            "closed/gap-0007-epub-token-lifetime.md"
+          ]
+        ],
+        "op": "tidy"
+      },
+      {
+        "ok": [],
+        "op": "tidy"
+      },
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-epub-download-token-ttl.md",
+            "filled_by": [],
+            "hits": 2,
+            "id": "gap-0001",
+            "score": 0.19977279157888678,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download token TTL"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0007-epub-token-lifetime.md",
+            "filled_by": [
+              {
+                "ref": "epub#tokens",
+                "hash": "ab"
+              }
+            ],
+            "hits": 3,
+            "id": "gap-0007",
+            "score": 0.003741772800755795,
+            "stale": true,
+            "stale_refs": [
+              {
+                "ref": "epub#tokens",
+                "reason": "changed"
+              }
+            ],
+            "status": "filled",
+            "topic": "EPUB token lifetime"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [
+          {
+            "file": "gap-0008-x.md",
+            "reason": "no front matter"
+          },
+          {
+            "file": "closed/gap-0009-y.md",
+            "reason": "no front matter"
+          }
+        ],
+        "op": "bad_files"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "closed/gap-0007-epub-token-lifetime.md": "---\nid: gap-0007\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: ab\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n",
+      "closed/gap-0009-y.md": "junk",
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 2\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "gap-0008-x.md": "junk"
+    }
+  },
+  {
+    "name": "invalid-files",
+    "results": [
+      {
+        "ok": [
+          {
+            "file": "gap-0001-broken.md",
+            "reason": "front matter: yaml: line 1: did not find expected ',' or ']'"
+          },
+          {
+            "file": "gap-0002-no-kind.md",
+            "reason": "missing required key \"kind\""
+          },
+          {
+            "file": "gap-0003-bad-asked.md",
+            "reason": "key \"asked\": want a YYYY-MM-DD date, have \"4 Oct\""
+          },
+          {
+            "file": "gap-0007-moved.md",
+            "reason": "file name does not match id \"gap-0001\""
+          }
+        ],
+        "op": "bad_files"
+      },
+      {
+        "ok": [],
+        "op": "list"
+      },
+      {
+        "err": "update gap-0001: invalid gap file gap-0001-broken.md: front matter: yaml: line 1: did not find expected ',' or ']'",
+        "op": "update"
+      },
+      {
+        "err": "submit gap-0002: invalid gap file gap-0002-no-kind.md: missing required key \"kind\"",
+        "op": "submit"
+      },
+      {
+        "err": "discard gap-0003: invalid gap file gap-0003-bad-asked.md: key \"asked\": want a YYYY-MM-DD date, have \"4 Oct\"",
+        "op": "discard"
+      },
+      {
+        "err": "wontfix gap-0007: invalid gap file gap-0007-moved.md: file name does not match id \"gap-0001\"",
+        "op": "wontfix"
+      },
+      {
+        "err": "submit gap-0001: invalid gap file gap-0001-broken.md: front matter: yaml: line 1: did not find expected ',' or ']'",
+        "op": "submit"
+      },
+      {
+        "err": "fill gap-0005: gap not found",
+        "op": "fill"
+      },
+      {
+        "ok": "gap-0008",
+        "op": "report"
+      },
+      {
+        "ok": [],
+        "op": "tidy"
+      },
+      {
+        "ok": [
+          {
+            "file": "gap-0001-broken.md",
+            "reason": "front matter: yaml: line 1: did not find expected ',' or ']'"
+          },
+          {
+            "file": "gap-0002-no-kind.md",
+            "reason": "missing required key \"kind\""
+          },
+          {
+            "file": "gap-0003-bad-asked.md",
+            "reason": "key \"asked\": want a YYYY-MM-DD date, have \"4 Oct\""
+          },
+          {
+            "file": "gap-0007-moved.md",
+            "reason": "file name does not match id \"gap-0001\""
+          }
+        ],
+        "op": "bad_files"
+      }
+    ],
+    "files": {
+      "gap-0001-broken.md": "---\nid: gap-0001\nstatus: [open\n---\n# T\n",
+      "gap-0002-no-kind.md": "---\nid: gap-0002\nstatus: open\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+      "gap-0003-bad-asked.md": "---\nid: gap-0003\nstatus: open\nkind: wrong\nask: [Anna M]\nasked: 4 Oct\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+      "gap-0007-moved.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "gap-0008-epub-download-token-ttl.md": "---\nid: gap-0008\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "notes.md": "not a gap"
+    }
+  },
+  {
+    "name": "shared-numbers",
+    "results": [
+      {
+        "ok": [
+          {
+            "file": "gap-0001-copy.md",
+            "reason": "duplicate id gap-0001, also in gap-0001-epub-download-token-ttl.md"
+          },
+          {
+            "file": "gap-0001-epub-download-token-ttl.md",
+            "reason": "duplicate id gap-0001, also in gap-0001-copy.md"
+          },
+          {
+            "file": "closed/gap-0002-x.md",
+            "reason": "duplicate id gap-0002, also in gap-0002-y.md"
+          },
+          {
+            "file": "gap-0002-y.md",
+            "reason": "duplicate id gap-0002, also in closed/gap-0002-x.md"
+          }
+        ],
+        "op": "bad_files"
+      },
+      {
+        "ok": [],
+        "op": "list"
+      },
+      {
+        "err": "submit gap-0001: invalid gap file gap-0001-copy.md: duplicate id gap-0001, also in gap-0001-epub-download-token-ttl.md",
+        "op": "submit"
+      },
+      {
+        "err": "reopen gap-0002: invalid gap file closed/gap-0002-x.md: duplicate id gap-0002, also in gap-0002-y.md",
+        "op": "reopen"
+      },
+      {
+        "ok": "gap-0003",
+        "op": "report"
+      },
+      {
+        "ok": [],
+        "op": "tidy"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "closed/gap-0002-x.md": "---\nid: gap-0002\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: ab\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n",
+      "gap-0001-copy.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "gap-0002-y.md": "---\nid: gap-0002\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: ab\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n",
+      "gap-0003-epub-download-token-ttl.md": "---\nid: gap-0003\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n"
+    }
+  },
+  {
+    "name": "import-stale",
+    "results": [
+      {
+        "ok": "closed/gap-0007-epub-token-lifetime.md",
+        "op": "import"
+      },
+      {
+        "err": "import gap-0008: invalid gap input: \"kb/shipping.md\" vanished",
+        "op": "import"
+      },
+      {
+        "err": "import gap-0009: invalid gap input: hits must be at least 1, have 0",
+        "op": "import"
+      },
+      {
+        "err": "import gap-0007: invalid gap input: \"initiatives/int7.md#scope\" is under the initiatives folder",
+        "op": "import"
+      },
+      {
+        "ok": "closed/gap-0010-epub-token-lifetime.md",
+        "op": "import"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0007-epub-token-lifetime.md",
+            "filled_by": [
+              {
+                "ref": "epub#tokens",
+                "hash": "ab"
+              }
+            ],
+            "hits": 3,
+            "id": "gap-0007",
+            "score": 0,
+            "stale": true,
+            "stale_refs": [
+              {
+                "ref": "epub#tokens",
+                "reason": "changed"
+              }
+            ],
+            "status": "filled",
+            "topic": "EPUB token lifetime"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0010-epub-token-lifetime.md",
+            "filled_by": [
+              {
+                "ref": "epub#delivery",
+                "hash": "edited"
+              }
+            ],
+            "hits": 3,
+            "id": "gap-0010",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "filled",
+            "topic": "EPUB token lifetime"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0007-epub-token-lifetime.md",
+            "filled_by": [
+              {
+                "ref": "epub#tokens",
+                "hash": "ab"
+              }
+            ],
+            "hits": 3,
+            "id": "gap-0007",
+            "score": 0,
+            "stale": true,
+            "stale_refs": [
+              {
+                "ref": "epub#tokens",
+                "reason": "changed"
+              }
+            ],
+            "status": "filled",
+            "topic": "EPUB token lifetime"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": null,
+        "op": "fill"
+      },
+      {
+        "err": "fill gap-0007: gap status does not allow the operation: it is filled, the operation needs open",
+        "op": "fill"
+      },
+      {
+        "ok": [],
+        "op": "list"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "closed/gap-0007-epub-token-lifetime.md": "---\nid: gap-0007\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: cf1c80922c4eb56c33b4aebdfe73054512c21d19944ba75958e4c1984c0b45d7\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n",
+      "closed/gap-0010-epub-token-lifetime.md": "---\nid: gap-0010\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#delivery\n    hash: edited\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n"
+    }
+  },
+  {
+    "name": "bookshop",
+    "results": [
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-epub-download-link-after-a-resend.md",
+            "filled_by": [
+              {
+                "ref": "epub-delivery#download-link",
+                "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+              }
+            ],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download link after a resend"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-epub-download-link-after-a-resend.md",
+            "filled_by": [
+              {
+                "ref": "epub-delivery#download-link",
+                "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+              }
+            ],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0.31463718366876725,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download link after a resend"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": null,
+        "op": "add_hit"
+      },
+      {
+        "ok": "gap-0002",
+        "op": "report"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0002-gift-card-refunds.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0002",
+            "score": 0.16481034742346348,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Gift card refunds"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-epub-download-link-after-a-resend.md",
+            "filled_by": [
+              {
+                "ref": "epub-delivery#download-link",
+                "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+              }
+            ],
+            "hits": 2,
+            "id": "gap-0001",
+            "score": 0.0024749121057992224,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download link after a resend"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": null,
+        "op": "fill"
+      },
+      {
+        "ok": [],
+        "op": "tidy"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0001-epub-download-link-after-a-resend.md",
+            "filled_by": [
+              {
+                "ref": "epub-delivery#download-link",
+                "hash": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+              }
+            ],
+            "hits": 2,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "filled",
+            "topic": "EPUB download link after a resend"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": 2,
+        "op": "reindex"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "closed/gap-0001-epub-download-link-after-a-resend.md": "---\nid: gap-0001\nstatus: filled\nkind: incomplete\nanswer: deferred\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - EPUB Delivery\n  - Download Link\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 2\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+      "gap-0002-gift-card-refunds.md": "---\nid: gap-0002\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: payments\ndoc_id: \"\"\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - refund gift card\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# Gift card refunds\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n"
+    }
+  },
+  {
+    "name": "errors",
+    "results": [
+      {
+        "err": "invalid gap input: unknown kind \"odd\"",
+        "op": "report"
+      },
+      {
+        "err": "invalid gap input: unknown reference \"kb/nope.md\"",
+        "op": "report"
+      },
+      {
+        "err": "invalid gap input: doc_id \"epub#delivery\" must name a document, not a section",
+        "op": "report"
+      },
+      {
+        "err": "invalid gap input: topic is required",
+        "op": "report"
+      },
+      {
+        "ok": "gap-0001",
+        "op": "report"
+      },
+      {
+        "err": "invalid gap input: nothing to update",
+        "op": "update"
+      },
+      {
+        "err": "invalid gap input: asked: want a YYYY-MM-DD date, have \"4.10.26\"",
+        "op": "update"
+      },
+      {
+        "err": "invalid gap input: blank ask name",
+        "op": "update"
+      },
+      {
+        "err": "update gap-0404: gap not found",
+        "op": "update"
+      },
+      {
+        "err": "update gap-1: gap not found",
+        "op": "update"
+      },
+      {
+        "err": "invalid gap input: filled_by is required",
+        "op": "fill"
+      },
+      {
+        "err": "invalid gap input: unknown reference \"epub#nope\"",
+        "op": "fill"
+      },
+      {
+        "err": "invalid gap input: \"initiatives/int7.md#scope\" is under the initiatives folder",
+        "op": "fill"
+      },
+      {
+        "err": "invalid gap input: reason is required",
+        "op": "reopen"
+      },
+      {
+        "err": "invalid gap input: reason is required",
+        "op": "wontfix"
+      },
+      {
+        "err": "invalid gap input: unknown status \"kb\"",
+        "op": "list"
+      }
+    ],
+    "files": {
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n"
+    }
+  },
+  {
+    "name": "no-resolver",
+    "results": [
+      {
+        "err": "invalid gap input: cannot resolve \"docs/catalog/epub.md\": no corpus to resolve against",
+        "op": "report"
+      },
+      {
+        "ok": "gap-0001",
+        "op": "report"
+      },
+      {
+        "err": "invalid gap input: cannot resolve \"epub\": no corpus to resolve against",
+        "op": "fill"
+      },
+      {
+        "err": "import gap-0007: invalid gap input: cannot resolve \"docs/catalog/epub.md\": no corpus to resolve against",
+        "op": "import"
+      }
+    ],
+    "files": {
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: \"\"\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n"
+    }
+  },
+  {
+    "name": "queries",
+    "results": [
+      {
+        "ok": "gap-0001",
+        "op": "report"
+      },
+      {
+        "ok": "gap-0002",
+        "op": "report"
+      },
+      {
+        "ok": "gap-0003",
+        "op": "report"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0002-epub-download-token-lifetime.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0002",
+            "score": 0.15224404814748793,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download token lifetime"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0003-gift-card-expiry.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0003",
+            "score": 0.009004678462871826,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Gift card expiry"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-shipping-rates-for-canada.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Shipping rates for Canada"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0002-epub-download-token-lifetime.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0002",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "EPUB download token lifetime"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0003-gift-card-expiry.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0003",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Gift card expiry"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": null,
+        "op": "wontfix"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0003-gift-card-expiry.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0003",
+            "score": 0.009004678462871826,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Gift card expiry"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-shipping-rates-for-canada.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0.037537209561493326,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Shipping rates for Canada"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": null,
+        "op": "update"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-shipping-rates-for-canada.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0.13632783751862793,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Parcel weight"
+          }
+        ],
+        "op": "list"
+      },
+      {
+        "ok": [],
+        "op": "list"
+      },
+      {
+        "ok": [
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0001-shipping-rates-for-canada.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0001",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Parcel weight"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "closed/gap-0002-epub-download-token-lifetime.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0002",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "wontfix",
+            "topic": "EPUB download token lifetime"
+          },
+          {
+            "ask": [],
+            "asked": "",
+            "file": "gap-0003-gift-card-expiry.md",
+            "filled_by": [],
+            "hits": 1,
+            "id": "gap-0003",
+            "score": 0,
+            "stale": false,
+            "stale_refs": [],
+            "status": "open",
+            "topic": "Gift card expiry"
+          }
+        ],
+        "op": "list"
+      }
+    ],
+    "files": {
+      "closed/": null,
+      "closed/gap-0002-epub-download-token-lifetime.md": "---\nid: gap-0002\nstatus: wontfix\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7\ndoc_id: \"\"\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms: []\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token lifetime\n\n## Demand\n\nSRD-7 needs the token lifetime.\n\n## Detail\n\nNever stated.\n\nWon't fix 2026-07-14: out of scope\n\n## Target claim\n",
+      "gap-0001-shipping-rates-for-canada.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: \"\"\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms: []\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# Parcel weight\n\n## Demand\n\nSRD-2 prices parcels.\n\n## Detail\n\nNo rate table.\n\n## Target claim\n",
+      "gap-0003-gift-card-expiry.md": "---\nid: gap-0003\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-9\ndoc_id: \"\"\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - download\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# Gift card expiry\n\n## Demand\n\nSRD-9 sells gift cards.\n\n## Detail\n\nExpiry rules missing.\n\n## Target claim\n"
+    }
+  }
+]

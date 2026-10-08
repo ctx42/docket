@@ -1,0 +1,2603 @@
+[
+  {
+    "name": "full",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources:\n  - upstream\n  - initiatives\n  - kb\ngaps: gaps\nwatch: true\nwatch-debounce: 2s\nglossary: upstream/bookshop/glossary\nkb: kb\ninitiatives: initiatives\nprecedence:\n  - kb\n  - upstream/bookshop\nsrd-standard: kb/srd.md\nunknown-key: ignored\n---\n\n# Project configuration\n",
+    "dirs": ["upstream/bookshop/glossary", "initiatives", "kb", "gaps"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "initiatives": {
+            "dir": "$ROOT/initiatives",
+            "file": ""
+          },
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          },
+          "upstream": {
+            "dir": "$ROOT/upstream",
+            "file": ""
+          }
+        },
+        "gaps": "$ROOT/gaps",
+        "watch": {
+          "enabled": true,
+          "debounce": 2000000000
+        },
+        "glossary": "upstream/bookshop/glossary",
+        "precedence": ["kb", "upstream/bookshop"],
+        "initiatives": "initiatives",
+        "kb": "$ROOT/kb",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "defaults",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "cleans-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb/]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "glossary-folder",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: kb/glossary\n---\n\n# Project configuration\n",
+    "dirs": ["kb/glossary"],
+    "files": {
+      "kb/glossary/main.md": "## A\n"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "kb/glossary",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "glossary-file",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: kb/glossary/main.md\n---\n\n# Project configuration\n",
+    "dirs": ["kb/glossary"],
+    "files": {
+      "kb/glossary/main.md": "## A\n"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "kb/glossary/main.md",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "glossary-whole",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: kb\n---\n\n# Project configuration\n",
+    "dirs": ["kb/glossary"],
+    "files": {
+      "kb/glossary/main.md": "## A\n"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "kb",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "glossary-slash",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: kb/glossary/\n---\n\n# Project configuration\n",
+    "dirs": ["kb/glossary"],
+    "files": {
+      "kb/glossary/main.md": "## A\n"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "kb/glossary",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "prec-whole",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb, doc]\nprecedence: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "doc/catalog", "doc/reference"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": ["kb"],
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "prec-sub",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb, doc]\nprecedence: [doc/catalog]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "doc/catalog", "doc/reference"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": ["doc/catalog"],
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "prec-slash",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb, doc]\nprecedence: [doc/catalog/]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "doc/catalog", "doc/reference"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": ["doc/catalog"],
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "prec-order",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb, doc]\nprecedence: [doc/reference, kb, doc]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "doc/catalog", "doc/reference"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": ["doc/reference", "kb", "doc"],
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "prec-nested",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb, doc]\nprecedence: [doc, doc/catalog]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "doc/catalog", "doc/reference"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": ["doc", "doc/catalog"],
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "init-whole",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [initiatives, doc]\ninitiatives: initiatives\n---\n\n# Project configuration\n",
+    "dirs": ["initiatives", "doc/initiatives", "drafts"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "initiatives": {
+            "dir": "$ROOT/initiatives",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "initiatives",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "init-sub",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [initiatives, doc]\ninitiatives: doc/initiatives\n---\n\n# Project configuration\n",
+    "dirs": ["initiatives", "doc/initiatives", "drafts"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "initiatives": {
+            "dir": "$ROOT/initiatives",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "doc/initiatives",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "init-slash",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [initiatives, doc]\ninitiatives: doc/initiatives/\n---\n\n# Project configuration\n",
+    "dirs": ["initiatives", "doc/initiatives", "drafts"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "initiatives": {
+            "dir": "$ROOT/initiatives",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "doc/initiatives",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "init-outside",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [initiatives, doc]\ninitiatives: drafts\n---\n\n# Project configuration\n",
+    "dirs": ["initiatives", "doc/initiatives", "drafts"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "initiatives": {
+            "dir": "$ROOT/initiatives",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "init-missing",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [initiatives, doc]\ninitiatives: doc/none\n---\n\n# Project configuration\n",
+    "dirs": ["initiatives", "doc/initiatives", "drafts"],
+    "files": {},
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "doc": {
+            "dir": "$ROOT/doc",
+            "file": ""
+          },
+          "initiatives": {
+            "dir": "$ROOT/initiatives",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "doc/none",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "no-server",
+    "file": "project-config.md",
+    "content": "---\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: mcp-server is required"
+    }
+  },
+  {
+    "name": "blank-server",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: \"  \"\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: mcp-server is required"
+    }
+  },
+  {
+    "name": "no-port",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: mcp-port must be between 1 and 65535, have 0"
+    }
+  },
+  {
+    "name": "port-big",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 70000\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: mcp-port must be between 1 and 65535, have 70000"
+    }
+  },
+  {
+    "name": "port-abc",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: abc\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 2: cannot unmarshal !!str `abc` into int"
+    }
+  },
+  {
+    "name": "port-float",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777.9\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "port-str",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: \"7777\"\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 2: cannot unmarshal !!str `7777` into int"
+    }
+  },
+  {
+    "name": "no-sources",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources: cannot be blank"
+    }
+  },
+  {
+    "name": "empty-sources",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: []\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources: cannot be blank"
+    }
+  },
+  {
+    "name": "abs-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [/srv/kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources path \"/srv/kb\" must be relative to the project root"
+    }
+  },
+  {
+    "name": "esc-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [../kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources path \"../kb\" escapes the project root"
+    }
+  },
+  {
+    "name": "nested-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb/sub]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources entry \"kb/sub\" must be a top-level folder name matching ^[A-Za-z0-9._-]*[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+    }
+  },
+  {
+    "name": "dot-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [.]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources entry \".\" must be a top-level folder name matching ^[A-Za-z0-9._-]*[A-Za-z0-9_-][A-Za-z0-9._-]*$"
+    }
+  },
+  {
+    "name": "dup-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb, kb/]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources entry \"kb/\" is listed twice"
+    }
+  },
+  {
+    "name": "missing-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [gone]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources entry \"gone\": stat $ROOT/gone: no such file or directory"
+    }
+  },
+  {
+    "name": "file-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [file.md]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: sources entry \"file.md\" is not a directory"
+    }
+  },
+  {
+    "name": "abs-gaps",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\ngaps: /var/gaps\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: gaps path \"/var/gaps\" must be relative to the project root"
+    }
+  },
+  {
+    "name": "esc-gaps",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\ngaps: ../gaps\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: gaps path \"../gaps\" escapes the project root"
+    }
+  },
+  {
+    "name": "gaps-in-source",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\ngaps: kb/gaps\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: gaps folder \"$ROOT/kb/gaps\" is inside source \"kb\""
+    }
+  },
+  {
+    "name": "abs-glossary",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: /kb/g\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: glossary path \"/kb/g\" must be relative to the project root"
+    }
+  },
+  {
+    "name": "abs-kb",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nkb: /kb\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: kb path \"/kb\" must be relative to the project root"
+    }
+  },
+  {
+    "name": "abs-init",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\ninitiatives: /i\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: initiatives path \"/i\" must be relative to the project root"
+    }
+  },
+  {
+    "name": "esc-srd",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nsrd-standard: ../../s.md\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: srd-standard path \"../../s.md\" escapes the project root"
+    }
+  },
+  {
+    "name": "glossary-missing",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: kb/none\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: glossary: stat $ROOT/kb/none: no such file or directory"
+    }
+  },
+  {
+    "name": "glossary-outside",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: file.md\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: glossary \"$ROOT/file.md\" is not inside any source"
+    }
+  },
+  {
+    "name": "glossary-txt",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nglossary: kb/notes.txt\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: glossary must be a Markdown file or a folder"
+    }
+  },
+  {
+    "name": "abs-prec",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nprecedence: [/kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: precedence path \"/kb\" must be relative to the project root"
+    }
+  },
+  {
+    "name": "esc-prec",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nprecedence: [kb, ../kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: precedence path \"../kb\" escapes the project root"
+    }
+  },
+  {
+    "name": "miss-prec",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nprecedence: [kb, kbb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: precedence entry \"kbb\": stat $ROOT/kbb: no such file or directory"
+    }
+  },
+  {
+    "name": "dup-prec",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nprecedence: [kb, kb/]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: precedence entry \"kb/\" is listed twice"
+    }
+  },
+  {
+    "name": "file-prec",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nprecedence: [kb/notes.txt]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: precedence entry \"kb/notes.txt\" is not a directory"
+    }
+  },
+  {
+    "name": "out-prec",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nprecedence: [other]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: precedence entry \"other\" is not inside any source"
+    }
+  },
+  {
+    "name": "init-prec",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\ninitiatives: kb\nprecedence: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: precedence entry \"kb\" is inside initiatives"
+    }
+  },
+  {
+    "name": "deb-2m",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nwatch-debounce: 2m\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: watch: debounce must not exceed 1m0s"
+    }
+  },
+  {
+    "name": "deb-0",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nwatch-debounce: 0s\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: watch: debounce must be positive"
+    }
+  },
+  {
+    "name": "deb-null",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nwatch-debounce: ~\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "watch-yes",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nwatch: yes\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": true,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "sources-str",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: kb\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 3: cannot unmarshal !!str `kb` into []string"
+    }
+  },
+  {
+    "name": "dup-key",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nsources: [other]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 4: mapping key \"sources\" already defined at line 3"
+    }
+  },
+  {
+    "name": "two-errs",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: [x]\nmcp-port: abc\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!seq into string\n  line 2: cannot unmarshal !!str `abc` into int"
+    }
+  },
+  {
+    "name": "srd-ok",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nsrd-standard: anything/at/all.md\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "inner-parent",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nkb: a/../kb\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "$ROOT/kb",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "dotdot-name",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\nkb: ..kb\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "$ROOT/..kb",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "bad-yaml",
+    "file": "project-config.md",
+    "content": "---\nsources: [\n---\n\n# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: yaml: line 1: did not find expected node content"
+    }
+  },
+  {
+    "name": "no-fm",
+    "file": "project-config.md",
+    "content": "# Project configuration\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: no front matter"
+    }
+  },
+  {
+    "name": "unclosed",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "parse config: front matter is not closed"
+    }
+  },
+  {
+    "name": "empty-fm",
+    "file": "project-config.md",
+    "content": "---\n---\nbody\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "validate config: mcp-server is required"
+    }
+  },
+  {
+    "name": "crlf",
+    "file": "project-config.md",
+    "content": "---\r\nmcp-server: srd\r\nmcp-port: 7777\r\nsources: [kb]\r\n---\r\nbody\r\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "bom",
+    "file": "project-config.md",
+    "content": "﻿---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "eof-close",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
+    }
+  },
+  {
+    "name": "missing-file",
+    "file": "project-config.md",
+    "content": "\u0000absent",
+    "dirs": ["kb", "other"],
+    "files": {
+      "file.md": "x",
+      "kb/notes.txt": "x"
+    },
+    "want": {
+      "err": "read config: open $ROOT/project-config.md: no such file or directory"
+    }
+  },
+  {
+    "name": "mcp-ok",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\":{\"other\":{\"type\":\"stdio\",\"command\":\"x\"},\"srd\":{\"type\":\"http\",\"url\":\"http://localhost:7777/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": true
+    }
+  },
+  {
+    "name": "mcp-malformed",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: unexpected end of JSON input"
+    }
+  },
+  {
+    "name": "mcp-no-entry",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"other\": {\"url\": \"http://localhost:7777/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json has no server \"srd\" named by mcp-server"
+    }
+  },
+  {
+    "name": "mcp-port-differs",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://localhost:7778/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\" URL http://localhost:7778/mcp uses port 7778, but mcp-port is 7777"
+    }
+  },
+  {
+    "name": "mcp-default-80",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://localhost/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\" URL http://localhost/mcp uses port 80, but mcp-port is 7777"
+    }
+  },
+  {
+    "name": "mcp-https-443",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"https://h/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\" URL https://h/mcp uses port 443, but mcp-port is 7777"
+    }
+  },
+  {
+    "name": "mcp-no-url",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"type\": \"stdio\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": has no url"
+    }
+  },
+  {
+    "name": "mcp-empty",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: unexpected end of JSON input"
+    }
+  },
+  {
+    "name": "mcp-ws",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"ws://localhost/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": url \"ws://localhost/mcp\" names no port"
+    }
+  },
+  {
+    "name": "mcp-bad-url",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://[::1\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": url: parse \"http://[::1\": missing ']' in host"
+    }
+  },
+  {
+    "name": "mcp-no-scheme",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"localhost:7777/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": url \"localhost:7777/mcp\" names no port"
+    }
+  },
+  {
+    "name": "mcp-colon-first",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \":7777\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": url: parse \":7777\": missing protocol scheme"
+    }
+  },
+  {
+    "name": "mcp-bad-port",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://localhost:abc/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": url: parse \"http://localhost:abc/mcp\": invalid port \":abc\" after host"
+    }
+  },
+  {
+    "name": "mcp-ipv6",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://[::1]:7777/mcp\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": true
+    }
+  },
+  {
+    "name": "mcp-huge-port",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://h:99999999999999999999/\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": strconv.Atoi: parsing \"99999999999999999999\": value out of range"
+    }
+  },
+  {
+    "name": "mcp-case-key",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"MCPSERVERS\": {\"srd\": {\"URL\": \"http://h:7777\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": true
+    }
+  },
+  {
+    "name": "mcp-top-array",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "[]",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: json: cannot unmarshal array into Go value of type config.mcpRegistry"
+    }
+  },
+  {
+    "name": "mcp-servers-array",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": []}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: json: cannot unmarshal array into Go struct field mcpRegistry.mcpServers of type map[string]struct { URL string \"json:\\\"url\\\"\" }"
+    }
+  },
+  {
+    "name": "mcp-entry-string",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": \"x\"}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: json: cannot unmarshal string into Go struct field mcpRegistry.mcpServers of type struct { URL string \"json:\\\"url\\\"\" }"
+    }
+  },
+  {
+    "name": "mcp-url-number",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": 7777}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: json: cannot unmarshal number into Go struct field .mcpServers.url of type string"
+    }
+  },
+  {
+    "name": "mcp-url-null",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": null}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": has no url"
+    }
+  },
+  {
+    "name": "mcp-trailing",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {}} x",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: invalid character 'x' after top-level value"
+    }
+  },
+  {
+    "name": "mcp-bad-char",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://h:7777\"},}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: invalid character '}' looking for beginning of object key string"
+    }
+  },
+  {
+    "name": "mcp-key-unquoted",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{mcpServers: {}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: invalid character 'm' looking for beginning of object key string"
+    }
+  },
+  {
+    "name": "mcp-literal",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"a\": tru}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: invalid character '}' in literal true (expecting 'e')"
+    }
+  },
+  {
+    "name": "mcp-control",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"a\": \"\u0001\"}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: invalid character '\\x01' in string literal"
+    }
+  },
+  {
+    "name": "mcp-number",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"a\": 01}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "parse .mcp.json: invalid character '1' after object key:value pair"
+    }
+  },
+  {
+    "name": "mcp-upper-scheme",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"HTTP://h:7777/\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": true
+    }
+  },
+  {
+    "name": "mcp-userinfo",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://u:p@h:7777/\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": true
+    }
+  },
+  {
+    "name": "mcp-port-empty",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://h:/x\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\" URL http://h:/x uses port 80, but mcp-port is 7777"
+    }
+  },
+  {
+    "name": "mcp-dup-entry",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://h:1\"}, \"srd\": {\"url\": \"http://h:7777\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": true
+    }
+  },
+  {
+    "name": "mcp-space-url",
+    "file": "project-config.md",
+    "content": "---\nmcp-server: srd\nmcp-port: 7777\nsources: [kb]\n---\n\n# Project configuration\n",
+    "dirs": ["kb"],
+    "files": {},
+    "mcp_json": "{\"mcpServers\": {\"srd\": {\"url\": \"http://h :7777\"}}}",
+    "want": {
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false,
+      "mcp_err": "$ROOT/.mcp.json server \"srd\": url: parse \"http://h :7777\": invalid character \" \" in host name"
+    }
+  }
+]

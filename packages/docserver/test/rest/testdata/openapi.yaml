@@ -1,0 +1,1106 @@
+# SPDX-FileCopyrightText: (c) 2026 Rafal Zajac.
+# SPDX-License-Identifier: MIT
+openapi: 3.2.0
+info:
+  title: docket REST API
+  version: "1.0.0"
+  summary: REST mirror of the docket documentation server.
+  description: >
+    Plain REST access to the Markdown corpus served by docket. The same
+    engine also serves MCP (Streamable HTTP) at /mcp; that JSON-RPC surface is
+    intentionally not described by this document — its tools are discovered
+    through MCP's own tools/list mechanism. The corpus is indexed at process
+    start; a corpus change requires a server restart unless the server
+    watches its sources, in which case it rebuilds the index shortly after
+    the change.
+  license:
+    name: MIT
+    identifier: MIT
+paths:
+  /healthz:
+    get:
+      summary: Liveness probe
+      description: >
+        Reports that the server is up and how many documents it has indexed.
+      operationId: getHealth
+      responses:
+        "200":
+          description: Server is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /search:
+    get:
+      summary: Search the corpus
+      description: >
+        Ranks corpus sections against the free-text query with BM25 and
+        returns the most relevant sections with citation metadata and the
+        source document's trust rank. The rank never reorders the results.
+        The response shape mirrors the MCP search tool field for field.
+      operationId: search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: The free-text search query.
+          schema:
+            type: string
+            minLength: 1
+        - name: k
+          in: query
+          required: false
+          description: Maximum number of results; defaults to 10.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        "200":
+          description: Ranked sections, best match first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        "400":
+          description: Missing q, or k is not a positive integer.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /docs:
+    get:
+      summary: List every document
+      description: >
+        Returns the identity, path, trust rank, and title of every indexed
+        document, sorted by path. Mirrors the MCP list_docs tool.
+      operationId: listDocs
+      responses:
+        "200":
+          description: The corpus inventory.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocList"
+  /docs/{id}:
+    get:
+      summary: Get one whole document
+      description: >
+        Returns the complete source file for the given document identity or
+        current path, read from disk at request time. Mirrors the MCP get_doc
+        tool.
+      operationId: getDoc
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: >
+            The document's identity (id) or current path, as reported by
+            /search and /docs; an identity is tried first. Deliberate
+            deviation from strict path-template semantics: the value may
+            contain "/" separators and is matched as the remainder of the URL
+            path after /docs/. Values holding characters such as "#", "?", or
+            spaces must be URL-encoded.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: The whole document with citation metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: No document with the given identity or path is indexed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /openapi.yaml:
+    get:
+      summary: This document
+      operationId: getOpenAPI
+      responses:
+        "200":
+          description: The OpenAPI description of this API.
+          content:
+            application/yaml: {}
+  /glossary:
+    get:
+      summary: List the glossary's defined terms
+      description: >
+        Returns every term the configured glossary defines (each "## "
+        heading of its documents), ordered by document path and then by
+        position in the document, read from disk at request time. Mirrors
+        the MCP glossary_terms tool. Present only when the server is
+        configured with a glossary.
+      operationId: glossaryTerms
+      parameters:
+        - name: term
+          in: query
+          required: false
+          description: >
+            Keep only terms whose heading contains this text, ignoring case;
+            omit to return every term.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The defined terms.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlossaryTerms"
+  /gaps:
+    get:
+      summary: List gaps
+      description: >
+        Returns the recorded gaps of the gaps folder and its closed
+        subfolder, each with its front-matter fields, body sections, and
+        file path, optionally filtered by status, SRD reference, the
+        people to ask, and whether the questions were sent, in id order. With query, only the gaps matching it are
+        returned, ranked by relevance (best first), each with a score; the
+        filters still apply. A filled or open gap whose filled_by sections
+        changed, vanished, or were never hashed carries stale and
+        stale_refs; its status is unchanged. A gap file that fails to parse
+        or breaks the gap format (a missing or unknown key value, a file name
+        disagreeing with its id, a missing body section, a number shared
+        with another file) is left out of gaps and listed under invalid,
+        whatever the filters; every operation on its gap answers 409 until
+        the file is fixed, and the server never rewrites or deletes it. Gaps
+        never appear in /search. Mirrors the MCP list_gaps tool. Present
+        only when the server is configured with a gaps folder.
+      operationId: listGaps
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: >
+            Keep only gaps in this status; omit to return all.
+          schema:
+            type: string
+            enum: [draft, open, filled, wontfix]
+        - name: srd_ref
+          in: query
+          required: false
+          description: >
+            Keep only gaps whose srd_ref contains this text, for example an
+            SRD folder name; omit to return all.
+          schema:
+            type: string
+        - name: query
+          in: query
+          required: false
+          description: >
+            Free-text query ranked with BM25 against each gap's topic
+            (boosted), search terms, demand, detail, target claim, and
+            srd_ref. Keeps only matching gaps, best first, each with a
+            score; omit to list in id order.
+          schema:
+            type: string
+        - name: stale
+          in: query
+          required: false
+          description: >
+            true keeps only stale gaps; false or omitted applies no stale
+            filter.
+          schema:
+            type: boolean
+        - name: ask
+          in: query
+          required: false
+          description: >
+            Keep only gaps with a name in ask containing this text, case
+            ignored; omit to return all.
+          schema:
+            type: string
+        - name: asked
+          in: query
+          required: false
+          description: >
+            true keeps only gaps whose questions were sent (asked set), false
+            only gaps whose questions were not sent; omit to apply no asked
+            filter.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: The recorded gaps.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GapList"
+        "400":
+          description: >
+            The status is not a recognised one, or stale or asked is not
+            true or false.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: Report a gap
+      description: >
+        Records a gap, a fact SRD work needs that the corpus documents
+        outside the initiatives folder do not supply reliably, as a new
+        Markdown file in the gaps folder: open or, with draft set, an
+        unconfirmed draft. A gap closes only when the fact appears in a
+        corpus document outside the initiatives folder, never in an SRD and
+        never on a bare URL. doc_id, when given, must name a corpus document,
+        any one, by id or path and is stored as its id. ask names the people
+        who can answer the gap's question; asked is the date the questions
+        were sent to them. Mirrors the MCP report_gap tool. Present only when the server is configured with a gaps folder.
+      operationId: reportGap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportGapRequest"
+      responses:
+        "201":
+          description: The gap was recorded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportGapResponse"
+        "400":
+          description: >
+            The request body is malformed, names an unknown kind or answer,
+            leaves topic, demand, detail, or an ask name blank, gives an
+            asked that is not YYYY-MM-DD, puts a level-1 or level-2
+            heading into a section, or names a doc_id that does not resolve.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: The request body exceeds 1 MiB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /gaps/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The gap ID, as reported by /gaps.
+        schema:
+          type: string
+          minLength: 1
+    put:
+      summary: Edit a gap
+      description: >
+        Changes the given fields of a draft or open gap; a field left out
+        keeps the value in the gap's file, so edits made to the file by hand
+        survive. add_hit counts one more encounter of the gap; ask replaces
+        the people who can answer, asked records the date the questions were
+        sent. Filled and wontfix gaps keep ask and asked as history. Mirrors
+        the MCP update_gap tool. Present only when the server is configured with a gaps folder.
+      operationId: updateGap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGapRequest"
+      responses:
+        "200":
+          description: The gap was updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+        "400":
+          description: >
+            The request body is malformed or changes nothing, or a field is
+            invalid as for POST /gaps.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: No gap with the given ID exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            The gap is filled or wontfix, so it cannot be edited, or the gap's file is invalid (listed
+            under invalid by GET /gaps); the file is left untouched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: The request body exceeds 1 MiB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Discard a draft gap
+      description: >
+        Deletes a draft gap's file. Only a draft can be deleted; deleting the
+        highest-numbered draft frees its number. Mirrors the MCP discard_gap
+        tool. Present only when the server is configured with a gaps folder.
+      operationId: discardGap
+      responses:
+        "200":
+          description: The draft was deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+        "404":
+          description: No gap with the given ID exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            The gap is not a draft, so it cannot be deleted, or the gap's file is invalid (listed
+            under invalid by GET /gaps); the file is left untouched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /gaps/{id}/submit:
+    post:
+      summary: Submit a draft gap
+      description: >
+        Confirms a draft gap, moving it to the open status. Takes no request
+        body. Mirrors the MCP submit_gap tool. Present only when the server is configured with a gaps folder.
+      operationId: submitGap
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The gap ID, as reported by /gaps.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: The draft was submitted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+        "404":
+          description: No gap with the given ID exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            The gap is not a draft, so it cannot be submitted, or the gap's file is invalid (listed
+            under invalid by GET /gaps); the file is left untouched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /gaps/{id}/fill:
+    post:
+      summary: Fill a gap
+      description: >
+        Records the corpus sections that now state an open gap's fact, or
+        refreshes a filled gap's list. filled_by replaces the gap's list,
+        each entry naming a corpus document outside the initiatives folder,
+        never an SRD, and stored with the hash of its section's current
+        text. With
+        complete set an open gap moves to filled; otherwise it stays open,
+        partly filled, and remaining, when given, replaces its Detail section
+        with what is still missing. A filled gap takes only complete set: the
+        listed sections are re-hashed, clearing its stale flag, and it stays
+        filled. Mirrors the MCP fill_gap tool. Present only when the server is configured with a gaps folder.
+      operationId: fillGap
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The gap ID, as reported by /gaps.
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FillGapRequest"
+      responses:
+        "200":
+          description: The gap was filled, completely or in part, or refreshed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+        "400":
+          description: >
+            The request body is malformed, filled_by is empty, an entry does
+            not resolve to a corpus document or a heading in it, an entry
+            names a document under the initiatives folder, or remaining
+            holds a level-1 or level-2 heading.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: No gap with the given ID exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            The gap is neither open nor, for a complete fill, filled, or the
+            gap's file is invalid (listed
+            under invalid by GET /gaps); the file is left untouched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: The request body exceeds 1 MiB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /gaps/{id}/reopen:
+    post:
+      summary: Reopen a filled gap
+      description: >
+        Moves a filled gap back to open, appending the reason to its Detail
+        section. Its filled_by list is kept, so it can be filled again with a
+        corrected list. Mirrors the MCP reopen_gap tool. Present only when the server is configured with a gaps folder.
+      operationId: reopenGap
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The gap ID, as reported by /gaps.
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonRequest"
+      responses:
+        "200":
+          description: The gap was reopened.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+        "400":
+          description: The request body is malformed or the reason blank.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: No gap with the given ID exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            The gap is not filled, so it cannot be reopened, or the gap's file is invalid (listed
+            under invalid by GET /gaps); the file is left untouched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: The request body exceeds 1 MiB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /gaps/{id}/wontfix:
+    post:
+      summary: Close a gap as wontfix
+      description: >
+        Closes an open gap the corpus will not carry, appending the reason to
+        its Detail section. Mirrors the MCP wontfix_gap tool. Present only when the server is configured with a gaps folder.
+      operationId: wontfixGap
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The gap ID, as reported by /gaps.
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonRequest"
+      responses:
+        "200":
+          description: The gap was closed as wontfix.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+        "400":
+          description: The request body is malformed or the reason blank.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: No gap with the given ID exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: >
+            The gap is not open, so it cannot be closed, or the gap's file is invalid (listed
+            under invalid by GET /gaps); the file is left untouched.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: The request body exceeds 1 MiB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status, docs]
+      properties:
+        status:
+          type: string
+          description: Always "ok" when the server responds.
+        docs:
+          type: integer
+          description: Number of indexed documents.
+    Section:
+      type: object
+      required: [title, id, path, text, score]
+      properties:
+        title:
+          type: string
+          description: The source document's title.
+        id:
+          type: string
+          description: >
+            The source document's identity: its front-matter id when set, else
+            its path. Store this value to refer to the document.
+        path:
+          type: string
+          description: >
+            The source document's current path,
+            "<source-name>/<relative-path>".
+        rank:
+          $ref: "#/components/schemas/Rank"
+        heading_path:
+          type: array
+          items:
+            type: string
+          description: Heading trail from the document root to the section.
+        text:
+          type: string
+          description: Raw Markdown of the section, heading line included.
+        score:
+          type: number
+          description: BM25 relevance score; higher ranks first.
+        source_url:
+          type: string
+          description: >
+            The source document's canonical URL: its front-matter url, else
+            the first URL in its body; the same for every section of the
+            document, with no section fragment. Absent when unknown.
+    Rank:
+      type: integer
+      minimum: 1
+      description: >
+        The document's trust rank from the project's precedence list: 1 is
+        the most trusted, the first listed folder. A document gets the
+        position of the longest listed folder it lies under; one under no
+        listed folder ranks last, one past the list's length. The field is
+        absent for a document under the project's initiatives folder, and
+        for every document when no precedence is configured (always under a
+        plain YAML config). Rank is metadata only and never changes the
+        order of search results.
+    SearchResponse:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/Section"
+    DocSummary:
+      type: object
+      required: [id, path, title]
+      properties:
+        id:
+          type: string
+          description: >
+            The document's identity: its front-matter id when set, else its
+            path. Store this value to refer to the document.
+        path:
+          type: string
+          description: >
+            The document's current path, "<source-name>/<relative-path>".
+        rank:
+          $ref: "#/components/schemas/Rank"
+        title:
+          type: string
+          description: The document's front-matter title.
+    DocList:
+      type: object
+      required: [docs]
+      properties:
+        docs:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocSummary"
+    Document:
+      type: object
+      required: [id, path, title, text]
+      properties:
+        id:
+          type: string
+          description: >
+            The document's identity: its front-matter id when set, else its
+            path. Store this value to refer to the document.
+        path:
+          type: string
+          description: >
+            The document's current path, "<source-name>/<relative-path>".
+        rank:
+          $ref: "#/components/schemas/Rank"
+        title:
+          type: string
+          description: The document's front-matter title.
+        source_url:
+          type: string
+          description: The document's canonical URL, absent when unknown.
+        text:
+          type: string
+          description: The whole source file, front-matter included.
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Human-readable description of the failure.
+    FillRef:
+      type: object
+      required: [ref]
+      properties:
+        ref:
+          type: string
+          description: >
+            A corpus section, "<identity>#<anchor>", or a whole document,
+            "<identity>". The identity is the document's id, else its path;
+            the anchor is the GitHub-style slug of the section's heading
+            text: lowercase, every character other than a letter, digit,
+            space, "-", or "_" dropped, each space turned into "-", and a
+            heading repeating an earlier slug suffixed "-1", "-2", and so on.
+        hash:
+          type: string
+          description: >
+            Hex SHA-256 of the section's text when the entry was written:
+            the heading line through the line before the next heading of the
+            same or a higher level, or the whole body without front matter
+            for a document, CRLF line endings turned to LF and trailing
+            whitespace at its end dropped. Absent when the entry carries
+            none.
+    StaleRef:
+      type: object
+      required: [ref, reason]
+      properties:
+        ref:
+          type: string
+          description: The filled_by entry's ref as the gap file records it.
+        reason:
+          type: string
+          enum: [changed, vanished, unhashed]
+          description: >
+            changed when the section's current hash differs from the
+            recorded one, vanished when the document or heading no longer
+            resolves, unhashed when the entry records no hash.
+    Gap:
+      type: object
+      required:
+        - id
+        - status
+        - kind
+        - answer
+        - ask
+        - asked
+        - srd_ref
+        - doc_id
+        - heading_path
+        - search_terms
+        - hits
+        - created
+        - filled_by
+        - topic
+        - demand
+        - detail
+        - target_claim
+        - file
+      properties:
+        id:
+          type: string
+          description: The store-assigned identifier, "gap-NNNN".
+        status:
+          type: string
+          enum: [draft, open, filled, wontfix]
+          description: The gap's lifecycle position.
+        kind:
+          type: string
+          enum: [missing, wrong, incomplete, ambiguous]
+          description: How the corpus fails to supply the fact.
+        answer:
+          type: string
+          enum: ["", deferred, unknown]
+          description: >
+            deferred when someone knows but was not asked yet, unknown when
+            nobody has pinned it down, empty otherwise.
+        ask:
+          type: array
+          items:
+            type: string
+          description: >
+            The people who can answer the gap's question, as typed, without
+            case-insensitive duplicates; empty when none are named.
+        asked:
+          type: string
+          description: >
+            The date, YYYY-MM-DD, the questions were sent to the people in
+            ask; empty when they were not sent.
+        srd_ref:
+          type: string
+          description: The SRD, requirement, or session that needs the fact.
+        doc_id:
+          type: string
+          description: >
+            Identity of the corpus document the gap is about, empty when no
+            document covers the topic.
+        heading_path:
+          type: array
+          items:
+            type: string
+          description: Heading trail within doc_id the gap is about.
+        search_terms:
+          type: array
+          items:
+            type: string
+          description: Queries tried that did not supply the fact.
+        hits:
+          type: integer
+          minimum: 1
+          description: Times the gap was met in SRD work.
+        created:
+          type: string
+          format: date-time
+          description: When the server created the gap's file.
+        filled_by:
+          type: array
+          items:
+            $ref: "#/components/schemas/FillRef"
+          description: >
+            The corpus sections that state the fact: all of it for a filled
+            gap, part of it for an open one.
+        topic:
+          type: string
+          description: The gap's short label, the file's H1.
+        demand:
+          type: string
+          description: Why the SRD work needs the fact.
+        detail:
+          type: string
+          description: >
+            What the corpus says now and what is missing; for a partly
+            filled gap, what remains; for a wontfix gap, why.
+        target_claim:
+          type: string
+          description: The sentence the corpus should state, empty if unknown.
+        file:
+          type: string
+          description: >
+            The gap file's path within the gaps folder: its name for a draft
+            or open gap, closed/ and its name for a filled or wontfix gap
+            (the server moves the file on each such transition), for example
+            closed/gap-0007-epub-token-lifetime.md.
+        score:
+          type: number
+          description: >
+            Relevance to the query, higher ranks first; present only when
+            the listing was given a query.
+        stale:
+          type: boolean
+          description: >
+            True for a filled or open gap with a filled_by entry listed in
+            stale_refs; absent otherwise. The server never changes a status
+            for it.
+        stale_refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/StaleRef"
+          description: >
+            The stale filled_by entries, in filled_by order; present only
+            when stale is true.
+    BadFile:
+      type: object
+      required: [file, reason]
+      properties:
+        file:
+          type: string
+          description: >
+            The invalid file's path within the gaps folder, led by closed/
+            for a file in the closed subfolder.
+        reason:
+          type: string
+          description: Why the file is invalid.
+    GapList:
+      type: object
+      required: [gaps, invalid]
+      properties:
+        gaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/Gap"
+        invalid:
+          type: array
+          items:
+            $ref: "#/components/schemas/BadFile"
+          description: >
+            Every invalid gap file, by file-name number, then name, whatever
+            the filters; an empty list when there is none.
+    ReportGapRequest:
+      type: object
+      required: [kind, topic, demand, detail]
+      properties:
+        kind:
+          type: string
+          enum: [missing, wrong, incomplete, ambiguous]
+          description: How the corpus fails to supply the fact.
+        topic:
+          type: string
+          minLength: 1
+          description: Short one-line label for the needed fact.
+        doc_id:
+          type: string
+          description: >
+            Id or path of the corpus document the gap is about, from a search
+            or /docs result; stored as the document's id. Omit when no
+            document covers the topic.
+        heading_path:
+          type: array
+          items:
+            type: string
+          description: Heading trail within doc_id, copied from a result.
+        demand:
+          type: string
+          minLength: 1
+          description: Why the SRD work needs the fact.
+        detail:
+          type: string
+          minLength: 1
+          description: What the corpus says now and what is missing.
+        target_claim:
+          type: string
+          description: The sentence the corpus should state, when known.
+        search_terms:
+          type: array
+          items:
+            type: string
+          description: Queries tried that did not supply the fact.
+        srd_ref:
+          type: string
+          description: The SRD, requirement, or session that needs the fact.
+        answer:
+          type: string
+          enum: ["", deferred, unknown]
+          description: >
+            deferred when someone knows but was not asked yet, unknown when
+            nobody has pinned it down; omit otherwise.
+        ask:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: >
+            Names of the people who can answer the gap's question, as the
+            user types them; trimmed, case-insensitive duplicates dropped.
+        asked:
+          type: string
+          format: date
+          description: >
+            The date the questions were sent to the people in ask, set once
+            the user confirms they were sent; omit otherwise.
+        draft:
+          type: boolean
+          default: false
+          description: >
+            Record the gap unconfirmed, in the draft status; omit to record
+            it open.
+      additionalProperties: false
+    ReportGapResponse:
+      type: object
+      required: [gap_id]
+      properties:
+        gap_id:
+          type: string
+          description: The assigned gap ID, "gap-NNNN".
+    UpdateGapRequest:
+      type: object
+      description: >
+        The fields to change; every field is optional and one left out keeps
+        the value in the gap's file. At least one field must be given.
+      properties:
+        kind:
+          type: string
+          enum: [missing, wrong, incomplete, ambiguous]
+        topic:
+          type: string
+          minLength: 1
+        doc_id:
+          type: string
+          description: Id or path of a corpus document; empty clears it.
+        heading_path:
+          type: array
+          items:
+            type: string
+        demand:
+          type: string
+          minLength: 1
+        detail:
+          type: string
+          minLength: 1
+        target_claim:
+          type: string
+        search_terms:
+          type: array
+          items:
+            type: string
+        srd_ref:
+          type: string
+        answer:
+          type: string
+          enum: ["", deferred, unknown]
+        ask:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: >
+            Replaces the names of the people who can answer the gap's
+            question; an empty list clears them.
+        asked:
+          type: string
+          description: >
+            The date, YYYY-MM-DD, the questions were sent; empty clears it.
+        add_hit:
+          type: boolean
+          default: false
+          description: Count one more encounter of the gap in SRD work.
+      additionalProperties: false
+    FillGapRequest:
+      type: object
+      required: [filled_by]
+      properties:
+        filled_by:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: >
+            The corpus sections stating the fact, each "<identity>#<anchor>"
+            or "<identity>" as for FillRef.ref, in a corpus document outside
+            the initiatives folder; a path is stored as the document's id.
+            Replaces the gap's list.
+        complete:
+          type: boolean
+          default: false
+          description: >
+            True when the sections state the whole fact, moving an open gap
+            to filled or refreshing a filled one; omit to keep an open gap
+            open, partly filled. A filled gap refuses an incomplete fill.
+        remaining:
+          type: string
+          description: >
+            Replaces the gap's Detail section: what is still missing.
+      additionalProperties: false
+    ReasonRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          description: Why, appended to the gap's Detail section.
+      additionalProperties: false
+    GlossaryTerm:
+      type: object
+      required: [term, name, abbreviation, id, path, anchor, definition]
+      properties:
+        term:
+          type: string
+          description: The heading text, for example "Stock Keeping Unit (SKU)".
+        name:
+          type: string
+          description: The term without its trailing parenthesised abbreviation.
+        abbreviation:
+          type: string
+          description: The text inside the trailing parentheses, empty if none.
+        id:
+          type: string
+          description: >
+            The defining document's identity: its front-matter id when set,
+            else its path. Store this value to refer to the document.
+        path:
+          type: string
+          description: >
+            The defining document's current path,
+            "<source-name>/<relative-path>".
+        anchor:
+          type: string
+          description: >
+            The GitHub-style slug of the term heading, as in
+            "maintenance-break-mb"; the anchor of a filled_by section
+            reference.
+        definition:
+          type: string
+          description: The first paragraph after the heading, as plain text.
+    GlossaryTerms:
+      type: object
+      required: [terms]
+      properties:
+        terms:
+          type: array
+          items:
+            $ref: "#/components/schemas/GlossaryTerm"
+    Ok:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          description: Always true when the operation succeeded.

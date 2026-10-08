@@ -1,0 +1,1343 @@
+[
+  {
+    "gaps": [
+      {
+        "id": "gap-0001",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Shipping rates for Canada",
+        "demand": "SRD-2 prices parcels.",
+        "detail": "No rate table.",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0002",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "SRD-7",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "EPUB download token lifetime",
+        "demand": "SRD-7 needs the token lifetime.",
+        "detail": "Never stated.",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0003",
+        "status": "open",
+        "kind": "incomplete",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "SRD-9",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["download"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Gift card expiry",
+        "demand": "SRD-9 sells gift cards.",
+        "detail": "Expiry rules missing.",
+        "target_claim": "",
+        "file": ""
+      }
+    ],
+    "results": [
+      {
+        "query": "download token",
+        "hits": [
+          {
+            "id": "gap-0002",
+            "score": 0.15224404814748793
+          },
+          {
+            "id": "gap-0003",
+            "score": 0.009004678462871826
+          }
+        ]
+      },
+      {
+        "query": "token",
+        "hits": [
+          {
+            "id": "gap-0002",
+            "score": 0.11879265545299289
+          }
+        ]
+      },
+      {
+        "query": "download",
+        "hits": [
+          {
+            "id": "gap-0002",
+            "score": 0.053901257945607156
+          },
+          {
+            "id": "gap-0003",
+            "score": 0.026950628972803578
+          }
+        ]
+      },
+      {
+        "query": "gift",
+        "hits": [
+          {
+            "id": "gap-0003",
+            "score": 0.12982403253874142
+          }
+        ]
+      },
+      {
+        "query": "shipping canada",
+        "hits": [
+          {
+            "id": "gap-0001",
+            "score": 0.07392701087380671
+          }
+        ]
+      },
+      {
+        "query": "srd-7",
+        "hits": [
+          {
+            "id": "gap-0002",
+            "score": 0.022024725575339067
+          },
+          {
+            "id": "gap-0003",
+            "score": 0.0011018884648267902
+          },
+          {
+            "id": "gap-0001",
+            "score": 0.000056801899826688815
+          }
+        ]
+      },
+      {
+        "query": "SRD",
+        "hits": [
+          {
+            "id": "gap-0002",
+            "score": 0.00312959134004347
+          },
+          {
+            "id": "gap-0003",
+            "score": 0.00312959134004347
+          },
+          {
+            "id": "gap-0001",
+            "score": 0.00016132915396620089
+          }
+        ]
+      },
+      {
+        "query": "nothing",
+        "hits": []
+      }
+    ]
+  },
+  {
+    "gaps": [
+      {
+        "id": "gap-0010",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "checkout/srd.md",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["parcel weight", "max weight", "heavy parcels"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Parcel weight limits",
+        "demand": "Checkout must reject parcels over the carrier limit.",
+        "detail": "The SRD names no limit for international parcels.",
+        "target_claim": "International parcels may weigh at most 20 kg.",
+        "file": ""
+      },
+      {
+        "id": "gap-0011",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "payments/refunds.md",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["refund gift card"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Gift cards and refunds",
+        "demand": "Refunds of orders paid with gift cards.",
+        "detail": "Is the refund credited back to the gift card or paid out?",
+        "target_claim": "Refunds go back to the original gift card.",
+        "file": ""
+      },
+      {
+        "id": "gap-0012",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "srd-wishlist-sharing",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["resend download link", "EPUB link expiry"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "EPUB download link after a resend",
+        "demand": "Gifting an EPUB resends the download link; how long is it valid?",
+        "detail": "The Download Link section states a 48-hour lifetime and five downloads.",
+        "target_claim": "A resent download link is valid for 48 hours from the resend.",
+        "file": ""
+      },
+      {
+        "id": "gap-0013",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "wishlist/srd.md",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["share wishlist", "private wishlist"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Wishlist sharing privacy",
+        "demand": "Can a shared wishlist be made private again?",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0014",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Parcel weight",
+        "demand": "",
+        "detail": "Gift cards.",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0015",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Gift cards",
+        "demand": "",
+        "detail": "Parcel weight.",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0016",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "de/srd.md",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["Paketgröße", "größe"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Größe der Pakete",
+        "demand": "Die SRD nennt keine maximale Größe.",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0017",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["address book", "customers' addresses"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Customer's address book",
+        "demand": "How many addresses can a customer store?",
+        "detail": "The account page lists addresses but no limit.",
+        "target_claim": "A customer stores up to 10 addresses.",
+        "file": ""
+      },
+      {
+        "id": "gap-0018",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["cancel order", "cancellation"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Order cancellation window",
+        "demand": "Until when can an order be cancelled?",
+        "detail": "Cancelled orders before shipping are refunded in full; after shipping a return is needed.",
+        "target_claim": "Orders can be cancelled until they ship.",
+        "file": ""
+      },
+      {
+        "id": "gap-0019",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Token",
+        "demand": "token token token token",
+        "detail": "token",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0020",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["running", "ran", "runs"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Running runners run",
+        "demand": "Stemming forms of run.",
+        "detail": "",
+        "target_claim": "runner",
+        "file": ""
+      },
+      {
+        "id": "gap-0021",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "",
+        "demand": "",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0022",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "The and of to a in",
+        "demand": "stop words only: the a an",
+        "detail": "it is was",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0023",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "shipping/srd.md#delivery",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": ["po box", "p.o. box"],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Delivery to P.O. boxes",
+        "demand": "Can parcels be delivered to P.O. boxes?",
+        "detail": "Carriers differ; DHL refuses, the post office accepts.",
+        "target_claim": "Parcels ship to P.O. boxes only with the post office.",
+        "file": ""
+      },
+      {
+        "id": "gap-0024",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": [
+          "one two three four five six seven eight nine ten eleven twelve"
+        ],
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Long search terms",
+        "demand": "one",
+        "detail": "two three",
+        "target_claim": "",
+        "file": ""
+      }
+    ],
+    "results": [
+      {
+        "query": "download token",
+        "hits": [
+          {
+            "id": "gap-0012",
+            "score": 0.5046316678535425
+          },
+          {
+            "id": "gap-0019",
+            "score": 0.33906624779975447
+          }
+        ]
+      },
+      {
+        "query": "download",
+        "hits": [
+          {
+            "id": "gap-0012",
+            "score": 1.5208798871399485
+          }
+        ]
+      },
+      {
+        "query": "token",
+        "hits": [
+          {
+            "id": "gap-0019",
+            "score": 0.9064933586977342
+          }
+        ]
+      },
+      {
+        "query": "parcel",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 1.4483330545480566
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.14213211787149674
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.11355832565551727
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.035533029467874185
+          }
+        ]
+      },
+      {
+        "query": "parcels",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 1.4483330545480566
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.14213211787149674
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.11355832565551727
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.035533029467874185
+          }
+        ]
+      },
+      {
+        "query": "parcel weight",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 1.5255437702134405
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.1879351421413455
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.06169199248571852
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.037538313635588724
+          }
+        ]
+      },
+      {
+        "query": "weight limits parcels",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 1.5961507203504375
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.0939275949024066
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.030832873580199247
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.018761171946390185
+          },
+          {
+            "id": "gap-0017",
+            "score": 0.003983536382903297
+          }
+        ]
+      },
+      {
+        "query": "gift card",
+        "hits": [
+          {
+            "id": "gap-0011",
+            "score": 2.2636181793559627
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.19551621381863077
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.04887905345465769
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.006828691226921136
+          }
+        ]
+      },
+      {
+        "query": "gift cards refund",
+        "hits": [
+          {
+            "id": "gap-0011",
+            "score": 2.8592611029980337
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.10111770898508046
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.025279427246270116
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.0035316846554389724
+          },
+          {
+            "id": "gap-0018",
+            "score": 0.003245331839235364
+          }
+        ]
+      },
+      {
+        "query": "refund",
+        "hits": [
+          {
+            "id": "gap-0011",
+            "score": 1.7483136209620413
+          },
+          {
+            "id": "gap-0018",
+            "score": 0.015429230320124401
+          }
+        ]
+      },
+      {
+        "query": "EPUB",
+        "hits": [
+          {
+            "id": "gap-0012",
+            "score": 0.6572404104583277
+          }
+        ]
+      },
+      {
+        "query": "epub link",
+        "hits": [
+          {
+            "id": "gap-0012",
+            "score": 1.7583852674087872
+          }
+        ]
+      },
+      {
+        "query": "resend",
+        "hits": [
+          {
+            "id": "gap-0012",
+            "score": 1.0755565582402666
+          }
+        ]
+      },
+      {
+        "query": "wishlist",
+        "hits": [
+          {
+            "id": "gap-0013",
+            "score": 1.1845874203373818
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.013614446898307592
+          }
+        ]
+      },
+      {
+        "query": "private",
+        "hits": [
+          {
+            "id": "gap-0013",
+            "score": 0.15747347301327647
+          }
+        ]
+      },
+      {
+        "query": "share",
+        "hits": [
+          {
+            "id": "gap-0013",
+            "score": 0.7851568045924757
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.021990787547055954
+          }
+        ]
+      },
+      {
+        "query": "größe",
+        "hits": [
+          {
+            "id": "gap-0016",
+            "score": 0.8265447117824114
+          }
+        ]
+      },
+      {
+        "query": "pakete",
+        "hits": [
+          {
+            "id": "gap-0016",
+            "score": 0.14380489466183013
+          }
+        ]
+      },
+      {
+        "query": "customer",
+        "hits": [
+          {
+            "id": "gap-0017",
+            "score": 1.290226937298892
+          }
+        ]
+      },
+      {
+        "query": "customers",
+        "hits": [
+          {
+            "id": "gap-0017",
+            "score": 1.290226937298892
+          }
+        ]
+      },
+      {
+        "query": "address",
+        "hits": [
+          {
+            "id": "gap-0017",
+            "score": 1.8904975787011884
+          }
+        ]
+      },
+      {
+        "query": "addresses book",
+        "hits": [
+          {
+            "id": "gap-0017",
+            "score": 1.8905763888201936
+          }
+        ]
+      },
+      {
+        "query": "cancel",
+        "hits": [
+          {
+            "id": "gap-0018",
+            "score": 1.9466679902665671
+          }
+        ]
+      },
+      {
+        "query": "cancelled order",
+        "hits": [
+          {
+            "id": "gap-0018",
+            "score": 2.649348374721769
+          },
+          {
+            "id": "gap-0011",
+            "score": 0.007181936545569306
+          }
+        ]
+      },
+      {
+        "query": "running",
+        "hits": [
+          {
+            "id": "gap-0020",
+            "score": 0.957765340893085
+          }
+        ]
+      },
+      {
+        "query": "run",
+        "hits": [
+          {
+            "id": "gap-0020",
+            "score": 0.957765340893085
+          }
+        ]
+      },
+      {
+        "query": "runner",
+        "hits": [
+          {
+            "id": "gap-0020",
+            "score": 0.4524587762933875
+          }
+        ]
+      },
+      {
+        "query": "the",
+        "hits": []
+      },
+      {
+        "query": "the a an",
+        "hits": []
+      },
+      {
+        "query": "",
+        "hits": []
+      },
+      {
+        "query": "   ",
+        "hits": []
+      },
+      {
+        "query": "p.o. box",
+        "hits": [
+          {
+            "id": "gap-0023",
+            "score": 1.8089134320161737
+          }
+        ]
+      },
+      {
+        "query": "po",
+        "hits": [
+          {
+            "id": "gap-0023",
+            "score": 0.05380344431053585
+          }
+        ]
+      },
+      {
+        "query": "dhl",
+        "hits": [
+          {
+            "id": "gap-0023",
+            "score": 0.01912951683025726
+          }
+        ]
+      },
+      {
+        "query": "srd",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 0.02374692651757939
+          },
+          {
+            "id": "gap-0016",
+            "score": 0.02144883803621456
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.01662284837278782
+          }
+        ]
+      },
+      {
+        "query": "checkout",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 0.08484370672653266
+          }
+        ]
+      },
+      {
+        "query": "checkout/srd.md",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 0.053498466565242944
+          },
+          {
+            "id": "gap-0013",
+            "score": 0.0021491218799887324
+          },
+          {
+            "id": "gap-0016",
+            "score": 0.0021491218799887324
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.001665569449736921
+          }
+        ]
+      },
+      {
+        "query": "wishlist/srd.md",
+        "hits": [
+          {
+            "id": "gap-0013",
+            "score": 0.3925563798325281
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.0040473375717437875
+          },
+          {
+            "id": "gap-0010",
+            "score": 0.0024387149298548154
+          },
+          {
+            "id": "gap-0016",
+            "score": 0.0024387149298548154
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.001890004062405616
+          }
+        ]
+      },
+      {
+        "query": "48 hours",
+        "hits": [
+          {
+            "id": "gap-0012",
+            "score": 0.13035493823850355
+          }
+        ]
+      },
+      {
+        "query": "20 kg",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 0.04511976701459394
+          }
+        ]
+      },
+      {
+        "query": "kg",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 0.031904493221576485
+          }
+        ]
+      },
+      {
+        "query": "order shipping refund cancel",
+        "hits": [
+          {
+            "id": "gap-0018",
+            "score": 1.1367802909564761
+          },
+          {
+            "id": "gap-0011",
+            "score": 0.23979507607966263
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.011510108845193046
+          }
+        ]
+      },
+      {
+        "query": "one two three four five six seven eight nine ten eleven twelve",
+        "hits": [
+          {
+            "id": "gap-0024",
+            "score": 0.2996831626251801
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.0004060366558087423
+          }
+        ]
+      },
+      {
+        "query": "zzz nomatch",
+        "hits": []
+      },
+      {
+        "query": "Token TOKEN token",
+        "hits": [
+          {
+            "id": "gap-0019",
+            "score": 1.5700925539882342
+          }
+        ]
+      },
+      {
+        "query": "Gift-cards",
+        "hits": [
+          {
+            "id": "gap-0011",
+            "score": 2.2636181793559627
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.19551621381863077
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.04887905345465769
+          },
+          {
+            "id": "gap-0012",
+            "score": 0.006828691226921136
+          }
+        ]
+      },
+      {
+        "query": "international parcels limit",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 0.9111276005144735
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.020213578272563308
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.016149904317997624
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.005053394568140827
+          },
+          {
+            "id": "gap-0017",
+            "score": 0.003429089164311453
+          }
+        ]
+      },
+      {
+        "query": "download link valid",
+        "hits": [
+          {
+            "id": "gap-0012",
+            "score": 1.3249673432632987
+          }
+        ]
+      },
+      {
+        "query": "shipping",
+        "hits": [
+          {
+            "id": "gap-0018",
+            "score": 0.09700140636139688
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.07452386325382063
+          }
+        ]
+      },
+      {
+        "query": "délivery",
+        "hits": []
+      },
+      {
+        "query": "emoji 😀 parcel",
+        "hits": [
+          {
+            "id": "gap-0010",
+            "score": 0.3662015759034695
+          },
+          {
+            "id": "gap-0014",
+            "score": 0.035937179910101105
+          },
+          {
+            "id": "gap-0023",
+            "score": 0.028712482727245515
+          },
+          {
+            "id": "gap-0015",
+            "score": 0.008984294977525276
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "gaps": [],
+    "results": [
+      {
+        "query": "parcel",
+        "hits": []
+      }
+    ]
+  },
+  {
+    "gaps": [
+      {
+        "id": "gap-0001",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "",
+        "demand": "",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      }
+    ],
+    "results": [
+      {
+        "query": "parcel",
+        "hits": []
+      },
+      {
+        "query": "",
+        "hits": []
+      }
+    ]
+  },
+  {
+    "gaps": [
+      {
+        "id": "gap-0002",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Parcel weight",
+        "demand": "",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0001",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Parcel weight",
+        "demand": "",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      }
+    ],
+    "results": [
+      {
+        "query": "parcel",
+        "hits": [
+          {
+            "id": "gap-0001",
+            "score": 0.0016494020806178333
+          },
+          {
+            "id": "gap-0002",
+            "score": 0.0016494020806178333
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "gaps": [
+      {
+        "id": "gap-0001",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Gift cards",
+        "demand": "",
+        "detail": "Parcel weight.",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0002",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "Parcel weight",
+        "demand": "",
+        "detail": "Gift cards.",
+        "target_claim": "",
+        "file": ""
+      }
+    ],
+    "results": [
+      {
+        "query": "parcel weight",
+        "hits": [
+          {
+            "id": "gap-0002",
+            "score": 0.04380203380970554
+          },
+          {
+            "id": "gap-0001",
+            "score": 0.010950508452426386
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "gaps": [
+      {
+        "id": "gap-0001",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "a",
+        "demand": "",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      },
+      {
+        "id": "gap-0001",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "parcel",
+        "demand": "",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      }
+    ],
+    "results": [
+      {
+        "query": "parcel",
+        "hits": [
+          {
+            "id": "gap-0001",
+            "score": 0.00925485554708829
+          }
+        ]
+      },
+      {
+        "query": "a",
+        "hits": []
+      }
+    ]
+  },
+  {
+    "gaps": [
+      {
+        "id": "gap-0001",
+        "status": "open",
+        "kind": "missing",
+        "answer": "",
+        "ask": null,
+        "asked": "",
+        "srd_ref": "",
+        "doc_id": "",
+        "heading_path": null,
+        "search_terms": null,
+        "hits": 0,
+        "created": "2026-07-14T10:00:00Z",
+        "filled_by": null,
+        "topic": "parcels",
+        "demand": "",
+        "detail": "",
+        "target_claim": "",
+        "file": ""
+      }
+    ],
+    "results": [
+      {
+        "query": "parcel",
+        "hits": [
+          {
+            "id": "gap-0001",
+            "score": 0.00925485554708829
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,1604 @@
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
+// SPDX-License-Identifier: MIT
+
+// Pull orchestration, ported from `pkg/docket/pull.go`. A pull fetches each
+// managed page's ADF, caches it, renders its Markdown (downloading the page's
+// images first so the render can link them), and writes the Markdown to both the
+// cache and the note. A batch pull first probes every page's current remote
+// version in one bulk request: a page whose version is already in the ADF cache
+// renders straight from the cache, skipping the body download, so a re-pull of a
+// mostly-unchanged space costs a fraction of the requests. The ADF cache and the per-version `.md` live under the
+// injected `cacheDir` (the plugin data dir / CLI work tree, device-local per
+// M6.3); images land under `assetsDir` (below the sync root); notes go to their
+// dest paths. Everything is driven through the {@link ConfluenceClient},
+// {@link FileSystem}, and {@link Reporter} ports. A batch pull fans out over its
+// pages with {@link mapPool}, running up to {@link PULL_CONCURRENCY} at once (the
+// HTTP client's semaphore still caps sockets), and folds the per-page results
+// back in input order so the log and tally stay deterministic. Folder/space
+// discovery is in `./discover.ts`; this module is the page pull and the
+// `pullConfig`/`pullSelected` entry points.
+
+import {
+    annotationIdsIn,
+    stripCommentDecorations,
+} from "../adf/render/comments.ts";
+import type { RenderComments } from "../adf/render/markdown.ts";
+import {
+    cacheFile,
+    cacheFileName,
+    type Page,
+    pageDoc,
+    readCachedPage,
+    writePage,
+} from "../cache/cache.ts";
+import type { Config } from "../config/config.ts";
+import type {
+    ConfluenceClient,
+    PageComments,
+    PageData,
+} from "../confluence/client.ts";
+import { pageID, tryPageID } from "../confluence/sources.ts";
+import { type Flavor, resolveFlavor } from "../flavor/flavor.ts";
+import { type ADF, fileMedia } from "../models/adf.ts";
+import { fmRaw, MODE_PULL } from "../models/frontmatter.ts";
+import type { FileSystem } from "../ports/fs.ts";
+import type { Reporter } from "../ports/progress.ts";
+import { posixClean, posixDir, posixJoin } from "../util/path.ts";
+import { mapPool } from "../util/pool.ts";
+import { assetsFromDisk, downloadImages } from "./assets.ts";
+import {
+    countComments,
+    recordThreads,
+    toRenderComments,
+    writeRecord,
+} from "./comments.ts";
+import {
+    collides,
+    discoverFolder,
+    discoverFolders,
+    discoverSpace,
+    discoverSpaces,
+} from "./discover.ts";
+import { dirEmpty, mdFilesUnder } from "./fswalk.ts";
+import {
+    buildLinkIndex,
+    type DiscoveredPage,
+    type LinkIndex,
+    linkMapper,
+    mergeLinkIndex,
+    openLinkIndex,
+    pageName,
+} from "./linkindex.ts";
+import { hasConflictMarkers, mergeThreeWay } from "./merge.ts";
+import { splitFrontmatter } from "./push.ts";
+
+/** The default number of pages a batch pull fetches and renders at once. */
+export const PULL_CONCURRENCY = 8;
+
+/**
+ * PageState is the mechanical outcome of storing one pulled page — which cache
+ * tier served the render and how the note was reconciled. The user-facing
+ * {@link PageAction} is derived from it.
+ */
+export type PageState =
+    | "pulled"
+    | "rerendered"
+    | "unchanged"
+    | "merged"
+    | "conflict";
+
+/**
+ * PageAction is the user-facing outcome of a pulled page: what happened to the
+ * note file on disk. A new note is `added`; any rewrite of an existing note
+ * (a new version, a re-render, or a merge) is `updated`; a note left untouched
+ * is `unchanged`; a note left with conflict markers is `conflict`. Deletions are
+ * not page pulls — a vanished page's note is removed by the reconciliation pass
+ * and tallied under {@link PullStats.deleted}.
+ */
+export type PageAction = "added" | "updated" | "unchanged" | "conflict";
+
+/** PullStats tallies the outcomes of pulling (and reconciling) a set of pages. */
+export interface PullStats {
+    /** Notes created on disk that did not exist before. */
+    added: number;
+    /** Existing notes rewritten (new version, re-render, or clean merge). */
+    updated: number;
+    /** Notes already current, so nothing was written. */
+    unchanged: number;
+    /** Notes left with unresolved conflict markers for manual resolution. */
+    conflict: number;
+    /** Notes removed because their Confluence page no longer exists. */
+    deleted: number;
+    /**
+     * Updated notes whose Markdown was re-rendered from cached ADF without a new
+     * version — a subset of `updated` that drives the "shows up in git" note.
+     */
+    rerendered: number;
+    /** Pages attempted; total less added/updated/unchanged/conflict failed. */
+    total: number;
+}
+
+/** PullOutcome is the log, tally, and per-page failures of a batch pull. */
+export interface PullOutcome {
+    log: string;
+    stats: PullStats;
+    /** One message per failed page; the batch continues past a failure. */
+    errors: string[];
+}
+
+/** PullItemResult is one page's contribution to a batch, folded back in order. */
+interface PullItemResult {
+    /** The per-page log line, or `""` when the page failed. */
+    line: string;
+    /** The mechanical store outcome, or `null` when the page failed. */
+    state: PageState | null;
+    /** The user-facing action, or `null` when the page failed. */
+    action: PageAction | null;
+    /** The `"name: message"` failure, or `null` on success. */
+    error: string | null;
+}
+
+/** emptyStats returns a zeroed tally. */
+export function emptyStats(): PullStats {
+    return {
+        added: 0,
+        updated: 0,
+        unchanged: 0,
+        conflict: 0,
+        deleted: 0,
+        rerendered: 0,
+        total: 0,
+    };
+}
+
+/** addStats returns the element-wise sum of two tallies. */
+export function addStats(a: PullStats, b: PullStats): PullStats {
+    return {
+        added: a.added + b.added,
+        updated: a.updated + b.updated,
+        unchanged: a.unchanged + b.unchanged,
+        conflict: a.conflict + b.conflict,
+        deleted: a.deleted + b.deleted,
+        rerendered: a.rerendered + b.rerendered,
+        total: a.total + b.total,
+    };
+}
+
+/** pullSummary formats the closing summary of a completed pull. */
+export function pullSummary(s: PullStats): string {
+    const noun = s.total === 1 ? "page" : "pages";
+    let summary =
+        `docket: ${s.total} ${noun} — ${s.added} added, ${s.updated} updated, ` +
+        `${s.unchanged} unchanged, ${s.conflict} conflicted`;
+    summary += s.deleted > 0 ? `, ${s.deleted} deleted\n` : "\n";
+    if (s.rerendered > 0) {
+        summary +=
+            "docket: a re-render rewrites Markdown from cached ADF without " +
+            "fetching, so those pages show up as changes in git even though " +
+            "no new version was pulled\n";
+    }
+    if (s.conflict > 0) {
+        summary +=
+            "docket: some notes carry unresolved <<<<<<< conflict markers; " +
+            "resolve them before pushing\n";
+    }
+    return summary;
+}
+
+/** The column width the action word is padded to, so log lines align. */
+const ACTION_WIDTH = "unchanged".length;
+
+/**
+ * pageLine formats a pulled page's per-page log line: the action word padded to
+ * a fixed column, the note name, and a parenthetical version detail that keeps
+ * the mechanical nuance (a re-render, a merge, or a conflict to resolve).
+ */
+export function pageLine(
+    action: PageAction,
+    state: PageState,
+    name: string,
+    ver: number,
+): string {
+    return `${action.padEnd(ACTION_WIDTH)} ${name} ${detail(action, state, ver)}\n`;
+}
+
+/** detail is the parenthetical version note appended to a {@link pageLine}. */
+function detail(action: PageAction, state: PageState, ver: number): string {
+    if (action === "conflict") {
+        return `(v${ver}, resolve markers before pushing)`;
+    }
+    if (action === "updated" && state === "rerendered") {
+        return `(v${ver}, re-rendered from cache)`;
+    }
+    if (action === "updated" && state === "merged") {
+        return `(v${ver}, merged local edits)`;
+    }
+    return `(v${ver})`;
+}
+
+/** deletedLine reports a note removed because its Confluence page is gone. */
+function deletedLine(name: string): string {
+    return `${"deleted".padEnd(ACTION_WIDTH)} ${name} (removed from Confluence)\n`;
+}
+
+/** MergeResult is how {@link Puller.mergeIntoNote} reconciled a note. */
+type MergeResult = "wrote" | "kept" | "merged" | "conflict";
+
+/**
+ * storeState maps a store's cache state and merge result onto the mechanical
+ * {@link PageState}: a conflict or clean merge as such, a body fetched at an
+ * uncached version as `pulled`, a rewrite from cache as `rerendered`, and an
+ * untouched note as `unchanged`.
+ */
+function storeState(
+    cacheExisted: boolean,
+    wroteCache: boolean,
+    merge: MergeResult,
+): PageState {
+    if (merge === "conflict") {
+        return "conflict";
+    }
+    if (merge === "merged") {
+        return "merged";
+    }
+    if (!cacheExisted) {
+        return "pulled";
+    }
+    if (wroteCache || merge === "wrote") {
+        return "rerendered";
+    }
+    return "unchanged";
+}
+
+/**
+ * storeAction maps a merge result onto the user-facing {@link PageAction}. A
+ * note that was written (or three-way merged) is `added` when it did not exist
+ * before this pull and `updated` otherwise; a kept note is `unchanged`.
+ */
+function storeAction(merge: MergeResult, noteExisted: boolean): PageAction {
+    if (merge === "conflict") {
+        return "conflict";
+    }
+    if (merge === "kept") {
+        return "unchanged";
+    }
+    return noteExisted ? "updated" : "added";
+}
+
+/** PullerDeps are the ports and resolved paths a {@link Puller} needs. */
+export interface PullerDeps {
+    client: ConfluenceClient;
+    fs: FileSystem;
+    config: Config;
+    reporter: Reporter;
+    /** Device-local ADF cache dir (`.vN.json`/`.vN.md`). */
+    cacheDir: string;
+    /** Image assets dir, under the sync root. */
+    assetsDir: string;
+    /** The link index for this run, or null to disable link rewriting. */
+    links: LinkIndex | null;
+    /** The Markdown flavor driving ADF→Markdown rendering. */
+    flavor: Flavor;
+    /** Pages to fetch/render at once; defaults to {@link PULL_CONCURRENCY}. */
+    concurrency?: number;
+    /**
+     * The current remote version of each managed page id, if known. When a page's
+     * remote version is already in the ADF cache, the pull renders from the cache
+     * instead of re-downloading the body. Absent (or a missing id) means always
+     * fetch — the behaviour before the version probe.
+     */
+    knownVersions?: Map<string, number>;
+    /**
+     * Replace each note with the fresh render instead of three-way merging it,
+     * discarding local edits — and any unresolved conflict markers — for good.
+     * Defaults to `false`: a pull never loses an edit.
+     */
+    overwrite?: boolean;
+}
+
+/**
+ * Puller fetches and stores managed pages. It holds the ports and resolved dirs
+ * for one run; the discovery walk and the combining `pullConfig` compose it.
+ */
+export class Puller {
+    constructor(private readonly d: PullerDeps) {}
+
+    /**
+     * pullPages pulls every configured `pages:` entry. The pages are fetched and
+     * rendered concurrently ({@link PULL_CONCURRENCY} at once), so the live
+     * {@link Reporter} stream (per-page `item`/`log` callbacks) reflects
+     * completion order, which varies run to run. The returned {@link PullOutcome}
+     * is deterministic regardless: its log, tally, and per-page failures are
+     * folded back in the stable, sorted dest order, so the final log matches a
+     * serial run. A page that fails is recorded and skipped; the batch still
+     * completes.
+     */
+    async pullPages(): Promise<PullOutcome> {
+        const dests = Object.keys(this.d.config.pages).sort();
+        const results = await mapPool(dests, this.concurrency(), (dest) =>
+            this.pullItem(dest, this.d.config.pages[dest] ?? "", ""),
+        );
+        return this.fold(results, dests.length);
+    }
+
+    /**
+     * pullDiscovered pulls every walk-discovered page (from a folder or space),
+     * concurrently but folded back in the given order, tallying and logging like
+     * {@link pullPages}. The walk itself is `./discover.ts`.
+     */
+    async pullDiscovered(pages: DiscoveredPage[]): Promise<PullOutcome> {
+        const results = await mapPool(pages, this.concurrency(), (p) =>
+            this.pullItem(p.dest, p.url, p.spaceKey, p.parentId),
+        );
+        return this.fold(results, pages.length);
+    }
+
+    /** concurrency is the configured page fan-out width, defaulted and floored at 1. */
+    private concurrency(): number {
+        return Math.max(1, this.d.concurrency ?? PULL_CONCURRENCY);
+    }
+
+    /**
+     * pullItem pulls one page and returns its per-page outcome rather than
+     * mutating a shared tally, so a pool of these can run concurrently and
+     * {@link fold} reassembles them in order. A failure is captured as `error`
+     * (never thrown), so one bad page does not abort the pool.
+     */
+    private async pullItem(
+        dest: string,
+        src: string,
+        spaceKey: string,
+        parentOverride?: string,
+    ): Promise<PullItemResult> {
+        const name = pageName(this.d.config.syncRoot, dest);
+        this.d.reporter.item(name);
+        try {
+            const { state, action, version } = await this.pullOne(
+                dest,
+                src,
+                spaceKey,
+                parentOverride,
+            );
+            // An unchanged note is noise in a whole-vault pull: skip its live and
+            // buffered log line, but still count it in the stats and summary.
+            if (action === "unchanged") {
+                return { line: "", state, action, error: null };
+            }
+            const line = pageLine(action, state, name, version);
+            this.d.reporter.log(line);
+            return { line, state, action, error: null };
+        } catch (err) {
+            return {
+                line: "",
+                state: null,
+                action: null,
+                error: `${name}: ${message(err)}`,
+            };
+        }
+    }
+
+    /**
+     * fold reassembles the per-page results into one {@link PullOutcome}: the log
+     * concatenated in input order, the states tallied, and the errors collected —
+     * the same result a serial pull produced, independent of completion order.
+     */
+    private fold(results: PullItemResult[], total: number): PullOutcome {
+        const out: PullOutcome = {
+            log: "",
+            stats: { ...emptyStats(), total },
+            errors: [],
+        };
+        for (const r of results) {
+            if (r.error !== null) {
+                out.errors.push(r.error);
+                continue;
+            }
+            out.log += r.line;
+            if (r.action === "added") {
+                out.stats.added++;
+            } else if (r.action === "updated") {
+                out.stats.updated++;
+                if (r.state === "rerendered") {
+                    out.stats.rerendered++;
+                }
+            } else if (r.action === "conflict") {
+                out.stats.conflict++;
+            } else {
+                out.stats.unchanged++;
+            }
+        }
+        return out;
+    }
+
+    /**
+     * pullOne fetches the page at `src` for the note at `dest`, tags it with the
+     * space key and Site domain, and stores it. `src` must be a single page URL.
+     * A defined `parentOverride` replaces the fetched parent id — the walk's tree
+     * parent, which may differ from Confluence's, for a discovered page.
+     */
+    async pullOne(
+        dest: string,
+        src: string,
+        spaceKey: string,
+        parentOverride?: string,
+    ): Promise<{ state: PageState; action: PageAction; version: number }> {
+        const id = pageID(src);
+        const { data, cacheHit } = await this.fetchOrCache(id, dest);
+        return this.storeData(dest, spaceKey, parentOverride, data, cacheHit);
+    }
+
+    /**
+     * fetchOrCache returns the data for page `id`: from the ADF cache when the
+     * page's current remote version (from {@link PullerDeps.knownVersions}) is
+     * already cached — skipping the body download — and from the Site otherwise. A
+     * cache miss or an absent version hint falls through to a normal fetch, so the
+     * result is always the current version. `cacheHit` reports whether the body
+     * came from the cache, so {@link store} can likewise skip the attachment
+     * round-trip and rebuild the assets map from disk.
+     */
+    private async fetchOrCache(
+        id: string,
+        dest: string,
+    ): Promise<{ data: PageData; cacheHit: boolean }> {
+        const known = this.d.knownVersions?.get(id);
+        if (known !== undefined) {
+            const name = pageName(this.d.config.syncRoot, dest);
+            const path = posixJoin(this.d.cacheDir, cacheFileName(name, known));
+            const cached = await readCachedPage(this.d.fs, path);
+            if (cached !== null) {
+                return { data: cached, cacheHit: true };
+            }
+        }
+        return { data: await this.d.client.fetchPage(id), cacheHit: false };
+    }
+
+    /** storeData tags fetched-or-cached data with the run's identity and stores it. */
+    private storeData(
+        dest: string,
+        spaceKey: string,
+        parentOverride: string | undefined,
+        data: PageData,
+        cacheHit: boolean,
+    ): Promise<{ state: PageState; action: PageAction; version: number }> {
+        const page: Page = {
+            name: pageName(this.d.config.syncRoot, dest),
+            id: data.id,
+            title: data.title,
+            version: data.version,
+            spaceId: data.spaceId,
+            parentId: parentOverride ?? data.parentId,
+            spaceKey,
+            domain: this.d.config.domain,
+            adf: data.adf,
+        };
+        return this.store(page, dest, cacheHit);
+    }
+
+    /**
+     * store caches the page's ADF (only when its version is not already cached),
+     * resolves its images, renders its Markdown, and writes the Markdown to both
+     * the cache and `dest`, each only where the content differs. It returns the
+     * mechanical page state, the user-facing {@link PageAction} (a note written
+     * where none existed is `added`, any other write is `updated`), and version.
+     *
+     * On a version/cache hit (`cacheHit`) the images were downloaded by an earlier
+     * pull, so it rebuilds the assets map from disk ({@link assetsFromDisk}) rather
+     * than re-listing the page's attachments — the round-trip the version probe is
+     * meant to save. It falls back to a full {@link downloadImages} when any
+     * referenced image is missing on disk (an earlier pull may have cached the ADF
+     * then been interrupted before downloading them).
+     *
+     * Confluence writes a new inline comment's `annotation` mark into the page
+     * body without bumping the page version, so a cached body can predate the
+     * comment and lack its anchor. On a cache hit where an open comment's marker
+     * is missing from the cached ADF, the body is re-fetched and the cache
+     * overwritten, so the comment renders instead of being dropped as dangling.
+     */
+    private async store(
+        cached: Page,
+        dest: string,
+        cacheHit: boolean,
+    ): Promise<{ state: PageState; action: PageAction; version: number }> {
+        // Whether the note existed before this pull decides `added` vs `updated`;
+        // read it before mergeIntoNote, which may create it.
+        const noteExisted = await this.d.fs.exists(dest);
+        // Comments are not versioned with the page, so a warm (cache-hit) pull
+        // still fetches them to catch new or resolved threads. The fetch is
+        // best-effort: a page whose comments cannot be listed still renders its
+        // body, just without the callouts.
+        const fetched = await this.fetchComments(cached.id);
+        const comments = fetched && toRenderComments(fetched);
+        const stale =
+            cacheHit &&
+            comments !== undefined &&
+            missingMarkers(cached, comments);
+        const page = stale ? await this.refetch(cached) : cached;
+        const adfPath = posixJoin(this.d.cacheDir, cacheFile(page));
+        const exists = await this.d.fs.exists(adfPath);
+        if (!exists || stale) {
+            await writePage(this.d.fs, adfPath, page);
+        }
+
+        const doc = pageDoc(page);
+        const refs = fileMedia(doc);
+        const assets =
+            (cacheHit
+                ? await assetsFromDisk(this.d.fs, this.d.assetsDir, dest, refs)
+                : null) ??
+            (await downloadImages(
+                this.d.client,
+                this.d.fs,
+                this.d.assetsDir,
+                page.id,
+                dest,
+                refs,
+            ));
+        const md = renderNote(this.d, doc, dest, assets, comments);
+
+        const mdCache = `${adfPath.slice(0, -".json".length)}.md`;
+        // Reconcile the note BEFORE refreshing the cached render. mergeIntoNote
+        // reads the cached render of the note's version as its merge base, and on
+        // a re-pull at the same version that file IS mdCache. Writing the new
+        // render first would overwrite the base with the new content, so the merge
+        // would see "remote unchanged" and keep the stale note — which is why
+        // toggling comments on never reached an already-pulled note. Refresh the
+        // cache after, so the base stays the previous render during the merge.
+        const merge = await this.mergeIntoNote(page, dest, md);
+        const wroteCache = await writeIfChanged(this.d.fs, mdCache, md);
+        // Record the inline threads the render drew, so a push can tell which
+        // ones the user removed. A failed fetch drew none, so records none.
+        if (this.d.config.comments) {
+            await writeRecord(
+                this.d.fs,
+                this.d.cacheDir,
+                page.name,
+                fetched ? recordThreads(fetched, doc) : [],
+            );
+        }
+
+        const state = storeState(exists, wroteCache, merge);
+        return {
+            state,
+            action: storeAction(merge, noteExisted),
+            version: page.version,
+        };
+    }
+
+    /**
+     * refetch downloads the current body of the cached `page`, keeping the run's
+     * identity (name, space key, parent override, domain) and taking the remote
+     * title, version, and ADF.
+     */
+    private async refetch(page: Page): Promise<Page> {
+        const data = await this.d.client.fetchPage(page.id);
+        return {
+            ...page,
+            title: data.title,
+            version: data.version,
+            adf: data.adf,
+        };
+    }
+
+    /**
+     * fetchComments returns the page's fetched comments, or undefined when comment pulling is off ({@link
+     * Config.comments}) or the fetch fails. A failure is non-fatal — a page whose
+     * comments are unreadable still pulls its body — but it is logged as a warning
+     * rather than swallowed, so a misconfigured or rejected comment API is visible
+     * in the pull output instead of silently rendering no comments. A successful
+     * fetch that finds none is logged too, so "the API returned nothing" is
+     * distinguishable from "the fetch failed".
+     */
+    private async fetchComments(
+        pageId: string,
+    ): Promise<PageComments | undefined> {
+        if (!this.d.config.comments) {
+            return undefined;
+        }
+        try {
+            const fetched = await this.d.client.fetchComments(pageId);
+            const total =
+                countComments(fetched.inline) + countComments(fetched.footer);
+            if (total === 0) {
+                this.d.reporter.log(
+                    `docket: page ${pageId}: no comments returned\n`,
+                );
+            }
+            return fetched;
+        } catch (err) {
+            this.d.reporter.log(
+                `docket: page ${pageId}: fetching comments failed: ` +
+                    `${message(err)}\n`,
+            );
+            return undefined;
+        }
+    }
+
+    /**
+     * mergeIntoNote writes the remote render `remote` to the note at `dest`
+     * without clobbering unpushed local edits. It compares the note (local)
+     * against the cached render of its recorded version (base) and the fresh
+     * render (remote):
+     *
+     * - the note is missing, or its content already equals the remote, or the
+     *   run overwrites ({@link PullerDeps.overwrite}): write it;
+     * - the note carries unresolved conflict markers: leave it untouched so a
+     *   re-pull never overwrites a resolution in progress (`conflict`);
+     * - the note has no readable frontmatter (foreign or corrupt): overwrite it,
+     *   healing the managed note (matches the pre-merge behavior);
+     * - local matches base (no local edits): take the remote (`wrote`/`kept`);
+     * - both changed: three-way merge in place, writing the remote frontmatter
+     *   over the merged body — cleanly (`merged`) or with markers (`conflict`).
+     *
+     * The comment overlay ({@link stripCommentDecorations}: `[^cf-…]` anchors and
+     * `[!comment]` callouts) is docket's, not a user edit, so it is stripped from
+     * both local and base before the comparison and merge — only the fresh render
+     * (`remote`, which still carries the overlay) supplies it. This is what makes a
+     * stale overlay baked into the note disappear: a since-resolved comment is
+     * absent from the render, so once local's copy is stripped it survives in none
+     * of the three merge inputs and is dropped, while the user's real edits (present
+     * in the stripped local) still merge through.
+     *
+     * The remote frontmatter carries the current version, so a later push treats
+     * the resolved note as based on that version rather than re-merging.
+     */
+    private async mergeIntoNote(
+        page: Page,
+        dest: string,
+        remote: string,
+    ): Promise<"wrote" | "kept" | "merged" | "conflict"> {
+        let local: string;
+        try {
+            local = await this.d.fs.readText(dest);
+        } catch {
+            await this.d.fs.write(dest, remote);
+            return "wrote";
+        }
+        if (this.d.overwrite === true) {
+            // The caller chose to discard the note's edits: take the render.
+            const wrote = await writeIfChanged(this.d.fs, dest, remote);
+            return wrote ? "wrote" : "kept";
+        }
+        if (hasConflictMarkers(local)) {
+            return "conflict";
+        }
+        if (local === remote) {
+            return "kept";
+        }
+
+        let localFm: { frontmatter: string; body: string };
+        let remoteFm: { frontmatter: string; body: string };
+        try {
+            localFm = splitFrontmatter(local);
+            remoteFm = splitFrontmatter(remote);
+        } catch {
+            // A note with no frontmatter is not a managed edit; heal it.
+            const wrote = await writeIfChanged(this.d.fs, dest, remote);
+            return wrote ? "wrote" : "kept";
+        }
+
+        if (localFm.body === remoteFm.body) {
+            const wrote = await writeIfChanged(this.d.fs, dest, remote);
+            return wrote ? "wrote" : "kept";
+        }
+
+        // Merge on comment-free bodies: the overlay is docket's, not a user edit,
+        // so it must never be carried over from the note. Local and base are
+        // stripped; the fresh render (remoteFm.body) keeps its overlay and is the
+        // sole source of the current comments in the merge. A stale overlay in the
+        // note (e.g. a since-resolved comment) is thus in none of the three inputs
+        // and drops out.
+        const localBody = stripCommentDecorations(localFm.body);
+        // When the note and the render differ ONLY by that overlay, take the render
+        // so the note picks up the current comments. This also self-heals a note
+        // the pre-fix cache-ordering bug left comment-free (its cached base was
+        // clobbered, so the version compare below would wrongly keep it).
+        if (localBody === stripCommentDecorations(remoteFm.body)) {
+            const wrote = await writeIfChanged(this.d.fs, dest, remote);
+            return wrote ? "wrote" : "kept";
+        }
+
+        const noteVersion = frontmatterVersion(localFm.frontmatter);
+        const rawBase =
+            noteVersion > 0
+                ? await this.readBaseBody(page.name, noteVersion)
+                : null;
+        const base = rawBase === null ? null : stripCommentDecorations(rawBase);
+        if (base !== null && localBody === base) {
+            // No real edits; the remote moved on — take it (body + fresh overlay).
+            const wrote = await writeIfChanged(this.d.fs, dest, remote);
+            return wrote ? "wrote" : "kept";
+        }
+
+        const result = mergeThreeWay(base ?? "", localBody, remoteFm.body, {
+            local: "local (your edits)",
+            remote: `remote (Confluence v${page.version})`,
+        });
+        // A three-way merge whose result reproduces the note byte-for-byte means
+        // the remote body was unchanged and the note's only real content was its
+        // edits — keep them (and any overlay they already carry). The
+        // frontmatter is still the remote's, so tool-written fields such as
+        // `url` reach a note with unpushed edits too, and keys docket no longer
+        // writes leave it.
+        if (!result.conflict && result.text === localFm.body) {
+            const fm = remoteFm.frontmatter;
+            if (fm !== localFm.frontmatter) {
+                await this.d.fs.write(dest, assembleNote(fm, localFm.body));
+            }
+            return "kept";
+        }
+        await this.d.fs.write(
+            dest,
+            assembleNote(remoteFm.frontmatter, result.text),
+        );
+        return result.conflict ? "conflict" : "merged";
+    }
+
+    /**
+     * readBaseBody returns the body of the cached render of page `name` at
+     * `version` — the last state the local note and the remote agreed on — or
+     * null when that render is not cached (a fresh clone, or a pruned cache).
+     */
+    private readBaseBody(
+        name: string,
+        version: number,
+    ): Promise<string | null> {
+        return readCacheBody(this.d.fs, this.d.cacheDir, name, version);
+    }
+}
+
+/** PullConfigDeps are a {@link Puller}'s deps minus the (built-here) link index. */
+export interface PullConfigDeps {
+    client: ConfluenceClient;
+    fs: FileSystem;
+    config: Config;
+    reporter: Reporter;
+    cacheDir: string;
+    assetsDir: string;
+    /** Where to persist the link index (e.g. `<cacheDir>/links.json`). */
+    linksPath: string;
+}
+
+/**
+ * pullConfig pulls every configured page and the pages of every configured folder
+ * and space. It discovers the folder/space trees, aborts the whole run (throwing)
+ * when any destination or Confluence page is claimed by more than one entry,
+ * builds and persists the link index, then pulls the configured and discovered
+ * pages. A discovery with errors saw only part of the tree, so its index is
+ * merged over the persisted one (healed against the notes on disk) rather than
+ * replacing it — the pages it missed keep their last-known paths — and the run
+ * says so. Discovery and per-page failures are returned in
+ * {@link PullOutcome.errors}; the run still completes.
+ */
+export async function pullConfig(deps: PullConfigDeps): Promise<PullOutcome> {
+    const { client, fs, config, reporter, cacheDir, assetsDir, linksPath } =
+        deps;
+
+    const folders = await discoverFolders(client, config, reporter);
+    const spaces = await discoverSpaces(client, config, reporter);
+    const discovered = [...folders.pages, ...spaces.pages];
+    const discErrors = [...folders.errors, ...spaces.errors];
+
+    collides(config, discovered); // throws to abort before any write
+
+    const fresh = buildLinkIndex(config.syncRoot, config.pages, discovered);
+    // A complete discovery is authoritative and replaces the index outright. A
+    // partial one would drop the failed roots' pages, so it is merged over the
+    // previous index instead, and the run reports that it was.
+    let indexLog = "";
+    let links = fresh;
+    if (discErrors.length > 0) {
+        const prior = await openLinkIndex(fs, linksPath, config.syncRoot);
+        links = mergeLinkIndex(fresh, prior.links);
+        indexLog =
+            prior.healed.join("") +
+            `warning: link index merged with the previous one: ` +
+            `${discErrors.length} discovery error(s), so the pages not ` +
+            "discovered keep their last-known paths\n";
+        reporter.log(indexLog);
+    }
+    await links.write(fs, linksPath);
+
+    // Reconcile notes left behind by a moved page before pulling: a partial tree
+    // could misplace a note, so this runs only when discovery was complete.
+    const relocated =
+        discErrors.length === 0
+            ? await relocateMovedNotes(
+                  fs,
+                  config,
+                  cacheDir,
+                  reporter,
+                  discovered,
+              )
+            : { log: "", moved: 0 };
+
+    reporter.discovered(Object.keys(config.pages).length + discovered.length);
+
+    // Probe every managed page's current remote version in one bulk request, so
+    // a page whose version is already cached renders from the cache instead of
+    // re-downloading its body. A failed probe just disables that shortcut.
+    const knownVersions = await probeVersions(client, config, discovered);
+
+    const puller = new Puller({
+        client,
+        fs,
+        config,
+        reporter,
+        cacheDir,
+        assetsDir,
+        links,
+        flavor: resolveFlavor(config.flavor),
+        knownVersions,
+    });
+    const pagesOut = await puller.pullPages();
+    const treeOut = await puller.pullDiscovered(discovered);
+
+    // Reconcile notes whose Confluence page no longer exists: remove the clean
+    // ones (a note with unpushed edits is kept with a warning). Runs after the
+    // pull, and only on a complete discovery — a partial tree could report a
+    // still-live page as vanished.
+    const deleted =
+        discErrors.length === 0
+            ? await deleteVanishedNotes({
+                  fs,
+                  config,
+                  cacheDir,
+                  reporter,
+                  discovered,
+              })
+            : { log: "", deleted: 0 };
+
+    const stats = addStats(pagesOut.stats, treeOut.stats);
+    stats.deleted = deleted.deleted;
+    return {
+        log:
+            indexLog + relocated.log + pagesOut.log + treeOut.log + deleted.log,
+        stats,
+        errors: [...discErrors, ...pagesOut.errors, ...treeOut.errors],
+    };
+}
+
+/**
+ * probeVersions bulk-fetches the current remote version of every managed page —
+ * the configured pages plus the discovered folder/space pages — keyed by page id.
+ * It is best-effort: a failure (or a page with no resolvable id) yields no entry,
+ * so the pull falls back to fetching that page's body. The cost is one request per
+ * 250 ids, negligible against the body downloads it lets a warm pull skip.
+ */
+async function probeVersions(
+    client: ConfluenceClient,
+    config: Config,
+    discovered: DiscoveredPage[],
+): Promise<Map<string, number>> {
+    const ids = [
+        ...discovered.map((p) => p.id),
+        ...Object.values(config.pages)
+            .map((src) => tryPageID(src))
+            .filter((id): id is string => id !== undefined),
+    ];
+    if (ids.length === 0) {
+        return new Map();
+    }
+    try {
+        return await client.fetchPageVersions(ids);
+    } catch {
+        return new Map();
+    }
+}
+
+/** ResolveSourceDeps are what {@link resolvePageSource} needs to look a page up
+ * and, when it is not yet indexed, discover the root that contains it. */
+export interface ResolveSourceDeps {
+    client: ConfluenceClient;
+    fs: FileSystem;
+    config: Config;
+    reporter: Reporter;
+    /** Where the link index is persisted (e.g. `<cacheDir>/links.json`). */
+    linksPath: string;
+}
+
+/** ResolvedSource is a single page's remote source plus the link index to pull it
+ * with — the persisted index, or one just built by on-demand discovery. */
+export interface ResolvedSource {
+    src: string;
+    spaceKey: string;
+    links: LinkIndex | null;
+}
+
+/**
+ * resolvePageSource returns the Confluence source URL and space key for the single
+ * managed page at `dest` (an absolute note path), together with the link index to
+ * pull it with. The persisted index is first healed against the notes on disk
+ * (see {@link healedIndex}), so a locally moved page links to where it now is. A
+ * configured `pages:` entry resolves straight from the config (no space key).
+ * Otherwise the page is a descendant of a configured folder or space
+ * root, whose remote URL is only known through the link index: when the
+ * index already carries `dest` it is used; when the index is missing or
+ * lacks `dest`, the one root that contains `dest` is discovered on the spot (not
+ * the whole config), its pages merged into and re-persisted over the existing
+ * index, and `dest` resolved from the result. It throws when `dest` lies under no
+ * configured root, or the discovered root does not contain it.
+ */
+export async function resolvePageSource(
+    deps: ResolveSourceDeps,
+    dest: string,
+): Promise<ResolvedSource> {
+    const { config } = deps;
+    const links = await healedIndex(deps);
+
+    const configured = config.pages[dest];
+    if (configured !== undefined) {
+        return { src: configured, spaceKey: "", links };
+    }
+    const known = links?.byDest.get(dest);
+    if (known !== undefined) {
+        return { src: known.url, spaceKey: known.spaceKey, links };
+    }
+
+    // Not configured and not in the index — discover the root that contains it,
+    // exactly what pulling that folder or space would have done, then resolve.
+    const discovered = await discoverContainingRoot(deps, links, dest);
+    const entry = discovered.byDest.get(dest);
+    if (entry === undefined) {
+        throw new Error(
+            `${pageName(config.syncRoot, dest)}: not a managed page`,
+        );
+    }
+    return { src: entry.url, spaceKey: entry.spaceKey, links: discovered };
+}
+
+/**
+ * discoverContainingRoot walks the one configured folder or space root that
+ * contains `dest` and returns a link index merging its freshly discovered pages
+ * over `existing` (so entries from the other roots survive), re-persisting the
+ * result. The merge only adds entries, so persisting can never drop a prior
+ * root's pages even when this single-root discovery is partial. It throws when
+ * `dest` lies under no configured root.
+ */
+async function discoverContainingRoot(
+    deps: ResolveSourceDeps,
+    existing: LinkIndex | null,
+    dest: string,
+): Promise<LinkIndex> {
+    const { client, fs, config, reporter, linksPath } = deps;
+    const found = containingRoot(config, dest);
+    if (found === null) {
+        throw new Error(
+            `${pageName(config.syncRoot, dest)}: not a managed page`,
+        );
+    }
+    reporter.log(
+        `discovering ${found.kind} ${pageName(config.syncRoot, found.root)} ` +
+            `to resolve ${pageName(config.syncRoot, dest)}\n`,
+    );
+    // The caller has already announced the one page being pulled, so the walk's
+    // per-page found() events must not reopen the "discovering…" counter — only
+    // its log line above conveys that a root is being resolved.
+    const quiet = withoutFound(reporter);
+    const result =
+        found.kind === "folder"
+            ? await discoverFolder(client, config, quiet, found.src, found.root)
+            : await discoverSpace(client, config, quiet, found.src, found.root);
+
+    // Carry the other roots' entries (from a prior full pull) forward; the
+    // freshly discovered root is authoritative for its own ids and dests.
+    const links = mergeLinkIndex(
+        buildLinkIndex(config.syncRoot, config.pages, result.pages),
+        existing,
+    );
+    await links.write(fs, linksPath);
+    return links;
+}
+
+/**
+ * healedIndex loads the persisted link index for a single-page run, healed
+ * against the notes on disk, with the configured `pages:` entries laid over it:
+ * the config names each configured page's current path, so a page the user moved
+ * (note and config), or one newly configured, links to its current path without
+ * waiting for a full pull. Heal lines are logged and any change is persisted.
+ * It resolves to null when no index exists.
+ */
+async function healedIndex(deps: ResolveSourceDeps): Promise<LinkIndex | null> {
+    const { config, fs, reporter, linksPath } = deps;
+    const { links, healed } = await openLinkIndex(
+        fs,
+        linksPath,
+        config.syncRoot,
+    );
+    if (links === null) {
+        return null;
+    }
+    for (const line of healed) {
+        reporter.log(line);
+    }
+    let moved = false;
+    for (const e of buildLinkIndex(
+        config.syncRoot,
+        config.pages,
+        [],
+    ).entries()) {
+        const prior = links.byID.get(e.id);
+        if (prior?.dest === e.dest) {
+            continue;
+        }
+        if (prior !== undefined) {
+            links.remove(prior);
+        }
+        links.add(prior === undefined ? e : { ...prior, dest: e.dest });
+        moved = true;
+    }
+    if (moved) {
+        await links.write(fs, linksPath);
+    }
+    return links;
+}
+
+/**
+ * withoutFound returns a reporter that forwards every event to `r` except
+ * found(), which it drops — so an on-demand discovery walk during a single-page
+ * pull leaves the reporter in its already-announced processing phase instead of
+ * flashing a "discovering… N pages found" counter.
+ */
+function withoutFound(r: Reporter): Reporter {
+    return {
+        found: () => {},
+        discovered: (total) => r.discovered(total),
+        item: (name) => r.item(name),
+        log: (line) => r.log(line),
+        finish: () => r.finish(),
+        streamsLog: () => r.streamsLog(),
+    };
+}
+
+/**
+ * containingRoot returns the configured folder or space root that is an ancestor
+ * directory of `dest`, with the kind that selects its discovery walk, or null
+ * when none is. Roots never nest (the config rejects that), so at most one matches.
+ */
+function containingRoot(
+    config: Config,
+    dest: string,
+): { src: string; kind: "folder" | "space"; root: string } | null {
+    for (const [root, src] of Object.entries(config.folders)) {
+        if (isUnderDir(dest, root)) {
+            return { src, kind: "folder", root };
+        }
+    }
+    for (const [root, src] of Object.entries(config.spaces)) {
+        if (isUnderDir(dest, root)) {
+            return { src, kind: "space", root };
+        }
+    }
+    return null;
+}
+
+/** isUnderDir reports whether the file path `dest` lies within the directory `dir`. */
+function isUnderDir(dest: string, dir: string): boolean {
+    return dest.startsWith(`${dir}/`);
+}
+
+/** resolvePagePath returns an absolute note path from a selected path under the sync root. */
+export function resolvePagePath(syncRoot: string, path: string): string {
+    return path.startsWith("/") ? posixClean(path) : posixJoin(syncRoot, path);
+}
+
+/**
+ * writeIfChanged writes `data` to `path` only when its current content differs,
+ * returning whether it wrote, so an unchanged render leaves the file untouched.
+ */
+async function writeIfChanged(
+    fs: FileSystem,
+    path: string,
+    data: string,
+): Promise<boolean> {
+    try {
+        if ((await fs.readText(path)) === data) {
+            return false;
+        }
+    } catch {
+        // Missing (or unreadable) file: fall through to write it.
+    }
+    await fs.write(path, data);
+    return true;
+}
+
+/**
+ * frontmatterVersion reads the `docket_page_version` (or legacy `page_version`)
+ * from raw frontmatter, or 0.
+ */
+function frontmatterVersion(frontmatter: string): number {
+    const m = /^(\d+)/.exec(fmRaw(frontmatter, "pageVersion") ?? "");
+    return m?.[1] !== undefined ? Number.parseInt(m[1], 10) : 0;
+}
+
+/**
+ * assembleNote rebuilds a note from tool-managed `frontmatter` and a `body`,
+ * matching the `---`-fenced layout the renderer and push stamper both write.
+ */
+function assembleNote(frontmatter: string, body: string): string {
+    let out = `---\n${frontmatter}---\n`;
+    if (body !== "") {
+        out += `${body}\n`;
+    }
+    return out;
+}
+
+/** RenderDeps are what {@link renderNote} reads besides the page itself. */
+export interface RenderDeps {
+    flavor: Flavor;
+    config: Config;
+    /** The link index, or null to leave links untouched. */
+    links: LinkIndex | null;
+}
+
+/**
+ * renderNote renders page `doc` as the note pull writes to `dest` (frontmatter
+ * and body): `assets` maps each media node to its image path, and `comments`
+ * are the page's threads, or undefined to render none. It is the one render a
+ * pull and the plugin's Confluence diff share, so the two agree byte for byte.
+ */
+export function renderNote(
+    d: RenderDeps,
+    doc: ADF,
+    dest: string,
+    assets: Record<string, string>,
+    comments: RenderComments | undefined,
+): string {
+    const links = linkMapper(d.links, dest, d.config.domain, d.config.host);
+    return d.flavor.render(doc, {
+        assets,
+        links,
+        margin: d.config.margin,
+        ...(comments ? { comments } : {}),
+    })[0];
+}
+
+/** mdCachePath is the cached-render (`.md`) path for page `name` at `version`. */
+function mdCachePath(cacheDir: string, name: string, version: number): string {
+    const json = cacheFileName(name, version);
+    return posixJoin(cacheDir, `${json.slice(0, -".json".length)}.md`);
+}
+
+/**
+ * readCacheBody returns the body of the cached render of page `name` at
+ * `version` — the last state a note and the remote agreed on — or null when
+ * that render is not cached (a fresh clone, or a pruned cache).
+ */
+export async function readCacheBody(
+    fs: FileSystem,
+    cacheDir: string,
+    name: string,
+    version: number,
+): Promise<string | null> {
+    try {
+        const text = await fs.readText(mdCachePath(cacheDir, name, version));
+        return splitFrontmatter(text).body;
+    } catch {
+        return null;
+    }
+}
+
+/** MoveOutcome reports the moved-page pre-pass's log and how many notes it moved. */
+interface MoveOutcome {
+    log: string;
+    moved: number;
+}
+
+/**
+ * relocateMovedNotes reconciles the duplicate a moved page leaves behind. A page
+ * carries a stable `docket_page_id` but its note path is re-derived each pull from the
+ * page's place in the folder/space tree, so when a page moves in Confluence the
+ * pull writes the note to its new path and the old note lingers. This pre-pass
+ * scans every managed note under the folder/space roots, and for each whose
+ * `docket_page_id` resolves (via the freshly discovered tree) to a different path than
+ * where it sits, carries its content to the new path — so the per-page pull's
+ * merge preserves any unpushed edits there — and removes the stale copy, pruning
+ * emptied directories. Notes marked `docket_local` or lacking a page id are left
+ * alone. It runs only on a full pull (a selected pull sees a partial tree) and
+ * only when discovery was complete; the caller enforces both.
+ */
+async function relocateMovedNotes(
+    fs: FileSystem,
+    config: Config,
+    cacheDir: string,
+    reporter: Reporter,
+    discovered: DiscoveredPage[],
+): Promise<MoveOutcome> {
+    const expected = new Map<string, string>();
+    for (const p of discovered) {
+        expected.set(p.id, posixClean(p.dest));
+    }
+    const roots = [
+        ...Object.keys(config.folders),
+        ...Object.keys(config.spaces),
+    ];
+    const files = await mdFilesUnder(fs, roots);
+
+    // Collect the stale copies (a managed note sitting at a path other than the
+    // one its page now maps to), grouped by page id in walk order.
+    const stale = new Map<string, string[]>();
+    for (const path of files) {
+        let frontmatter: string;
+        try {
+            frontmatter = splitFrontmatter(await fs.readText(path)).frontmatter;
+        } catch {
+            continue; // unreadable or no frontmatter: not a managed note
+        }
+        if (fmRaw(frontmatter, "local") === "true") {
+            continue; // a local-only page, never pulled
+        }
+        const id = fmRaw(frontmatter, "pageId") ?? "";
+        const dest = id === "" ? undefined : expected.get(id);
+        if (dest === undefined || posixClean(path) === dest) {
+            continue; // not a discovered page, or already in place
+        }
+        const list = stale.get(id) ?? [];
+        list.push(posixClean(path));
+        stale.set(id, list);
+    }
+
+    let log = "";
+    let moved = 0;
+    const emit = (line: string): void => {
+        log += line;
+        reporter.log(line);
+    };
+    for (const [id, copies] of stale) {
+        const dest = expected.get(id) ?? "";
+        const to = pageName(config.syncRoot, dest);
+        for (const src of copies) {
+            const from = pageName(config.syncRoot, src);
+            const outcome = await relocateCopy(
+                fs,
+                cacheDir,
+                config.syncRoot,
+                src,
+                dest,
+            );
+            if (outcome === "moved") {
+                emit(
+                    `moving ${from} -> ${to} (page ${id} moved in Confluence)\n`,
+                );
+                moved++;
+            } else if (outcome === "removed") {
+                emit(`removing stale ${from} (page ${id} is now ${to})\n`);
+                moved++;
+            } else {
+                emit(
+                    `warning: ${from} and ${to} both hold unpushed edits for ` +
+                        `page ${id}; left in place, resolve by hand\n`,
+                );
+            }
+        }
+    }
+    return { log, moved };
+}
+
+/** DeleteOutcome reports the vanished-page pass's log and how many notes it removed. */
+interface DeleteOutcome {
+    log: string;
+    deleted: number;
+}
+
+/** DeleteVanishedDeps are what {@link deleteVanishedNotes} needs to reconcile. */
+interface DeleteVanishedDeps {
+    fs: FileSystem;
+    config: Config;
+    cacheDir: string;
+    reporter: Reporter;
+    /** The pages the discovery walk placed — the current remote content. */
+    discovered: DiscoveredPage[];
+}
+
+/**
+ * deleteVanishedNotes removes managed notes under the folder/space roots whose
+ * Confluence page no longer exists, so a pull's local tree tracks deletions the
+ * same way it tracks additions and edits. A note is a deletion candidate when it
+ * carries the `docket_mode: pull` marker, is not `docket_local`, and its path is
+ * not among the discovered (still-live) pages. It runs after the pull, so a
+ * moved page has already been relocated onto its new (live) path and is not
+ * mistaken for vanished.
+ *
+ * Two safety rules mirror {@link findStale}: a note with unpushed local edits is
+ * never deleted — it is kept with a warning, since a pull has no confirmation
+ * step to fall back on — and a root that discovery placed no pages under while
+ * managed notes still sit there is treated as a suspect empty listing (revoked
+ * access, a transient failure) and left untouched rather than wiped. Emptied
+ * directories are pruned as notes are removed.
+ */
+async function deleteVanishedNotes(
+    deps: DeleteVanishedDeps,
+): Promise<DeleteOutcome> {
+    const { fs, config, cacheDir, reporter, discovered } = deps;
+    const roots = [
+        ...Object.keys(config.folders),
+        ...Object.keys(config.spaces),
+    ];
+    if (roots.length === 0) {
+        return { log: "", deleted: 0 };
+    }
+
+    const expected = new Set<string>();
+    for (const p of discovered) {
+        expected.add(posixClean(p.dest));
+    }
+    for (const dest of Object.keys(config.pages)) {
+        expected.add(posixClean(dest));
+    }
+
+    const files = await mdFilesUnder(fs, roots);
+    let log = "";
+    let deleted = 0;
+    const emit = (line: string): void => {
+        log += line;
+        reporter.log(line);
+    };
+
+    // Empty-discovery safety floor: a root discovery placed no pages under, while
+    // managed notes still sit there, is refused rather than wiped.
+    const suspect = new Set<string>();
+    for (const root of roots) {
+        if (discovered.some((p) => isUnderDir(posixClean(p.dest), root))) {
+            continue;
+        }
+        if (await hasManagedNote(fs, files, root)) {
+            suspect.add(root);
+            emit(
+                `warning: ${pageName(config.syncRoot, root)}: discovery ` +
+                    "returned no pages but managed notes exist; refusing to " +
+                    "delete on a possibly incomplete listing\n",
+            );
+        }
+    }
+
+    for (const path of files) {
+        const clean = posixClean(path);
+        if (expected.has(clean) || underAny(clean, suspect)) {
+            continue;
+        }
+        const marker = await pullMarker(fs, clean);
+        if (!marker.managed || marker.local) {
+            continue; // foreign, local-only, or a different docket marker
+        }
+        const name = pageName(config.syncRoot, clean);
+        if (await isDivergent(fs, cacheDir, config.syncRoot, clean)) {
+            emit(
+                `warning: ${name}: page removed from Confluence but note has ` +
+                    "unpushed edits; left in place\n",
+            );
+            continue;
+        }
+        await removeNote(fs, clean, config.syncRoot);
+        emit(deletedLine(name));
+        deleted++;
+    }
+    return { log, deleted };
+}
+
+/** underAny reports whether `path` lies under any directory in `dirs`. */
+function underAny(path: string, dirs: Set<string>): boolean {
+    for (const dir of dirs) {
+        if (isUnderDir(path, dir)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * pullMarker reads a note's frontmatter markers relevant to deletion: whether it
+ * carries `docket_mode: pull` (a managed, pulled note) and whether it is
+ * `docket_local` (created locally, never pulled), each falling back to its
+ * legacy key. A file with no readable frontmatter is neither.
+ */
+async function pullMarker(
+    fs: FileSystem,
+    path: string,
+): Promise<{ managed: boolean; local: boolean }> {
+    let frontmatter: string;
+    try {
+        frontmatter = splitFrontmatter(await fs.readText(path)).frontmatter;
+    } catch {
+        return { managed: false, local: false };
+    }
+    return {
+        managed: fmRaw(frontmatter, "mode") === MODE_PULL,
+        local: fmRaw(frontmatter, "local") === "true",
+    };
+}
+
+/**
+ * hasManagedNote reports whether any file in `files` under directory `root` is a
+ * managed, non-local pulled note — the signal that backs the empty-discovery
+ * safety floor.
+ */
+async function hasManagedNote(
+    fs: FileSystem,
+    files: string[],
+    root: string,
+): Promise<boolean> {
+    for (const path of files) {
+        if (!isUnderDir(posixClean(path), root)) {
+            continue;
+        }
+        const marker = await pullMarker(fs, path);
+        if (marker.managed && !marker.local) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * relocateCopy resolves one stale copy `src` of a page whose current note path
+ * is `dest`. With no note yet at `dest`, or a clean one there while `src` has
+ * unpushed edits, it carries `src` to `dest` (`moved`). A clean `src` beside an
+ * existing `dest` is a pure leftover, removed (`removed`). When both `src` and
+ * `dest` carry unpushed edits it refuses to choose, leaving both (`kept`).
+ */
+async function relocateCopy(
+    fs: FileSystem,
+    cacheDir: string,
+    syncRoot: string,
+    src: string,
+    dest: string,
+): Promise<"moved" | "removed" | "kept"> {
+    if (!(await fs.exists(dest))) {
+        await carryNote(fs, cacheDir, syncRoot, src, dest);
+        return "moved";
+    }
+    if (!(await isDivergent(fs, cacheDir, syncRoot, src))) {
+        await removeNote(fs, src, syncRoot);
+        return "removed";
+    }
+    if (await isDivergent(fs, cacheDir, syncRoot, dest)) {
+        return "kept";
+    }
+    await carryNote(fs, cacheDir, syncRoot, src, dest);
+    return "moved";
+}
+
+/**
+ * carryNote moves the note at `src` to `dest`, relocating the cached base render
+ * of its recorded version alongside it (so the per-page pull's merge finds its
+ * base under the new name), then removes `src` and prunes emptied directories.
+ */
+async function carryNote(
+    fs: FileSystem,
+    cacheDir: string,
+    syncRoot: string,
+    src: string,
+    dest: string,
+): Promise<void> {
+    const content = await fs.readText(src);
+    let version = 0;
+    try {
+        version = frontmatterVersion(splitFrontmatter(content).frontmatter);
+    } catch {
+        version = 0;
+    }
+    await moveCacheBase(
+        fs,
+        cacheDir,
+        pageName(syncRoot, src),
+        pageName(syncRoot, dest),
+        version,
+    );
+    await fs.mkdirp(posixDir(dest));
+    await fs.write(dest, content);
+    await removeNote(fs, src, syncRoot);
+}
+
+/** removeNote deletes the note at `path` and prunes now-empty ancestor dirs. */
+async function removeNote(
+    fs: FileSystem,
+    path: string,
+    syncRoot: string,
+): Promise<void> {
+    await fs.remove(path);
+    let dir = posixDir(path);
+    while (dir.length > syncRoot.length && dir.startsWith(`${syncRoot}/`)) {
+        try {
+            if (!(await dirEmpty(fs, dir))) {
+                break;
+            }
+            await fs.remove(dir);
+        } catch {
+            break; // a backend that cannot remove a dir just leaves it
+        }
+        dir = posixDir(dir);
+    }
+}
+
+/**
+ * moveCacheBase relocates the cached ADF and render of page `oldName` at
+ * `version` to `newName`, so a moved note's merge base survives the rename. The
+ * ADF wrapper is rewritten with `newName` as its `name`, so the cache never
+ * names a page by its pre-rename path. It is best-effort: a cache entry that is
+ * absent is simply skipped.
+ */
+async function moveCacheBase(
+    fs: FileSystem,
+    cacheDir: string,
+    oldName: string,
+    newName: string,
+    version: number,
+): Promise<void> {
+    if (version === 0 || oldName === newName) {
+        return;
+    }
+    const oldJson = posixJoin(cacheDir, cacheFileName(oldName, version));
+    const newJson = posixJoin(cacheDir, cacheFileName(newName, version));
+    const page = await readCachedPage(fs, oldJson);
+    if (page !== null) {
+        await writePage(fs, newJson, { ...page, name: newName });
+        await fs.remove(oldJson);
+    }
+    const oldMd = `${oldJson.slice(0, -".json".length)}.md`;
+    const newMd = `${newJson.slice(0, -".json".length)}.md`;
+    try {
+        await fs.write(newMd, await fs.read(oldMd));
+        await fs.remove(oldMd);
+    } catch {
+        // Absent (or unreadable) cache render: nothing to move.
+    }
+}
+
+/**
+ * isDivergent reports whether the note at `path` differs from its cached base
+ * render — i.e. it carries unpushed local edits. A note with no readable
+ * frontmatter, no recorded version, or no cached base is treated as divergent,
+ * so a copy that cannot be proven clean is never silently discarded.
+ */
+async function isDivergent(
+    fs: FileSystem,
+    cacheDir: string,
+    syncRoot: string,
+    path: string,
+): Promise<boolean> {
+    let text: string;
+    try {
+        text = await fs.readText(path);
+    } catch {
+        return false; // already gone
+    }
+    let frontmatter: string;
+    let body: string;
+    try {
+        ({ frontmatter, body } = splitFrontmatter(text));
+    } catch {
+        return true;
+    }
+    const version = frontmatterVersion(frontmatter);
+    if (version === 0) {
+        return true;
+    }
+    const base = await readCacheBody(
+        fs,
+        cacheDir,
+        pageName(syncRoot, path),
+        version,
+    );
+    return base === null || body !== base;
+}
+
+/**
+ * missingMarkers reports whether an open inline thread in `comments` anchors to
+ * a marker absent from `page`'s body — a sign the body predates the comment.
+ */
+function missingMarkers(page: Page, comments: RenderComments): boolean {
+    if (comments.byMarker.size === 0) {
+        return false;
+    }
+    const present = new Set(annotationIdsIn(pageDoc(page).doc));
+    for (const marker of comments.byMarker.keys()) {
+        if (!present.has(marker)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/** message returns an unknown thrown value's message. */
+function message(err: unknown): string {
+    return err instanceof Error ? err.message : String(err);
+}

@@ -1,0 +1,619 @@
+[
+  {
+    "name": "read",
+    "results": [
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[{\"id\":\"epub-delivery\",\"path\":\"docs/catalog/epub_delivery.md\",\"rank\":3,\"score\":0.03746353679982743,\"source_url\":\"https://help.example.com/epub-delivery\",\"text\":\"\\n# EPUB Delivery\\n\\nHow a customer receives a purchased EPUB edition.\\n\\n## Download Link\\n\\nAfter payment clears, the shop emails a personal download link. The link is\\nvalid for 48 hours and allows five downloads.\\n\\n## Supported Readers\\n\\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\",\"title\":\"EPUB Delivery\"},{\"id\":\"srd-wishlist-sharing\",\"path\":\"initiatives/wishlist_sharing.md\",\"score\":0.005158847541204132,\"text\":\"\\n# SRD: Wishlist Sharing\\n\\nA draft requirement for letting a reader share a wishlist by link. It is work\\nin progress, so the server reports no rank for it: an agent settling a\\nconflict trusts the published documentation and the knowledge base first.\\n\\n## Requirements\\n\\n- A reader can create a read-only link to one wishlist.\\n- Opening the link shows the titles without the reader's account details.\",\"title\":\"SRD: Wishlist Sharing\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "results": [
+            {
+              "id": "epub-delivery",
+              "path": "docs/catalog/epub_delivery.md",
+              "rank": 3,
+              "score": 0.03746353679982743,
+              "source_url": "https://help.example.com/epub-delivery",
+              "text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+              "title": "EPUB Delivery"
+            },
+            {
+              "id": "srd-wishlist-sharing",
+              "path": "initiatives/wishlist_sharing.md",
+              "score": 0.005158847541204132,
+              "text": "\n# SRD: Wishlist Sharing\n\nA draft requirement for letting a reader share a wishlist by link. It is work\nin progress, so the server reports no rank for it: an agent settling a\nconflict trusts the published documentation and the knowledge base first.\n\n## Requirements\n\n- A reader can create a read-only link to one wishlist.\n- Opening the link shows the titles without the reader's account details.",
+              "title": "SRD: Wishlist Sharing"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "results": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "query is required"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"query\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "k must be between 1 and 100"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "k must be between 1 and 100"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/k: type: abc has type \"string\", want \"integer\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/k: type: 1.5 has type \"number\", want \"integer\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "results": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/query: type: 5 has type \"integer\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: unexpected additional properties [\"extra\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/query: type: \u003cinvalid reflect.Value\u003e has type \"null\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"query\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "results": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"id\":\"epub-delivery\",\"path\":\"docs/catalog/epub_delivery.md\",\"rank\":3,\"source_url\":\"https://help.example.com/epub-delivery\",\"text\":\"---\\nid: epub-delivery\\ntitle: EPUB Delivery\\naliases: [ebook, \\\"digital edition\\\"]\\nurl: https://help.example.com/epub-delivery\\n---\\n\\n# EPUB Delivery\\n\\nHow a customer receives a purchased EPUB edition.\\n\\n## Download Link\\n\\nAfter payment clears, the shop emails a personal download link. The link is\\nvalid for 48 hours and allows five downloads.\\n\\n## Supported Readers\\n\\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\\n\",\"title\":\"EPUB Delivery\"}"
+          }
+        ],
+        "structuredContent": {
+          "id": "epub-delivery",
+          "path": "docs/catalog/epub_delivery.md",
+          "rank": 3,
+          "source_url": "https://help.example.com/epub-delivery",
+          "text": "---\nid: epub-delivery\ntitle: EPUB Delivery\naliases: [ebook, \"digital edition\"]\nurl: https://help.example.com/epub-delivery\n---\n\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\n",
+          "title": "EPUB Delivery"
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"id\":\"epub-delivery\",\"path\":\"docs/catalog/epub_delivery.md\",\"rank\":3,\"source_url\":\"https://help.example.com/epub-delivery\",\"text\":\"---\\nid: epub-delivery\\ntitle: EPUB Delivery\\naliases: [ebook, \\\"digital edition\\\"]\\nurl: https://help.example.com/epub-delivery\\n---\\n\\n# EPUB Delivery\\n\\nHow a customer receives a purchased EPUB edition.\\n\\n## Download Link\\n\\nAfter payment clears, the shop emails a personal download link. The link is\\nvalid for 48 hours and allows five downloads.\\n\\n## Supported Readers\\n\\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\\n\",\"title\":\"EPUB Delivery\"}"
+          }
+        ],
+        "structuredContent": {
+          "id": "epub-delivery",
+          "path": "docs/catalog/epub_delivery.md",
+          "rank": 3,
+          "source_url": "https://help.example.com/epub-delivery",
+          "text": "---\nid: epub-delivery\ntitle: EPUB Delivery\naliases: [ebook, \"digital edition\"]\nurl: https://help.example.com/epub-delivery\n---\n\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\n",
+          "title": "EPUB Delivery"
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "document not found: nope"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: required: missing properties: [\"id\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/id: type: 7 has type \"integer\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"docs\":[{\"id\":\"epub-delivery\",\"path\":\"docs/catalog/epub_delivery.md\",\"rank\":3,\"title\":\"EPUB Delivery\"},{\"id\":\"docs/glossary/glossary.md\",\"path\":\"docs/glossary/glossary.md\",\"rank\":4,\"title\":\"Bookshop Glossary\"},{\"id\":\"docs/ordering/checkout.md\",\"path\":\"docs/ordering/checkout.md\",\"rank\":2,\"title\":\"Checkout\"},{\"id\":\"srd-wishlist-sharing\",\"path\":\"initiatives/wishlist_sharing.md\",\"title\":\"SRD: Wishlist Sharing\"},{\"id\":\"kb/shipping_times.md\",\"path\":\"kb/shipping_times.md\",\"rank\":1,\"title\":\"Shipping Times\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "docs": [
+            {
+              "id": "epub-delivery",
+              "path": "docs/catalog/epub_delivery.md",
+              "rank": 3,
+              "title": "EPUB Delivery"
+            },
+            {
+              "id": "docs/glossary/glossary.md",
+              "path": "docs/glossary/glossary.md",
+              "rank": 4,
+              "title": "Bookshop Glossary"
+            },
+            {
+              "id": "docs/ordering/checkout.md",
+              "path": "docs/ordering/checkout.md",
+              "rank": 2,
+              "title": "Checkout"
+            },
+            {
+              "id": "srd-wishlist-sharing",
+              "path": "initiatives/wishlist_sharing.md",
+              "title": "SRD: Wishlist Sharing"
+            },
+            {
+              "id": "kb/shipping_times.md",
+              "path": "kb/shipping_times.md",
+              "rank": 1,
+              "title": "Shipping Times"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"docs\":[{\"id\":\"epub-delivery\",\"path\":\"docs/catalog/epub_delivery.md\",\"rank\":3,\"title\":\"EPUB Delivery\"},{\"id\":\"docs/glossary/glossary.md\",\"path\":\"docs/glossary/glossary.md\",\"rank\":4,\"title\":\"Bookshop Glossary\"},{\"id\":\"docs/ordering/checkout.md\",\"path\":\"docs/ordering/checkout.md\",\"rank\":2,\"title\":\"Checkout\"},{\"id\":\"srd-wishlist-sharing\",\"path\":\"initiatives/wishlist_sharing.md\",\"title\":\"SRD: Wishlist Sharing\"},{\"id\":\"kb/shipping_times.md\",\"path\":\"kb/shipping_times.md\",\"rank\":1,\"title\":\"Shipping Times\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "docs": [
+            {
+              "id": "epub-delivery",
+              "path": "docs/catalog/epub_delivery.md",
+              "rank": 3,
+              "title": "EPUB Delivery"
+            },
+            {
+              "id": "docs/glossary/glossary.md",
+              "path": "docs/glossary/glossary.md",
+              "rank": 4,
+              "title": "Bookshop Glossary"
+            },
+            {
+              "id": "docs/ordering/checkout.md",
+              "path": "docs/ordering/checkout.md",
+              "rank": 2,
+              "title": "Checkout"
+            },
+            {
+              "id": "srd-wishlist-sharing",
+              "path": "initiatives/wishlist_sharing.md",
+              "title": "SRD: Wishlist Sharing"
+            },
+            {
+              "id": "kb/shipping_times.md",
+              "path": "kb/shipping_times.md",
+              "rank": 1,
+              "title": "Shipping Times"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: unexpected additional properties [\"x\"]"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"terms\":[{\"abbreviation\":\"SKU\",\"anchor\":\"stock-keeping-unit-sku\",\"definition\":\"Identifier of one edition of a title, unique across the catalog.\",\"id\":\"docs/glossary/glossary.md\",\"name\":\"Stock Keeping Unit\",\"path\":\"docs/glossary/glossary.md\",\"term\":\"Stock Keeping Unit (SKU)\"},{\"abbreviation\":\"RP\",\"anchor\":\"retail-price-rp\",\"definition\":\"Price a customer pays for a title before discounts.\",\"id\":\"docs/glossary/glossary.md\",\"name\":\"Retail Price\",\"path\":\"docs/glossary/glossary.md\",\"term\":\"Retail Price (RP)\"},{\"abbreviation\":\"\",\"anchor\":\"backorder\",\"definition\":\"Order for a title that is out of stock, shipped when stock arrives.\",\"id\":\"docs/glossary/glossary.md\",\"name\":\"Backorder\",\"path\":\"docs/glossary/glossary.md\",\"term\":\"Backorder\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "terms": [
+            {
+              "abbreviation": "SKU",
+              "anchor": "stock-keeping-unit-sku",
+              "definition": "Identifier of one edition of a title, unique across the catalog.",
+              "id": "docs/glossary/glossary.md",
+              "name": "Stock Keeping Unit",
+              "path": "docs/glossary/glossary.md",
+              "term": "Stock Keeping Unit (SKU)"
+            },
+            {
+              "abbreviation": "RP",
+              "anchor": "retail-price-rp",
+              "definition": "Price a customer pays for a title before discounts.",
+              "id": "docs/glossary/glossary.md",
+              "name": "Retail Price",
+              "path": "docs/glossary/glossary.md",
+              "term": "Retail Price (RP)"
+            },
+            {
+              "abbreviation": "",
+              "anchor": "backorder",
+              "definition": "Order for a title that is out of stock, shipped when stock arrives.",
+              "id": "docs/glossary/glossary.md",
+              "name": "Backorder",
+              "path": "docs/glossary/glossary.md",
+              "term": "Backorder"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"terms\":[{\"abbreviation\":\"SKU\",\"anchor\":\"stock-keeping-unit-sku\",\"definition\":\"Identifier of one edition of a title, unique across the catalog.\",\"id\":\"docs/glossary/glossary.md\",\"name\":\"Stock Keeping Unit\",\"path\":\"docs/glossary/glossary.md\",\"term\":\"Stock Keeping Unit (SKU)\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "terms": [
+            {
+              "abbreviation": "SKU",
+              "anchor": "stock-keeping-unit-sku",
+              "definition": "Identifier of one edition of a title, unique across the catalog.",
+              "id": "docs/glossary/glossary.md",
+              "name": "Stock Keeping Unit",
+              "path": "docs/glossary/glossary.md",
+              "term": "Stock Keeping Unit (SKU)"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/term: type: 1 has type \"integer\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "error": {
+          "code": -32602,
+          "message": "unknown tool \"nope\""
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "k must be between 1 and 100"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "json: cannot unmarshal number 10000000000000000000,\"query\":\"x\"... overflows into Go struct field mcpserver.searchInput.k of type int"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "json: cannot unmarshal number 9223372036854776000,\"query\":\"x\"}... overflows into Go struct field mcpserver.searchInput.k of type int"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "json: cannot unmarshal number -9223372036854776000,\"query\":\"x\"... overflows into Go struct field mcpserver.searchInput.k of type int"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[{\"id\":\"epub-delivery\",\"path\":\"docs/catalog/epub_delivery.md\",\"rank\":3,\"score\":0.3498201485453145,\"source_url\":\"https://help.example.com/epub-delivery\",\"text\":\"\\n# EPUB Delivery\\n\\nHow a customer receives a purchased EPUB edition.\\n\\n## Download Link\\n\\nAfter payment clears, the shop emails a personal download link. The link is\\nvalid for 48 hours and allows five downloads.\\n\\n## Supported Readers\\n\\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\",\"title\":\"EPUB Delivery\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "results": [
+            {
+              "id": "epub-delivery",
+              "path": "docs/catalog/epub_delivery.md",
+              "rank": 3,
+              "score": 0.3498201485453145,
+              "source_url": "https://help.example.com/epub-delivery",
+              "text": "\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.",
+              "title": "EPUB Delivery"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[{\"id\":\"docs/ordering/checkout.md\",\"path\":\"docs/ordering/checkout.md\",\"rank\":2,\"score\":0.03449078233928877,\"text\":\"\\n# Checkout\\n\\nHow an order moves from the cart to payment.\\n\\n## Payment Methods\\n\\nThe checkout accepts credit cards and gift cards. A gift card can cover part\\nof an order; the rest is charged to a card.\\n\\n## Order Confirmation\\n\\nThe shop sends an order confirmation email with the order number and the\\nretail price of every title.\",\"title\":\"Checkout\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "results": [
+            {
+              "id": "docs/ordering/checkout.md",
+              "path": "docs/ordering/checkout.md",
+              "rank": 2,
+              "score": 0.03449078233928877,
+              "text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+              "title": "Checkout"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[{\"id\":\"docs/ordering/checkout.md\",\"path\":\"docs/ordering/checkout.md\",\"rank\":2,\"score\":0.007001994014112832,\"text\":\"\\n# Checkout\\n\\nHow an order moves from the cart to payment.\\n\\n## Payment Methods\\n\\nThe checkout accepts credit cards and gift cards. A gift card can cover part\\nof an order; the rest is charged to a card.\\n\\n## Order Confirmation\\n\\nThe shop sends an order confirmation email with the order number and the\\nretail price of every title.\",\"title\":\"Checkout\"},{\"id\":\"kb/shipping_times.md\",\"path\":\"kb/shipping_times.md\",\"rank\":1,\"score\":0.005915398505730204,\"text\":\"\\n# Shipping Times\\n\\nPaperback orders placed before noon ship the same business day. Backorders\\nship within two days of the stock arriving.\",\"title\":\"Shipping Times\"},{\"id\":\"docs/glossary/glossary.md\",\"path\":\"docs/glossary/glossary.md\",\"rank\":4,\"score\":0.004893544631968864,\"text\":\"\\n## Stock Keeping Unit (SKU)\\n\\nIdentifier of one edition of a title, unique across the catalog.\\n\\n## Retail Price (RP)\\n\\nPrice a customer pays for a title before discounts.\\n\\n## Backorder\\n\\nOrder for a title that is out of stock, shipped when stock arrives.\",\"title\":\"Bookshop Glossary\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "results": [
+            {
+              "id": "docs/ordering/checkout.md",
+              "path": "docs/ordering/checkout.md",
+              "rank": 2,
+              "score": 0.007001994014112832,
+              "text": "\n# Checkout\n\nHow an order moves from the cart to payment.\n\n## Payment Methods\n\nThe checkout accepts credit cards and gift cards. A gift card can cover part\nof an order; the rest is charged to a card.\n\n## Order Confirmation\n\nThe shop sends an order confirmation email with the order number and the\nretail price of every title.",
+              "title": "Checkout"
+            },
+            {
+              "id": "kb/shipping_times.md",
+              "path": "kb/shipping_times.md",
+              "rank": 1,
+              "score": 0.005915398505730204,
+              "text": "\n# Shipping Times\n\nPaperback orders placed before noon ship the same business day. Backorders\nship within two days of the stock arriving.",
+              "title": "Shipping Times"
+            },
+            {
+              "id": "docs/glossary/glossary.md",
+              "path": "docs/glossary/glossary.md",
+              "rank": 4,
+              "score": 0.004893544631968864,
+              "text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+              "title": "Bookshop Glossary"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[{\"id\":\"docs/glossary/glossary.md\",\"path\":\"docs/glossary/glossary.md\",\"rank\":4,\"score\":0.46182578752821285,\"text\":\"\\n## Stock Keeping Unit (SKU)\\n\\nIdentifier of one edition of a title, unique across the catalog.\\n\\n## Retail Price (RP)\\n\\nPrice a customer pays for a title before discounts.\\n\\n## Backorder\\n\\nOrder for a title that is out of stock, shipped when stock arrives.\",\"title\":\"Bookshop Glossary\"}]}"
+          }
+        ],
+        "structuredContent": {
+          "results": [
+            {
+              "id": "docs/glossary/glossary.md",
+              "path": "docs/glossary/glossary.md",
+              "rank": 4,
+              "score": 0.46182578752821285,
+              "text": "\n## Stock Keeping Unit (SKU)\n\nIdentifier of one edition of a title, unique across the catalog.\n\n## Retail Price (RP)\n\nPrice a customer pays for a title before discounts.\n\n## Backorder\n\nOrder for a title that is out of stock, shipped when stock arrives.",
+              "title": "Bookshop Glossary"
+            }
+          ]
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "document not found: kb/refunds.md"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"terms\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "terms": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/query: type: 1e+06 has type \"integer\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/query: type: [1 a \u003cnil\u003e map[b:[2]]] has type \"array\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/query: type: 0.0001 has type \"number\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: validating /properties/query: type: 1.25e-07 has type \"number\", want \"string\""
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "json: cannot unmarshal \"1e+21\" into Go struct field mcpserver.searchInput.k of type int"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "json: cannot unmarshal \"1e+300\" into Go struct field mcpserver.searchInput.k of type int"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "json: cannot unmarshal number 10000000000000000000,\"query\":\"a ... overflows into Go struct field mcpserver.searchInput.k of type int"
+          }
+        ],
+        "isError": true
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"results\":[]}"
+          }
+        ],
+        "structuredContent": {
+          "results": []
+        }
+      },
+      {
+        "content": [
+          {
+            "type": "text",
+            "text": "validating \"arguments\": validating root: unexpected additional properties [\"zz\"]"
+          }
+        ],
+        "isError": true
+      }
+    ]
+  }
+]

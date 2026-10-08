@@ -1,0 +1,1562 @@
+[
+  {
+    "key": "k",
+    "node": {
+      "str": ""
+    },
+    "out": "k: \"\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "yes"
+    },
+    "out": "k: yes\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "no"
+    },
+    "out": "k: no\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "Yes"
+    },
+    "out": "k: Yes\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "ON"
+    },
+    "out": "k: ON\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "y"
+    },
+    "out": "k: y\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "true"
+    },
+    "out": "k: \"true\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "False"
+    },
+    "out": "k: \"False\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "null"
+    },
+    "out": "k: \"null\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "~"
+    },
+    "out": "k: \"~\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "Null"
+    },
+    "out": "k: \"Null\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "1"
+    },
+    "out": "k: \"1\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "-1"
+    },
+    "out": "k: \"-1\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "+1"
+    },
+    "out": "k: \"+1\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "0x1F"
+    },
+    "out": "k: \"0x1F\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "0o17"
+    },
+    "out": "k: \"0o17\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "017"
+    },
+    "out": "k: \"017\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "1e3"
+    },
+    "out": "k: \"1e3\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "1_000"
+    },
+    "out": "k: \"1_000\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": ".inf"
+    },
+    "out": "k: \".inf\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "-.Inf"
+    },
+    "out": "k: \"-.Inf\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": ".NaN"
+    },
+    "out": "k: \".NaN\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "1:20"
+    },
+    "out": "k: 1:20\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "1:20:30.5"
+    },
+    "out": "k: 1:20:30.5\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "2026-07-14"
+    },
+    "out": "k: \"2026-07-14\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "2026-07-14T10:00:00Z"
+    },
+    "out": "k: \"2026-07-14T10:00:00Z\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "2026-7-4"
+    },
+    "out": "k: \"2026-7-4\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a: b"
+    },
+    "out": "k: 'a: b'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a:b"
+    },
+    "out": "k: a:b\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a #b"
+    },
+    "out": "k: 'a #b'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a#b"
+    },
+    "out": "k: a#b\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "#x"
+    },
+    "out": "k: '#x'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "- x"
+    },
+    "out": "k: '- x'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "-x"
+    },
+    "out": "k: -x\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "-"
+    },
+    "out": "k: '-'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "? x"
+    },
+    "out": "k: '? x'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "?x"
+    },
+    "out": "k: ?x\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": ":x"
+    },
+    "out": "k: :x\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x:"
+    },
+    "out": "k: 'x:'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x: "
+    },
+    "out": "k: 'x: '\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "[a]"
+    },
+    "out": "k: '[a]'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a,b"
+    },
+    "out": "k: a,b\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a]"
+    },
+    "out": "k: a]\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "{a}"
+    },
+    "out": "k: '{a}'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a}"
+    },
+    "out": "k: a}\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "&a"
+    },
+    "out": "k: '&a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "*a"
+    },
+    "out": "k: '*a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "!a"
+    },
+    "out": "k: '!a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "|a"
+    },
+    "out": "k: '|a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": ">a"
+    },
+    "out": "k: '>a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "'a'"
+    },
+    "out": "k: '''a'''\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "\"a\""
+    },
+    "out": "k: '\"a\"'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "%a"
+    },
+    "out": "k: '%a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "@a"
+    },
+    "out": "k: '@a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "`a"
+    },
+    "out": "k: '`a'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "="
+    },
+    "out": "k: =\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "<<"
+    },
+    "out": "k: <<\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": " lead"
+    },
+    "out": "k: ' lead'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "trail "
+    },
+    "out": "k: 'trail '\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": " "
+    },
+    "out": "k: ' '\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "tab\tin"
+    },
+    "out": "k: \"tab\\tin\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "\tlead"
+    },
+    "out": "k: \"\\tlead\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "line\nbreak"
+    },
+    "out": "k: |-\n  line\n  break\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "line\nbreak\n"
+    },
+    "out": "k: |\n  line\n  break\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "line\nbreak\n\n"
+    },
+    "out": "k: |+\n  line\n  break\n\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "\nlead"
+    },
+    "out": "k: |2-\n  lead\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": " \nx"
+    },
+    "out": "k: \" \\nx\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a\n\nb"
+    },
+    "out": "k: |-\n  a\n\n  b\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "trail \nx"
+    },
+    "out": "k: \"trail \\nx\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x\n y"
+    },
+    "out": "k: |-\n  x\n   y\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x\r\ny"
+    },
+    "out": "k: \"x\\r\\ny\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x\ry"
+    },
+    "out": "k: \"x\\ry\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "SRD-7 §4.3"
+    },
+    "out": "k: SRD-7 §4.3\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "ü"
+    },
+    "out": "k: ü\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "Grüße"
+    },
+    "out": "k: Grüße\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "😀"
+    },
+    "out": "k: \"\\U0001F600\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a😀b"
+    },
+    "out": "k: \"a\\U0001F600b\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": ""
+    },
+    "out": "k: \"\\N\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "xy"
+    },
+    "out": "k: \"x\\Ny\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": " x"
+    },
+    "out": "k:  x\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x\u2028y"
+    },
+    "out": "k: 'x\u2028  y'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "﻿bom"
+    },
+    "out": "k: \"\\uFEFF\\x62\\x6F\\x6D\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x﻿"
+    },
+    "out": "k: \"x\\uFEFF\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "\u0007bell"
+    },
+    "out": "k: \"\\abell\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "\u001b"
+    },
+    "out": "k: \"\\e\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": ""
+    },
+    "out": "k: \"\\x7F\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "back\\slash"
+    },
+    "out": "k: back\\slash\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "dq\"in"
+    },
+    "out": "k: dq\"in\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "it's"
+    },
+    "out": "k: it's\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "it's: x"
+    },
+    "out": "k: 'it''s: x'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "---"
+    },
+    "out": "k: '---'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "..."
+    },
+    "out": "k: '...'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "--- x"
+    },
+    "out": "k: '--- x'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "...x"
+    },
+    "out": "k: '...x'\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "-- x"
+    },
+    "out": "k: -- x\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "out": "k: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a "
+    },
+    "out": "k: 'a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a '\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "EPUB download token TTL"
+    },
+    "out": "k: EPUB download token TTL\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "srd-wishlist-sharing"
+    },
+    "out": "k: srd-wishlist-sharing\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "epub-delivery#download-link"
+    },
+    "out": "k: epub-delivery#download-link\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+    },
+    "out": "k: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "123abc"
+    },
+    "out": "k: 123abc\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "0.5"
+    },
+    "out": "k: \"0.5\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "1."
+    },
+    "out": "k: \"1.\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "+.5"
+    },
+    "out": "k: \"+.5\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "0b101"
+    },
+    "out": "k: \"0b101\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "1__0"
+    },
+    "out": "k: \"1__0\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "0x_1"
+    },
+    "out": "k: \"0x_1\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "12e"
+    },
+    "out": "k: 12e\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "Na N"
+    },
+    "out": "k: Na N\n"
+  },
+  {
+    "key": "a b",
+    "node": {
+      "str": "v"
+    },
+    "out": "a b: v\n"
+  },
+  {
+    "node": {
+      "str": "v"
+    },
+    "out": "'': v\n"
+  },
+  {
+    "key": "x\ny",
+    "node": {
+      "str": "v"
+    },
+    "out": "? |-\n  x\n  y\n: v\n"
+  },
+  {
+    "key": "yes",
+    "node": {
+      "str": "v"
+    },
+    "out": "yes: v\n"
+  },
+  {
+    "key": "1",
+    "node": {
+      "str": "v"
+    },
+    "out": "1: v\n"
+  },
+  {
+    "key": "a: b",
+    "node": {
+      "str": "v"
+    },
+    "out": "'a: b': v\n"
+  },
+  {
+    "key": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+    "node": {
+      "str": "v"
+    },
+    "out": "? kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\n: v\n"
+  },
+  {
+    "key": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+    "node": {
+      "str": "v"
+    },
+    "out": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk: v\n"
+  },
+  {
+    "key": "😀",
+    "node": {
+      "str": "v"
+    },
+    "out": "\"\\U0001F600\": v\n"
+  },
+  {
+    "key": "- k",
+    "node": {
+      "str": "v"
+    },
+    "out": "'- k': v\n"
+  },
+  {
+    "key": "[k]",
+    "node": {
+      "str": "v"
+    },
+    "out": "'[k]': v\n"
+  },
+  {
+    "key": "hits",
+    "node": {
+      "int": 0
+    },
+    "out": "hits: 0\n"
+  },
+  {
+    "key": "hits",
+    "node": {
+      "int": -5
+    },
+    "out": "hits: -5\n"
+  },
+  {
+    "key": "hits",
+    "node": {
+      "int": 123456
+    },
+    "out": "hits: 123456\n"
+  },
+  {
+    "key": "hits",
+    "node": {
+      "int": 1099511627776
+    },
+    "out": "hits: 1099511627776\n"
+  },
+  {
+    "key": "created",
+    "node": {
+      "time": "2026-07-14T10:00:00Z"
+    },
+    "out": "created: 2026-07-14T10:00:00Z\n"
+  },
+  {
+    "key": "created",
+    "node": {
+      "time": "2026-07-14T10:00:00+02:00"
+    },
+    "out": "created: 2026-07-14T10:00:00+02:00\n"
+  },
+  {
+    "key": "created",
+    "node": {
+      "time": "2026-07-14T10:00:00.5Z"
+    },
+    "out": "created: 2026-07-14T10:00:00Z\n"
+  },
+  {
+    "key": "created",
+    "node": {
+      "time": "0001-01-01T00:00:00Z"
+    },
+    "out": "created: 0001-01-01T00:00:00Z\n"
+  },
+  {
+    "key": "created",
+    "node": {
+      "time": "2026-07-14T10:00:00-00:30"
+    },
+    "out": "created: 2026-07-14T10:00:00-00:30\n"
+  },
+  {
+    "key": "asked",
+    "node": {
+      "date": "2026-10-04"
+    },
+    "out": "asked: 2026-10-04\n"
+  },
+  {
+    "key": "asked",
+    "node": {
+      "date": ""
+    },
+    "out": "asked: \"\"\n"
+  },
+  {
+    "key": "asked",
+    "node": {
+      "date": "2026-1-4"
+    },
+    "out": "asked: 2026-1-4\n"
+  },
+  {
+    "key": "asked",
+    "node": {
+      "date": "later"
+    },
+    "out": "asked: later\n"
+  },
+  {
+    "key": "ask",
+    "node": {
+      "list": []
+    },
+    "out": "ask: []\n"
+  },
+  {
+    "key": "ask",
+    "node": {
+      "list": ["a"]
+    },
+    "out": "ask:\n  - a\n"
+  },
+  {
+    "key": "ask",
+    "node": {
+      "list": ["yes", "a: b", ""]
+    },
+    "out": "ask:\n  - yes\n  - 'a: b'\n  - \"\"\n"
+  },
+  {
+    "key": "ask",
+    "node": {
+      "list": ["line\nbreak", "😀"]
+    },
+    "out": "ask:\n  - |-\n    line\n    break\n  - \"\\U0001F600\"\n"
+  },
+  {
+    "key": "ask",
+    "node": {
+      "list": ["- x", "#y"]
+    },
+    "out": "ask:\n  - '- x'\n  - '#y'\n"
+  },
+  {
+    "key": "filled_by",
+    "node": {
+      "fill": []
+    },
+    "out": "filled_by: []\n"
+  },
+  {
+    "key": "filled_by",
+    "node": {
+      "fill": [
+        {
+          "ref": "epub"
+        }
+      ]
+    },
+    "out": "filled_by:\n  - ref: epub\n"
+  },
+  {
+    "key": "filled_by",
+    "node": {
+      "fill": [
+        {
+          "ref": "a#b",
+          "hash": "abc"
+        },
+        {
+          "ref": "x"
+        }
+      ]
+    },
+    "out": "filled_by:\n  - ref: a#b\n    hash: abc\n  - ref: x\n"
+  },
+  {
+    "key": "filled_by",
+    "node": {
+      "fill": [
+        {
+          "ref": "yes",
+          "hash": "1"
+        }
+      ]
+    },
+    "out": "filled_by:\n  - ref: yes\n    hash: \"1\"\n"
+  },
+  {
+    "key": "filled_by",
+    "node": {
+      "fill": [
+        {
+          "ref": "multi\nline"
+        }
+      ]
+    },
+    "out": "filled_by:\n  - ref: |-\n      multi\n      line\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "key": "plainkey"
+    },
+    "out": "k: plainkey\n"
+  },
+  {
+    "yaml": "{id: gap-0003, status: open, kind: wrong, hits: 1,\n created: 2026-07-14T10:00:00Z, x: y}\n",
+    "out": "{id: gap-0003, status: open, kind: wrong, hits: 1, created: '2026-07-14T10:00:00Z', x: y}\n"
+  },
+  {
+    "yaml": "{a: &x 1, b: *x, c: !!str 2, d: [1, {e: f}], g: \"h\"}",
+    "out": "{a: &x 1, b: *x, c: !!str 2, d: [1, {e: f}], g: \"h\"}\n"
+  },
+  {
+    "yaml": "a:\n  - b: 1\n    c: [x]\n  - - y\n    - z\n? [k]\n: v\n",
+    "out": "a:\n  - b: 1\n    c: [x]\n  - - y\n    - z\n? [k]\n: v\n"
+  },
+  {
+    "yaml": "a: >\n  folded\n  text\n\n  para\nb: |\n  lit\n   more\nc: |+\n  keep\n\nd: |-\n  strip\ne: |2\n   indented\n",
+    "out": "a: >\n  folded text\n\n  para\n\nb: |\n  lit\n   more\nc: |+\n  keep\n\nd: |-\n  strip\ne: |2\n   indented\n"
+  },
+  {
+    "yaml": "{a: \"multi\\nline\", b: 'it''s', 'q k': v, \"\": e}",
+    "out": "{a: \"multi\\nline\", b: 'it''s', 'q k': v, \"\": e}\n"
+  },
+  {
+    "yaml": "a: &anc\n  b: 1\nc: *anc\nd: !local x\ne: !<tag:example.com,2000:foo> y\nf: !!int 3\ng: !!str yes\nh: ! 12\n",
+    "out": "a: &anc\n  b: 1\nc: *anc\nd: !local x\ne: !<tag:example.com,2000:foo> y\nf: !!int 3\ng: !!str yes\nh: 12\n"
+  },
+  {
+    "yaml": "a: {}\nb: []\nc: {x: []}\nd: [[], {}]\ne:\nf: ~\ng: null\n",
+    "out": "a: {}\nb: []\nc: {x: []}\nd: [[], {}]\ne:\nf: ~\ng: null\n"
+  },
+  {
+    "yaml": "a: plain multi\n  line scalar\nb: 'single\n\n  folded'\nc: \"dq \\t tab\"\n",
+    "out": "a: plain multi line scalar\nb: 'single\n\n  folded'\nc: \"dq \\t tab\"\n"
+  },
+  {
+    "yaml": "? |\n  block key\n: v\n? a\n: - x\n  - y\n",
+    "out": "? |\n  block key\n: v\na:\n  - x\n  - y\n"
+  },
+  {
+    "yaml": "seq:\n- a\n- b:\n    c: d\n- - e\n  - f\n",
+    "out": "seq:\n  - a\n  - b:\n      c: d\n  - - e\n    - f\n"
+  },
+  {
+    "yaml": "{a: [1, 2, {b: [c, {d: e}]}], f: \"x\"}",
+    "out": "{a: [1, 2, {b: [c, {d: e}]}], f: \"x\"}\n"
+  },
+  {
+    "yaml": "[a, b]",
+    "out": "[a, b]\n"
+  },
+  {
+    "yaml": "a: 2026-07-14\nb: 2026-07-14T10:00:00Z\nc: 1.5\nd: 0x1F\ne: true\nf: ~\n",
+    "out": "a: 2026-07-14\nb: 2026-07-14T10:00:00Z\nc: 1.5\nd: 0x1F\ne: true\nf: ~\n"
+  },
+  {
+    "yaml": "a: !!binary aGVsbG8=\nb: !!float 1\nc: !!null ''\n",
+    "out": "a: !!binary aGVsbG8=\nb: !!float 1\nc: !!null ''\n"
+  },
+  {
+    "yaml": "\"quoted key\": 1\n'single': 2\n? complex\n: 3\n",
+    "out": "\"quoted key\": 1\n'single': 2\ncomplex: 3\n"
+  },
+  {
+    "yaml": "a: \"\\U0001F600\"\nb: \"\\x07\"\nc: \"\\u00e9\"\n",
+    "out": "a: \"\\U0001F600\"\nb: \"\\a\"\nc: \"é\"\n"
+  },
+  {
+    "yaml": "{a: b, c: [d, e], f: {g: h}, i: 'j k', l: \"m: n\"}",
+    "out": "{a: b, c: [d, e], f: {g: h}, i: 'j k', l: \"m: n\"}\n"
+  },
+  {
+    "yaml": "a:\n  b:\n    c:\n      d: [1, 2]\n      e:\n        - f\n        - g: h\n          i: j\n",
+    "out": "a:\n  b:\n    c:\n      d: [1, 2]\n      e:\n        - f\n        - g: h\n          i: j\n"
+  },
+  {
+    "yaml": "<<: {a: 1}\nb: 2\n",
+    "out": "!!merge <<: {a: 1}\nb: 2\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "sets": [
+      {
+        "key": "answer",
+        "node": {
+          "str": "unknown"
+        }
+      },
+      {
+        "key": "filled_by",
+        "node": {
+          "fill": [
+            {
+              "ref": "epub"
+            }
+          ]
+        }
+      },
+      {
+        "key": "zz",
+        "node": {
+          "str": "last"
+        }
+      }
+    ],
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nanswer: unknown\nhits: 2\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ref: epub\nzz: last\n---\n# Topic\n## Demand\n## Detail\n## Target claim"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "sets": [
+      {
+        "key": "status",
+        "node": {
+          "str": "wontfix"
+        }
+      },
+      {
+        "key": "status",
+        "node": {
+          "str": "filled"
+        }
+      }
+    ],
+    "out": "---\nid: gap-0003\nstatus: filled\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "sets": [
+      {
+        "key": "id",
+        "node": {
+          "str": "gap-0004"
+        }
+      },
+      {
+        "key": "created",
+        "node": {
+          "time": "2026-08-01T00:00:00Z"
+        }
+      },
+      {
+        "key": "hits",
+        "node": {
+          "int": 3
+        }
+      }
+    ],
+    "out": "---\nid: gap-0004\nstatus: open\nkind: wrong\nhits: 3\ncreated: 2026-08-01T00:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "sets": [
+      {
+        "key": "asked",
+        "node": {
+          "date": "2026-10-04"
+        }
+      },
+      {
+        "key": "ask",
+        "node": {
+          "list": ["Ann", "Bob"]
+        }
+      },
+      {
+        "key": "srd_ref",
+        "node": {
+          "str": "SRD-1"
+        }
+      },
+      {
+        "key": "doc_id",
+        "node": {
+          "str": "epub"
+        }
+      },
+      {
+        "key": "heading_path",
+        "node": {
+          "list": ["A", "B"]
+        }
+      },
+      {
+        "key": "search_terms",
+        "node": {
+          "list": []
+        }
+      }
+    ],
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nasked: 2026-10-04\nask:\n  - Ann\n  - Bob\nsrd_ref: SRD-1\ndoc_id: epub\nheading_path:\n  - A\n  - B\nsearch_terms: []\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "topic": "New topic",
+    "target": "A claim.",
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# New topic\n## Demand\n## Detail\n## Target claim\n\nA claim.\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim\n",
+    "target": "\n\n  indented claim  \n\n",
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim\n\n  indented claim\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim\n\nold claim\n## Notes\nkeep\n",
+    "target": "new",
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim\n\nnew\n\n## Notes\nkeep\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim\n\nold claim\n## Notes\nkeep\n",
+    "target": " ",
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim\n\n## Notes\nkeep\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim",
+    "target": "",
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# Topic\n## Demand\n## Detail\n## Target claim\n"
+  },
+  {
+    "name": "gap-0001-x.md",
+    "src": "---\nid: gap-0001\nstatus: open\nkind: incomplete\nanswer: deferred\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - EPUB Delivery\n  - Download Link\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 1\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+    "sets": [
+      {
+        "key": "status",
+        "node": {
+          "str": "filled"
+        }
+      },
+      {
+        "key": "filled_by",
+        "node": {
+          "fill": [
+            {
+              "ref": "epub-delivery#download-link",
+              "hash": "abc"
+            },
+            {
+              "ref": "other"
+            }
+          ]
+        }
+      }
+    ],
+    "out": "---\nid: gap-0001\nstatus: filled\nkind: incomplete\nanswer: deferred\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - EPUB Delivery\n  - Download Link\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 1\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: abc\n  - ref: other\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n"
+  },
+  {
+    "name": "gap-0001-x.md",
+    "src": "---\nid: gap-0001\nstatus: open\nkind: incomplete\nanswer: deferred\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - EPUB Delivery\n  - Download Link\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 1\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n",
+    "sets": [
+      {
+        "key": "heading_path",
+        "node": {
+          "list": ["One"]
+        }
+      },
+      {
+        "key": "answer",
+        "node": {
+          "str": "known"
+        }
+      }
+    ],
+    "out": "---\nid: gap-0001\nstatus: open\nkind: incomplete\nanswer: known\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - One\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 1\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\n# comment about status\nstatus: open\n\nkind: wrong   # trailing\nhits: 2\ncreated: 2026-07-14T10:00:00Z\ncustom:\n  nested: 1\n# end comment\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "sets": [
+      {
+        "key": "status",
+        "node": {
+          "str": "filled"
+        }
+      },
+      {
+        "key": "kind",
+        "node": {
+          "str": "missing"
+        }
+      },
+      {
+        "key": "custom",
+        "node": {
+          "str": "x"
+        }
+      },
+      {
+        "key": "answer",
+        "node": {
+          "str": "deferred"
+        }
+      }
+    ],
+    "out": "---\nid: gap-0003\n# comment about status\nstatus: filled\n\nkind: missing\nanswer: deferred\nhits: 2\ncreated: 2026-07-14T10:00:00Z\ncustom: x\n# end comment\n---\n# T\n## Demand\n## Detail\n## Target claim\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\n{id: gap-0003, status: open, kind: wrong, hits: 1,\n created: 2026-07-14T10:00:00Z, x: y}\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "sets": [
+      {
+        "key": "status",
+        "node": {
+          "str": "wontfix"
+        }
+      },
+      {
+        "key": "srd_ref",
+        "node": {
+          "str": "SRD-1"
+        }
+      }
+    ],
+    "out": "---\n{id: gap-0003, status: wontfix, kind: wrong, hits: 1, created: '2026-07-14T10:00:00Z', x: y, srd_ref: SRD-1}\n---\n# T\n## Demand\n## Detail\n## Target claim\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\n{id: gap-0003, status: open, kind: wrong, hits: 1, created: 2026-07-14T10:00:00Z, list: [a, b], m: {k: v}}\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "sets": [
+      {
+        "key": "ask",
+        "node": {
+          "list": ["Ann"]
+        }
+      },
+      {
+        "key": "filled_by",
+        "node": {
+          "fill": [
+            {
+              "ref": "r",
+              "hash": "h"
+            }
+          ]
+        }
+      }
+    ],
+    "out": "---\n{id: gap-0003, status: open, kind: wrong, hits: 1, created: '2026-07-14T10:00:00Z', list: [a, b], m: {k: v}, ask: [Ann], filled_by: [{ref: r, hash: h}]}\n---\n# T\n## Demand\n## Detail\n## Target claim\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\r\nid: gap-0003\r\nstatus: open\r\nkind: wrong\r\nhits: 2\r\ncreated: 2026-07-14T10:00:00Z\r\n---\r\n# T\r\n## Demand\r\n## Detail\r\n## Target claim\r\n",
+    "sets": [
+      {
+        "key": "status",
+        "node": {
+          "str": "filled"
+        }
+      },
+      {
+        "key": "answer",
+        "node": {
+          "str": "x"
+        }
+      }
+    ],
+    "out": "---\nid: gap-0003\r\nstatus: filled\nkind: wrong\r\nanswer: x\nhits: 2\r\ncreated: 2026-07-14T10:00:00Z\r\n---\n# T\r\n## Demand\r\n## Detail\r\n## Target claim\r\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\nlead text\n#  Old  \n\nintro\n## Demand\nd\n## Detail\n```\n## Target claim\n```\n## Target claim\nold",
+    "topic": "New",
+    "target": "t",
+    "out": "---\nid: gap-0003\nstatus: open\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\nlead text\n# New\n\nintro\n## Demand\nd\n## Detail\n```\n## Target claim\n```\n## Target claim\n\nt\n"
+  },
+  {
+    "name": "gap-0003-t.md",
+    "src": "---\nstatus: open\nid: gap-0003\nkind: wrong\nhits: 2\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+    "sets": [
+      {
+        "key": "answer",
+        "node": {
+          "str": "a"
+        }
+      },
+      {
+        "key": "asked",
+        "node": {
+          "date": ""
+        }
+      },
+      {
+        "key": "zz",
+        "node": {
+          "str": "z"
+        }
+      },
+      {
+        "key": "aa",
+        "node": {
+          "str": "a"
+        }
+      }
+    ],
+    "out": "---\nstatus: open\nid: gap-0003\nkind: wrong\nanswer: a\nasked: \"\"\nhits: 2\ncreated: 2026-07-14T10:00:00Z\nzz: z\naa: a\n---\n# T\n## Demand\n## Detail\n## Target claim\n"
+  },
+  {
+    "name": "gap-0001-epub-download-token-ttl.md",
+    "new": {
+      "id": "gap-0001",
+      "status": "open",
+      "kind": "missing",
+      "answer": "deferred",
+      "ask": [],
+      "asked": "",
+      "srd_ref": "SRD-7 §4.3",
+      "doc_id": "epub",
+      "heading_path": ["Catalog", "Delivery"],
+      "search_terms": ["token", "ttl"],
+      "hits": 1,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [],
+      "topic": "EPUB download token TTL",
+      "demand": "SRD-7 needs the token TTL.",
+      "detail": "TTL never stated.",
+      "target_claim": "Token valid 24h."
+    },
+    "out": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n"
+  },
+  {
+    "name": "gap-0002.md",
+    "new": {
+      "id": "gap-0001",
+      "status": "filled",
+      "kind": "missing",
+      "answer": "deferred",
+      "ask": ["Ann Lee", "yes"],
+      "asked": "2026-10-04",
+      "srd_ref": "SRD-7 §4.3",
+      "doc_id": "epub",
+      "heading_path": [],
+      "search_terms": ["a: b"],
+      "hits": 0,
+      "created": "2026-07-14T10:00:00Z",
+      "filled_by": [
+        {
+          "ref": "epub#a",
+          "hash": "ff"
+        }
+      ],
+      "topic": "Grüße: 😀 #1",
+      "demand": "\n\n  multi\n\nline  \n",
+      "detail": "",
+      "target_claim": ""
+    },
+    "out": "---\nid: gap-0001\nstatus: filled\nkind: missing\nanswer: deferred\nask:\n  - Ann Lee\n  - yes\nasked: 2026-10-04\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path: []\nsearch_terms:\n  - 'a: b'\nhits: 0\ncreated: 2026-07-14T10:00:00Z\nfilled_by:\n  - ref: epub#a\n    hash: ff\n---\n# Grüße: 😀 #1\n\n## Demand\n\n  multi\n\nline\n\n## Detail\n\n## Target claim\n"
+  },
+  {
+    "name": "gap-0003.md",
+    "new": {
+      "id": "gap-0001",
+      "status": "open",
+      "kind": "missing",
+      "answer": "",
+      "ask": null,
+      "asked": "",
+      "srd_ref": "",
+      "doc_id": "",
+      "heading_path": null,
+      "search_terms": null,
+      "hits": 1,
+      "created": "2026-07-14T12:00:00+02:00",
+      "filled_by": null,
+      "topic": "EPUB download token TTL",
+      "demand": "SRD-7 needs the token TTL.",
+      "detail": "TTL never stated.",
+      "target_claim": "Token valid 24h."
+    },
+    "sets": [
+      {
+        "key": "status",
+        "node": {
+          "str": "wontfix"
+        }
+      }
+    ],
+    "out": "---\nid: gap-0001\nstatus: wontfix\nkind: missing\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: \"\"\nheading_path: []\nsearch_terms: []\nhits: 1\ncreated: 2026-07-14T12:00:00+02:00\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "￿"
+    },
+    "out": "k: \"\\uFFFF\"\n"
+  },
+  {
+    "key": "k",
+    "node": {
+      "str": "x￾"
+    },
+    "out": "k: \"x\\uFFFE\"\n"
+  },
+  {
+    "yaml": "{[a, b]: c, d: e}\n",
+    "out": "{? [a, b] : c, d: e}\n"
+  },
+  {
+    "yaml": "a: &x k\n*x : v\n",
+    "out": "a: &x k\n*x: v\n"
+  },
+  {
+    "yaml": "{&a x: 1, *a : 2}\n",
+    "out": "{&a x: 1, *a: 2}\n"
+  },
+  {
+    "yaml": "? []\n: v\n? {}\n: w\n",
+    "out": "[]: v\n{}: w\n"
+  },
+  {
+    "yaml": "a: |+\n\nb: 1\n",
+    "out": "a: |2+\nb: 1\n"
+  },
+  {
+    "yaml": "a: !e%C3%A9 x\nb: !<tag:x.com,2000:a%20b> y\n",
+    "out": "a: !e%C3%A9 x\nb: !<tag:x.com,2000:a%20b> y\n"
+  }
+]

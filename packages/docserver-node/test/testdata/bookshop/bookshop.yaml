@@ -1,0 +1,71 @@
+# Plain-YAML configuration for the bookshop example. It indexes the same
+# sources as project-config.md beside it:
+#
+#   docket mcp -c examples/bookshop/bookshop.yaml
+#
+# The server indexes every source before it starts listening, then serves
+# MCP (Streamable HTTP) at /mcp and a REST mirror at /search, /docs,
+# /docs/{id}, /healthz, and /openapi.yaml (plus /gaps when gaps is set).
+# Unless watching is enabled below, a running server never re-reads the
+# sources; restart it after the documents change.
+
+# Address the HTTP server listens on. Required unless the binary runs with
+# --stdio, which serves a single client over stdin/stdout instead.
+listen: ":7777"
+
+# Named document sources. Each source is either a directory walked
+# recursively for *.md files, or a single Markdown file. The source name
+# prefixes every document path the server reports, so the file
+# catalog/epub_delivery.md under the docs source gets the path
+# "docs/catalog/epub_delivery.md". Names may contain letters, digits, dots,
+# dashes, and underscores. A document's identity is its front-matter id when
+# set (epub_delivery.md sets "epub-delivery"), else its path; results carry
+# both as id and path, and /docs/{id} accepts either.
+#
+# Paths may be absolute or relative. A relative path resolves against the
+# directory holding this config file, not the working directory the server
+# is launched from.
+#
+# A document's source_url comes from its front-matter url when set, else
+# from the first URL in its body; every section of the document cites it as
+# is. A gap's filled_by names a section by the GitHub-style slug of its
+# heading ("## Download Link" is epub-delivery#download-link).
+#
+# Ranking documents by trust (the precedence and initiatives keys) is a
+# project-config.md feature only; under a plain YAML config no result
+# carries a rank.
+sources:
+  docs:
+    dir: docs
+  kb:
+    dir: kb
+  initiatives:
+    dir: initiatives
+
+# Optional gap folder. When set, agents can record gaps: facts SRD work needs
+# that the corpus does not supply reliably. Each gap is one Markdown file,
+# gap-NNNN-<slug>.md, that people may edit by hand (for example in Obsidian);
+# the server re-reads a gap's file before every operation and rewrites only
+# what the operation changes. A gap starts as a draft or open, and closes as
+# filled once corpus sections state its fact, or as wontfix; the server moves
+# a closed gap's file into the folder's closed/ subfolder, and back when the
+# gap reopens. Omit the key to keep the server retrieval-only.
+#
+# The path follows the same rules as a source path. The folder must lie
+# outside every source above, so gaps never reach search, and no source may
+# lie inside it. It must exist and be writable, or the server refuses to
+# start; the server never creates it, only its closed/ subfolder.
+gaps: gap
+
+# Optional source watching. When enabled, the server watches every source
+# above and rebuilds the whole index once changes have been quiet for the
+# debounce window, so a corpus change needs no restart. A failed rebuild is
+# logged and the previous index keeps serving. Omit the key to keep
+# restart-to-reload.
+#
+# debounce is a Go duration ("500ms", "2s"), defaults to 500ms, and must be
+# positive and at most 1m. Watching needs filesystem change events, which
+# network filesystems and some container mounts do not deliver.
+watch:
+  enabled: true
+  debounce: 500ms

@@ -1,0 +1,2456 @@
+// SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
+// SPDX-License-Identifier: MIT
+
+// Ported from the page-pull cases of pkg/docket/pull_test.go. The client, cache,
+// and notes all go through the injected ports, so a pull is driven end-to-end
+// with StubHttpClient + MemFS. Folder/space discovery is exercised in
+// discover.test.ts.
+
+import { describe, expect, it } from "vitest";
+import { readCachedPage, writePage } from "../../src/cache/cache.ts";
+import { buildConfig, type Config } from "../../src/config/config.ts";
+import { ConfluenceClient } from "../../src/confluence/client.ts";
+import { obsidianFlavor } from "../../src/flavor/flavor.ts";
+import { NoopReporter, type Reporter } from "../../src/ports/progress.ts";
+import {
+    buildLinkIndex,
+    type LinkIndex,
+    loadLinkIndex,
+} from "../../src/sync/linkindex.ts";
+import {
+    addStats,
+    emptyStats,
+    Puller,
+    type PullOutcome,
+    pullConfig,
+    pullSummary,
+    type ResolveSourceDeps,
+    resolvePagePath,
+    resolvePageSource,
+} from "../../src/sync/pull.ts";
+import { StubHttpClient } from "../support/http-stub.ts";
+import { MemFS } from "../support/memfs.ts";
+
+function testConfig(pages: Record<string, string>): Config {
+    return buildConfig(
+        { pages },
+        {
+            site: "ex",
+            account: "a@ex.com",
+            token: "secret",
+            syncRoot: "/vault",
+        },
+    );
+}
+
+function pullerFor(
+    config: Config,
+    stub: StubHttpClient,
+    fs = new MemFS(),
+    links: LinkIndex | null = buildLinkIndex(config.syncRoot, config.pages, []),
+    knownVersions?: Map<string, number>,
+): { puller: Puller; fs: MemFS } {
+    const client = new ConfluenceClient(stub, {
+        host: config.host,
+        account: config.account,
+        token: config.token,
+    });
+    const puller = new Puller({
+        client,
+        fs,
+        config,
+        reporter: new NoopReporter(),
+        cacheDir: "/data/cache",
+        assetsDir: "/vault/_docket-media",
+        links,
+        flavor: obsidianFlavor,
+        ...(knownVersions ? { knownVersions } : {}),
+    });
+    return { puller, fs };
+}
+
+const pageURL = (id: string): string =>
+    `https://ex.atlassian.net/wiki/api/v2/pages/${id}?body-format=atlas_doc_format`;
+
+const attachmentsURL = (id: string): string =>
+    `https://ex.atlassian.net/wiki/api/v2/pages/${id}/attachments`;
+
+/** An ADF doc carrying one uploaded-file image (fileId F1, localId L1). */
+const mediaADF = {
+    version: 1,
+    type: "doc",
+    content: [
+        {
+            type: "mediaSingle",
+            attrs: { layout: "center" },
+            content: [
+                {
+                    type: "media",
+                    attrs: {
+                        type: "file",
+                        id: "F1",
+                        localId: "L1",
+                        alt: "pic.png",
+                    },
+                },
+            ],
+        },
+    ],
+};
+
+/** The attachments-list response resolving F1 to a downloadable PNG. */
+const attachmentsBody = JSON.stringify({
+    results: [
+        {
+            fileId: "F1",
+            title: "pic.png",
+            mediaType: "image/png",
+            downloadLink: "/download/x",
+        },
+    ],
+    _links: {},
+});
+
+function pageBody(
+    id: string,
+    version: number,
+    adf: unknown = {
+        version: 1,
+        type: "doc",
+        content: [
+            { type: "paragraph", content: [{ type: "text", text: "hello" }] },
+        ],
+    },
+): string {
+    return JSON.stringify({
+        id,
+        title: "Title",
+        spaceId: "9",
+        parentId: "7",
+        version: { number: version },
+        body: { atlas_doc_format: { value: JSON.stringify(adf) } },
+    });
+}
+
+/** paras builds a doc of one paragraph per text — a multi-line body for merges. */
+function paras(...texts: string[]): unknown {
+    return {
+        version: 1,
+        type: "doc",
+        content: texts.map((t) => ({
+            type: "paragraph",
+            content: [{ type: "text", text: t }],
+        })),
+    };
+}
+
+/** managedNote is a docket-managed note as pulled: frontmatter plus body. */
+function managedNote(id: string, version: number, body: string): string {
+    return (
+        "---\n" +
+        'title: "Guide"\n' +
+        `docket_page_id: "${id}"\n` +
+        `docket_page_version: ${version}\n` +
+        'docket_space_id: "9"\n' +
+        "docket_mode: pull\n" +
+        `---\n\n${body}\n`
+    );
+}
+
+/** SHARED_KEYS are the frontmatter keys docket shares with other tools. */
+const SHARED_KEYS = new Set(["id", "title", "url"]);
+
+/** fmKeys returns the top-level frontmatter keys of `note`, in order. */
+function fmKeys(note: string): string[] {
+    const fm = /^---\n([\s\S]*?)\n---\n/.exec(note)?.[1] ?? "";
+    return [...fm.matchAll(/^([^\s:][^:]*):/gm)].map((m) => m[1] ?? "");
+}
+
+/**
+ * toLegacy rewrites a note's `docket_`-prefixed frontmatter keys to the
+ * unprefixed names docket wrote before the prefix, as an old vault holds them.
+ */
+function toLegacy(note: string): string {
+    const legacy: Record<string, string> = {
+        docket_mode: "docket-plugin",
+        docket_local: "cf_local",
+        docket_page_id: "page_id",
+        docket_page_version: "page_version",
+        docket_page_path: "page_path",
+        docket_space_id: "space_id",
+        docket_space_key: "space_key",
+        docket_parent_id: "parent_id",
+        docket_domain: "cf_domain",
+        docket_mentions: "mentions",
+        docket_page_images: "page_images",
+    };
+    return note.replace(
+        /^(docket_[a-z_]+):/gm,
+        (_all, key: string) => `${legacy[key] ?? key}:`,
+    );
+}
+
+/** cacheNote is a cached-render `.md` (the merge base) with `body`. */
+function cacheNote(version: number, body: string): string {
+    return `---\ndocket_page_version: ${version}\n---\n\n${body}\n`;
+}
+
+/** folderConfig maps the `docs` root to a Confluence folder. */
+function folderConfig(): Config {
+    return buildConfig(
+        { folders: { docs: "/wiki/spaces/X/folder/100" } },
+        {
+            site: "ex",
+            account: "a@ex.com",
+            token: "secret",
+            syncRoot: "/vault",
+        },
+    );
+}
+
+/** folderStub answers folder 100's children with one page (id 7, "Guide"). */
+function folderStub(): StubHttpClient {
+    return new StubHttpClient().on(
+        "GET",
+        "https://ex.atlassian.net/wiki/api/v2/folders/100/direct-children",
+        {
+            body: JSON.stringify({
+                results: [
+                    {
+                        id: "7",
+                        type: "page",
+                        title: "Guide",
+                        status: "current",
+                    },
+                ],
+                _links: {},
+            }),
+        },
+    );
+}
+
+/** pullConfigWith runs a full pullConfig against the given config, stub, and fs. */
+function pullConfigWith(
+    cfg: Config,
+    stub: StubHttpClient,
+    fs: MemFS,
+): Promise<PullOutcome> {
+    const client = new ConfluenceClient(stub, {
+        host: cfg.host,
+        account: cfg.account,
+        token: cfg.token,
+    });
+    return pullConfig({
+        client,
+        fs,
+        config: cfg,
+        reporter: new NoopReporter(),
+        cacheDir: "/data/cache",
+        assetsDir: "/vault/_docket-media",
+        linksPath: "/data/cache/links.json",
+    });
+}
+
+describe("Puller.pullPages", () => {
+    it("pulls a fresh page: caches ADF, writes the note and cache md", async () => {
+        const config = testConfig({
+            "notes/page.md": "/wiki/spaces/X/pages/123/Title",
+        });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+
+        const out = await puller.pullPages();
+
+        expect(out.stats).toEqual({
+            added: 1,
+            updated: 0,
+            unchanged: 0,
+            conflict: 0,
+            deleted: 0,
+            rerendered: 0,
+            total: 1,
+        });
+        expect(out.errors).toEqual([]);
+        expect(out.log).toContain("added");
+        expect(out.log).toContain("notes/page.md (v3)");
+        expect(await fs.readText("/vault/notes/page.md")).toContain("hello");
+        expect(await fs.readText("/vault/notes/page.md")).toContain(
+            "docket_mode: pull",
+        );
+        expect(await fs.exists("/data/cache/notes/page.v3.json")).toBe(true);
+        expect(await fs.exists("/data/cache/notes/page.v3.md")).toBe(true);
+    });
+
+    it("writes the page id as id right after the marker", async () => {
+        const config = testConfig({
+            "notes/page.md": "/wiki/spaces/X/pages/123/Title",
+        });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+
+        await puller.pullPages();
+
+        const have = await fs.readText("/vault/notes/page.md");
+        expect(have).toContain(
+            '---\ndocket_mode: pull\nid: "123"\ntitle: "Title"\n',
+        );
+        expect(have).toContain('docket_page_id: "123"\n');
+    });
+
+    it("writes only shared or docket_-prefixed frontmatter keys", async () => {
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "heading",
+                    attrs: { level: 2 },
+                    content: [{ type: "text", text: "Intro" }],
+                },
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "mention", attrs: { id: "A1", text: "@Ann" } },
+                    ],
+                },
+                ...mediaADF.content,
+            ],
+        };
+        const config = testConfig({
+            "notes/page.md": "/wiki/spaces/X/pages/123/Title",
+        });
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", attachmentsURL("123"), { body: attachmentsBody })
+            .on("GET", "https://ex.atlassian.net/wiki/download/x", {
+                body: "IMG",
+            });
+        const { puller, fs } = pullerFor(config, stub);
+
+        await puller.pullPages();
+
+        const have = fmKeys(await fs.readText("/vault/notes/page.md"));
+        expect(have).toEqual([
+            "docket_mode",
+            "id",
+            "title",
+            "docket_page_path",
+            "docket_page_id",
+            "docket_page_version",
+            "docket_space_id",
+            "docket_parent_id",
+            "docket_domain",
+            "url",
+            "docket_page_images",
+            "docket_mentions",
+        ]);
+        for (const key of have) {
+            expect(SHARED_KEYS.has(key) || key.startsWith("docket_")).toBe(
+                true,
+            );
+        }
+    });
+
+    it("rewrites a legacy-key note to the prefixed keys on re-pull", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const seed = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta", "gamma")),
+        });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+        // An old vault: the note carries the unprefixed keys, plus a local edit.
+        const pulled = await fs.readText("/vault/p.md");
+        const old = toLegacy(pulled.replace("beta", "beta-local"));
+        expect(old).toContain("docket-plugin: pull\n");
+        expect(old).toContain("page_version: 3\n");
+        await fs.write("/vault/p.md", old);
+        const v4 = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 4, paras("alpha", "beta", "gamma-remote")),
+        });
+        const { puller } = pullerFor(
+            config,
+            v4,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 4]]),
+        );
+
+        const out = await puller.pullPages();
+
+        // The legacy page_version still found the merge base: a clean merge.
+        expect(out.stats.updated).toBe(1);
+        expect(out.stats.conflict).toBe(0);
+        const note = await fs.readText("/vault/p.md");
+        expect(note).toContain("beta-local");
+        expect(note).toContain("gamma-remote");
+        expect(note).toContain("docket_page_version: 4\n");
+        for (const key of fmKeys(note)) {
+            expect(SHARED_KEYS.has(key) || key.startsWith("docket_")).toBe(
+                true,
+            );
+        }
+    });
+
+    it("decorates the note with comments when config.comments is on", async () => {
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        // A body whose "world" run carries the inlineComment annotation "M1".
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "text", text: "hello " },
+                        {
+                            type: "text",
+                            text: "world",
+                            marks: [
+                                {
+                                    type: "annotation",
+                                    attrs: {
+                                        id: "M1",
+                                        annotationType: "inlineComment",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+        const commentBody = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Where from?" }],
+                },
+            ],
+        };
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "C1",
+                            resolutionStatus: "open",
+                            properties: { inlineMarkerRef: "M1" },
+                            version: {
+                                authorId: "jsmith",
+                                createdAt: "2026-07-20T10:00:00Z",
+                            },
+                            body: {
+                                atlas_doc_format: {
+                                    value: JSON.stringify(commentBody),
+                                },
+                            },
+                        },
+                    ],
+                    _links: {},
+                }),
+            })
+            .on("GET", `${v2}/inline-comments/C1/children${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            });
+        const { puller, fs } = pullerFor(config, stub);
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        const note = await fs.readText("/vault/notes/page.md");
+        expect(note).toContain("hello world[^cf-M1]");
+        expect(note).toContain(
+            "> [!comment] id:C1 · @jsmith · 2026-07-20T10:00:00Z · open",
+        );
+        expect(note).toContain("> Where from?");
+        // The cache render carries the same decorations, so the note is not seen
+        // as a local edit on the next pull.
+        expect(await fs.readText("/data/cache/notes/page.v3.md")).toContain(
+            "[^cf-M1]",
+        );
+    });
+
+    it("drops a resolved inline comment on pull", async () => {
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        // Same "world" run carries the annotation, but its comment is resolved.
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "text", text: "hello " },
+                        {
+                            type: "text",
+                            text: "world",
+                            marks: [
+                                {
+                                    type: "annotation",
+                                    attrs: {
+                                        id: "M1",
+                                        annotationType: "inlineComment",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+        const commentBody = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Where from?" }],
+                },
+            ],
+        };
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "C1",
+                            resolutionStatus: "resolved",
+                            properties: { inlineMarkerRef: "M1" },
+                            version: {
+                                authorId: "jsmith",
+                                createdAt: "2026-07-20T10:00:00Z",
+                            },
+                            body: {
+                                atlas_doc_format: {
+                                    value: JSON.stringify(commentBody),
+                                },
+                            },
+                        },
+                    ],
+                    _links: {},
+                }),
+            })
+            .on("GET", `${v2}/inline-comments/C1/children${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            });
+        const { puller, fs } = pullerFor(config, stub);
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        const note = await fs.readText("/vault/notes/page.md");
+        // No callout, no anchor ref — the resolved thread vanishes.
+        expect(note).toContain("hello world");
+        expect(note).not.toContain("[^cf-M1]");
+        expect(note).not.toContain("[!comment]");
+        expect(note).not.toContain("Where from?");
+    });
+
+    it("drops a dangling inline comment (open, anchor gone) on pull", async () => {
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        // The body carries no annotation — the comment's highlighted text was
+        // deleted, so its marker "GONE" is absent. Confluence reports it open but
+        // hides it from the page; the pull must not surface it in a trailing section.
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "hello world" }],
+                },
+            ],
+        };
+        const commentBody = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "text", text: "Anchor text was edited away." },
+                    ],
+                },
+            ],
+        };
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "C9",
+                            resolutionStatus: "open",
+                            properties: { inlineMarkerRef: "GONE" },
+                            version: {
+                                authorId: "jsmith",
+                                createdAt: "2026-07-23T08:00:00Z",
+                            },
+                            body: {
+                                atlas_doc_format: {
+                                    value: JSON.stringify(commentBody),
+                                },
+                            },
+                        },
+                    ],
+                    _links: {},
+                }),
+            })
+            .on("GET", `${v2}/inline-comments/C9/children${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            });
+        const { puller, fs } = pullerFor(config, stub);
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        const note = await fs.readText("/vault/notes/page.md");
+        expect(note).toContain("hello world");
+        expect(note).not.toContain("## Comments");
+        expect(note).not.toContain("[!comment]");
+        expect(note).not.toContain("Anchor text was edited away.");
+    });
+
+    it("records each rendered thread's version and replies, refreshing on a cache hit", async () => {
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        {
+                            type: "text",
+                            text: "world",
+                            marks: [
+                                {
+                                    type: "annotation",
+                                    attrs: {
+                                        id: "M1",
+                                        annotationType: "inlineComment",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        const empty = JSON.stringify({ results: [], _links: {} });
+        const comment = (id: string, version: number, extra = {}) => ({
+            id,
+            version: { authorId: "u", createdAt: "", number: version },
+            body: { atlas_doc_format: { value: "{}" } },
+            ...extra,
+        });
+        /** stubAt serves the page plus C1 at `version` (dangling C9 too). */
+        const stubAt = (version: number): StubHttpClient =>
+            new StubHttpClient()
+                .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+                .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                    body: JSON.stringify({
+                        results: [
+                            comment("C1", version, {
+                                resolutionStatus: "open",
+                                properties: {
+                                    inlineMarkerRef: "M1",
+                                    inlineOriginalSelection: "world",
+                                },
+                            }),
+                            comment("C9", 1, {
+                                resolutionStatus: "open",
+                                properties: { inlineMarkerRef: "GONE" },
+                            }),
+                        ],
+                        _links: {},
+                    }),
+                })
+                .on("GET", `${v2}/inline-comments/C1/children${adfQ}`, {
+                    body: JSON.stringify({
+                        results: [comment("R1", 1)],
+                        _links: {},
+                    }),
+                })
+                .on("GET", `${v2}/inline-comments/R1/children${adfQ}`, {
+                    body: empty,
+                })
+                .on("GET", `${v2}/inline-comments/C9/children${adfQ}`, {
+                    body: empty,
+                })
+                .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                    body: empty,
+                });
+        const { fs } = pullerFor(config, stubAt(2));
+        await pullerFor(config, stubAt(2), fs).puller.pullPages();
+
+        const want = (version: number) => ({
+            threads: [
+                {
+                    id: "C1",
+                    markerRef: "M1",
+                    anchorText: "world",
+                    version,
+                    replies: [{ id: "R1", version: 1 }],
+                },
+            ],
+        });
+        const path = "/data/cache/notes/page.comments.json";
+        expect(JSON.parse(await fs.readText(path))).toEqual(want(2));
+
+        // C1 is edited on Confluence; the page version stays 3 (a cache hit).
+        const { puller } = pullerFor(
+            config,
+            stubAt(3),
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 3]]),
+        );
+        await puller.pullPages();
+
+        expect(JSON.parse(await fs.readText(path))).toEqual(want(3));
+    });
+
+    it("re-fetches a cached body that predates a new inline comment", async () => {
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        const noComments = JSON.stringify({ results: [], _links: {} });
+        // The first pull caches v3 before anyone commented.
+        const seed = new StubHttpClient()
+            .on("GET", pageURL("123"), {
+                body: pageBody("123", 3, paras("hello world")),
+            })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: noComments,
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: noComments,
+            });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+
+        // Confluence then marks "world" for comment C1 without bumping v3.
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "text", text: "hello " },
+                        {
+                            type: "text",
+                            text: "world",
+                            marks: [
+                                {
+                                    type: "annotation",
+                                    attrs: {
+                                        id: "M1",
+                                        annotationType: "inlineComment",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+        const commentBody = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Where from?" }],
+                },
+            ],
+        };
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "C1",
+                            resolutionStatus: "open",
+                            properties: { inlineMarkerRef: "M1" },
+                            version: {
+                                authorId: "jsmith",
+                                createdAt: "2026-07-20T10:00:00Z",
+                            },
+                            body: {
+                                atlas_doc_format: {
+                                    value: JSON.stringify(commentBody),
+                                },
+                            },
+                        },
+                    ],
+                    _links: {},
+                }),
+            })
+            .on("GET", `${v2}/inline-comments/C1/children${adfQ}`, {
+                body: noComments,
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: noComments,
+            });
+        const { puller } = pullerFor(
+            config,
+            stub,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 3]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        const have = await fs.readText("/vault/notes/page.md");
+        expect(have).toContain("hello world[^cf-M1]");
+        expect(have).toContain("> Where from?");
+        expect(await fs.readText("/data/cache/notes/page.v3.json")).toContain(
+            '"M1"',
+        );
+        const pageFetches = stub.requests.filter(
+            (r) => r.url === pageURL("123"),
+        );
+        expect(pageFetches).toHaveLength(1);
+    });
+
+    it("self-heals a comment-free note whose cached base was clobbered", async () => {
+        // The pre-fix cache-ordering bug left notes comment-free while their
+        // cached .vN.md base held the decorated render. A pull must still decorate
+        // such a note: it differs from the fresh render only by the comment
+        // overlay, so the render is taken.
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "text", text: "hello " },
+                        {
+                            type: "text",
+                            text: "world",
+                            marks: [
+                                {
+                                    type: "annotation",
+                                    attrs: {
+                                        id: "M1",
+                                        annotationType: "inlineComment",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+        const commentBody = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Where from?" }],
+                },
+            ],
+        };
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "C1",
+                            resolutionStatus: "open",
+                            properties: { inlineMarkerRef: "M1" },
+                            version: {
+                                authorId: "jsmith",
+                                createdAt: "2026-07-20T10:00:00Z",
+                            },
+                            body: {
+                                atlas_doc_format: {
+                                    value: JSON.stringify(commentBody),
+                                },
+                            },
+                        },
+                    ],
+                    _links: {},
+                }),
+            })
+            .on("GET", `${v2}/inline-comments/C1/children${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            });
+
+        // The corrupted state: a comment-free note, but a DECORATED cached base.
+        const fs = new MemFS();
+        await fs.write(
+            "/vault/notes/page.md",
+            '---\ndocket_mode: pull\ntitle: "Title"\ndocket_page_id: "123"\n' +
+                'docket_page_version: 3\ndocket_space_id: "9"\n---\n\nhello world\n',
+        );
+        await fs.write(
+            "/data/cache/notes/page.v3.md",
+            "---\ndocket_page_version: 3\n---\n\nhello world[^cf-M1]\n\n" +
+                "> [!comment] id:C1 · @jsmith · open\n> Where from?\n",
+        );
+        const { puller } = pullerFor(config, stub, fs);
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        const note = await fs.readText("/vault/notes/page.md");
+        expect(note).toContain("hello world[^cf-M1]");
+        expect(note).toContain("> Where from?");
+        expect(note).not.toContain("<<<<<<<");
+    });
+
+    it("drops a since-resolved comment from an edited note, keeping the edit", async () => {
+        // The note was pulled while the comment was open, so it carries the
+        // callout; the comment has since been resolved, so the render omits it and
+        // the cached base (a fresh render) no longer has it. The callout lives only
+        // in the note — it must not be mistaken for a user edit and preserved. A
+        // real edit in a different block must still survive.
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "intro paragraph" }],
+                },
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "text", text: "hello " },
+                        {
+                            type: "text",
+                            text: "world",
+                            marks: [
+                                {
+                                    type: "annotation",
+                                    attrs: {
+                                        id: "M1",
+                                        annotationType: "inlineComment",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+        const commentBody = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Where from?" }],
+                },
+            ],
+        };
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        // The comment is now resolved, so the render omits its callout and anchor.
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "C1",
+                            resolutionStatus: "resolved",
+                            properties: { inlineMarkerRef: "M1" },
+                            version: {
+                                authorId: "jsmith",
+                                createdAt: "2026-07-20T10:00:00Z",
+                            },
+                            body: {
+                                atlas_doc_format: {
+                                    value: JSON.stringify(commentBody),
+                                },
+                            },
+                        },
+                    ],
+                    _links: {},
+                }),
+            })
+            .on("GET", `${v2}/inline-comments/C1/children${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            });
+
+        const fs = new MemFS();
+        // The note: intro edited, plus the stale resolved callout on "world".
+        await fs.write(
+            "/vault/notes/page.md",
+            '---\ndocket_mode: pull\ntitle: "Title"\ndocket_page_id: "123"\n' +
+                'docket_page_version: 3\ndocket_space_id: "9"\n---\n\n' +
+                "intro paragraph edited\n\nhello world[^cf-M1]\n\n" +
+                "> [!comment] id:C1 · @jsmith · resolved\n> Where from?\n",
+        );
+        // The cached base: a fresh (comment-free) render of the un-edited body.
+        await fs.write(
+            "/data/cache/notes/page.v3.md",
+            "---\ndocket_page_version: 3\n---\n\nintro paragraph\n\nhello world\n",
+        );
+        const { puller } = pullerFor(config, stub, fs);
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        const note = await fs.readText("/vault/notes/page.md");
+        // The resolved thread is gone — no callout, no anchor ref …
+        expect(note).not.toContain("[!comment]");
+        expect(note).not.toContain("[^cf-M1]");
+        expect(note).not.toContain("Where from?");
+        // … but the unrelated edit survives, with no conflict markers.
+        expect(note).toContain("intro paragraph edited");
+        expect(note).toContain("hello world");
+        expect(note).not.toContain("<<<<<<<");
+    });
+
+    it("drops a resolved footer comment and its section from the note", async () => {
+        // The note was pulled while the footer comment was open, so it carries the
+        // trailing section; the comment has since been resolved, so the render
+        // omits it — and with no footer comment left, the `## Comments` heading
+        // too. A real edit in the body must still survive.
+        const config = buildConfig(
+            {
+                pages: { "notes/page.md": "/wiki/spaces/X/pages/123/Title" },
+                comments: true,
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "intro paragraph" }],
+                },
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "hello world" }],
+                },
+            ],
+        };
+        const commentBody = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Looks good." }],
+                },
+            ],
+        };
+        const v2 = "https://ex.atlassian.net/wiki/api/v2";
+        const adfQ = "?body-format=atlas_doc_format";
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 3, adf) })
+            .on("GET", `${v2}/pages/123/inline-comments${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            })
+            .on("GET", `${v2}/pages/123/footer-comments${adfQ}`, {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "F1",
+                            resolutionStatus: "resolved",
+                            version: {
+                                authorId: "jsmith",
+                                createdAt: "2026-07-20T10:00:00Z",
+                            },
+                            body: {
+                                atlas_doc_format: {
+                                    value: JSON.stringify(commentBody),
+                                },
+                            },
+                        },
+                    ],
+                    _links: {},
+                }),
+            })
+            .on("GET", `${v2}/footer-comments/F1/children${adfQ}`, {
+                body: JSON.stringify({ results: [], _links: {} }),
+            });
+
+        const fs = new MemFS();
+        // The note: intro edited, plus the stale footer section.
+        await fs.write(
+            "/vault/notes/page.md",
+            '---\ndocket_mode: pull\ntitle: "Title"\ndocket_page_id: "123"\n' +
+                'docket_page_version: 3\ndocket_space_id: "9"\n---\n\n' +
+                "intro paragraph edited\n\nhello world\n\n## Comments\n\n" +
+                "> [!comment] id:F1 · @jsmith · 2026-07-20T10:00:00Z\n" +
+                "> Looks good.\n",
+        );
+        // The cached base: a fresh (comment-free) render of the un-edited body.
+        await fs.write(
+            "/data/cache/notes/page.v3.md",
+            "---\ndocket_page_version: 3\n---\n\nintro paragraph\n\nhello world\n",
+        );
+        const { puller } = pullerFor(config, stub, fs);
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        const note = await fs.readText("/vault/notes/page.md");
+        // The resolved thread is gone — no callout, no section heading …
+        expect(note).not.toContain("[!comment]");
+        expect(note).not.toContain("## Comments");
+        expect(note).not.toContain("Looks good.");
+        // … but the edit survives, with no conflict markers.
+        expect(note).toContain("intro paragraph edited");
+        expect(note).toContain("hello world");
+        expect(note).not.toContain("<<<<<<<");
+    });
+
+    it("counts unchanged on a second pull but keeps it out of the log", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3),
+        });
+        const { puller } = pullerFor(config, stub);
+
+        await puller.pullPages();
+        const out = await puller.pullPages();
+
+        expect(out.stats.unchanged).toBe(1);
+        expect(out.stats.added).toBe(0);
+        // An unchanged page is tallied but produces no per-page log line.
+        expect(out.log).toBe("");
+    });
+
+    it("renders from cache without fetching when the version is already cached", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        // First pull populates the ADF cache at v3.
+        const seed = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3),
+        });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+
+        // A second pull that already knows the remote is still v3 must not fetch:
+        // this stub has no route, so any fetchPage would 404 and error.
+        const noNet = new StubHttpClient();
+        const { puller } = pullerFor(
+            config,
+            noNet,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 3]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        expect(out.stats.unchanged).toBe(1);
+        expect(out.stats.added).toBe(0);
+        expect(noNet.requests).toHaveLength(0); // zero network calls
+    });
+
+    it("fetches when the known remote version is newer than the cache", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const seed = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3),
+        });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+
+        // Remote moved to v4; v4 is not cached, so the body must be fetched.
+        const v4 = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 4),
+        });
+        const { puller } = pullerFor(
+            config,
+            v4,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 4]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        expect(out.stats.updated).toBe(1);
+        expect(v4.requests.length).toBeGreaterThan(0);
+        expect(await fs.exists("/data/cache/p.v4.json")).toBe(true);
+    });
+
+    it("re-renders when the note on disk diverged", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+
+        await puller.pullPages();
+        await fs.write("/vault/p.md", "clobbered");
+        const out = await puller.pullPages();
+
+        expect(out.stats.updated).toBe(1);
+        expect(out.stats.rerendered).toBe(1);
+        expect(await fs.readText("/vault/p.md")).toContain("hello");
+    });
+
+    it("keeps unpushed local edits when the remote is unchanged", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta", "gamma")),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+
+        await puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        await fs.write("/vault/p.md", pulled.replace("beta", "beta-local"));
+
+        const out = await puller.pullPages(); // same v3: remote unchanged
+
+        expect(out.stats.conflict).toBe(0);
+        expect(out.stats.updated).toBe(0);
+        expect(out.stats.unchanged).toBe(1);
+        expect(await fs.readText("/vault/p.md")).toContain("beta-local");
+    });
+
+    it("refreshes the frontmatter of a note with unpushed edits", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta", "gamma")),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+        await puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        // A note written before the frontmatter carried a url, but still
+        // carrying the dropped `heading_anchors` key, then edited.
+        const old = pulled
+            .replace(/^url: .*\n/m, 'heading_anchors:\n  - "#Stale"\n')
+            .replace("beta", "## Local\n\nbeta-local");
+        await fs.write("/vault/p.md", old);
+
+        const out = await puller.pullPages(); // same v3: remote unchanged
+
+        expect(out.stats.conflict).toBe(0);
+        const note = await fs.readText("/vault/p.md");
+        expect(note).toContain("## Local\n\nbeta-local");
+        expect(note).toMatch(/^url: ".*123"$/m);
+        expect(note).not.toContain("heading_anchors");
+    });
+
+    it("overwrites local edits and conflict markers when asked", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta", "gamma")),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+        await puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        await fs.write(
+            "/vault/p.md",
+            pulled.replace(
+                "beta",
+                "<<<<<<< local\nbeta-local\n=======\nb\n>>>>>>> remote",
+            ),
+        );
+        const overwriting = new Puller({
+            client: new ConfluenceClient(stub, {
+                host: config.host,
+                account: config.account,
+                token: config.token,
+            }),
+            fs,
+            config,
+            reporter: new NoopReporter(),
+            cacheDir: "/data/cache",
+            assetsDir: "/vault/_docket-media",
+            links: buildLinkIndex(config.syncRoot, config.pages, []),
+            flavor: obsidianFlavor,
+            overwrite: true,
+        });
+
+        const have = await overwriting.pullPages();
+
+        expect(have.stats.updated).toBe(1);
+        expect(await fs.readText("/vault/p.md")).toBe(pulled);
+    });
+
+    it("merges local edits with a remote change in a different region", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const seed = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta", "gamma")),
+        });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        await fs.write("/vault/p.md", pulled.replace("beta", "beta-local"));
+
+        // Remote moves to v4, changing a different paragraph (gamma).
+        const v4 = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 4, paras("alpha", "beta", "gamma-remote")),
+        });
+        const { puller } = pullerFor(
+            config,
+            v4,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 4]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.stats.updated).toBe(1);
+        expect(out.stats.conflict).toBe(0);
+        const note = await fs.readText("/vault/p.md");
+        expect(note).toContain("beta-local");
+        expect(note).toContain("gamma-remote");
+        expect(note).not.toContain("<<<<<<<");
+        expect(note).toContain("docket_page_version: 4");
+    });
+
+    it("drops a stale heading_anchors key on re-pull of an unedited note", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta")),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+        await puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        await fs.write(
+            "/vault/p.md",
+            pulled.replace(/^(url: .*\n)/m, '$1heading_anchors:\n  - "#A"\n'),
+        );
+
+        await puller.pullPages(); // same v3: remote unchanged
+
+        const have = await fs.readText("/vault/p.md");
+        expect(have).toBe(pulled);
+    });
+
+    it("drops a stale heading_anchors key when merging remote changes", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const seed = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta", "gamma")),
+        });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        await fs.write(
+            "/vault/p.md",
+            pulled
+                .replace(/^(url: .*\n)/m, '$1heading_anchors:\n  - "#A"\n')
+                .replace("beta", "beta-local"),
+        );
+        const v4 = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 4, paras("alpha", "beta", "gamma-remote")),
+        });
+        const { puller } = pullerFor(
+            config,
+            v4,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 4]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.stats.conflict).toBe(0);
+        const note = await fs.readText("/vault/p.md");
+        expect(note).toContain("beta-local");
+        expect(note).toContain("gamma-remote");
+        expect(note).not.toContain("heading_anchors");
+    });
+
+    it("writes conflict markers when local and remote change the same region", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const seed = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta", "gamma")),
+        });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        await fs.write("/vault/p.md", pulled.replace("beta", "beta-local"));
+
+        // Remote moves to v4, changing the same paragraph differently.
+        const v4 = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 4, paras("alpha", "beta-remote", "gamma")),
+        });
+        const { puller } = pullerFor(
+            config,
+            v4,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 4]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.stats.conflict).toBe(1);
+        const note = await fs.readText("/vault/p.md");
+        expect(note).toContain("<<<<<<< local (your edits)");
+        expect(note).toContain("beta-local");
+        expect(note).toContain("beta-remote");
+        expect(note).toContain(">>>>>>> remote (Confluence v4)");
+    });
+
+    it("leaves a note with conflict markers untouched on re-pull", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, paras("alpha", "beta")),
+        });
+        const { puller, fs } = pullerFor(config, stub);
+
+        await puller.pullPages();
+        const conflicted = `---\ndocket_page_version: 3\n---\nalpha\n<<<<<<< local (your edits)\nmine\n=======\ntheirs\n>>>>>>> remote (Confluence v3)\n`;
+        await fs.write("/vault/p.md", conflicted);
+
+        const out = await puller.pullPages();
+
+        expect(out.stats.conflict).toBe(1);
+        expect(await fs.readText("/vault/p.md")).toBe(conflicted);
+    });
+
+    it("continues past a failed page and collects the error", async () => {
+        const config = testConfig({
+            "a.md": "/wiki/spaces/X/pages/111/A",
+            "b.md": "/wiki/spaces/X/pages/222/B",
+        });
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("111"), { body: pageBody("111", 1) })
+            .on("GET", pageURL("222"), { status: 404 });
+        const { puller } = pullerFor(config, stub);
+
+        const out = await puller.pullPages();
+
+        expect(out.stats).toMatchObject({ added: 1, total: 2 });
+        expect(out.errors).toHaveLength(1);
+        expect(out.errors[0]).toContain("b.md");
+    });
+
+    it("embeds a downloaded image in the rendered note", async () => {
+        const adf = {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "mediaSingle",
+                    attrs: { layout: "center" },
+                    content: [
+                        {
+                            type: "media",
+                            attrs: {
+                                type: "file",
+                                id: "F1",
+                                localId: "L1",
+                                alt: "pic.png",
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const stub = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 1, adf) })
+            .on(
+                "GET",
+                "https://ex.atlassian.net/wiki/api/v2/pages/123/attachments",
+                {
+                    body: JSON.stringify({
+                        results: [
+                            {
+                                fileId: "F1",
+                                title: "pic.png",
+                                mediaType: "image/png",
+                                downloadLink: "/download/x",
+                            },
+                        ],
+                        _links: {},
+                    }),
+                },
+            )
+            .on("GET", "https://ex.atlassian.net/wiki/download/x", {
+                body: "IMG",
+            });
+        const { puller, fs } = pullerFor(config, stub);
+
+        await puller.pullPages();
+
+        expect(await fs.readText("/vault/p.md")).toContain("![[F1-L1.png]]");
+        expect(await fs.readText("/vault/_docket-media/F1-L1.png")).toBe("IMG");
+    });
+
+    it("on a cache hit rebuilds the assets map from disk without fetching attachments", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        // Cold pull: fetch the page, list its attachments, download the image.
+        const seed = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 1, mediaADF) })
+            .on("GET", attachmentsURL("123"), { body: attachmentsBody })
+            .on("GET", "https://ex.atlassian.net/wiki/download/x", {
+                body: "IMG",
+            });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+
+        // Warm pull: version probe says still v1, so the body is served from the
+        // ADF cache; the image is already on disk, so no attachment round-trip is
+        // needed. This stub has no routes, so any request would 404.
+        const noNet = new StubHttpClient();
+        const { puller } = pullerFor(
+            config,
+            noNet,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 1]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        expect(out.stats.unchanged).toBe(1);
+        expect(noNet.requests).toHaveLength(0); // no fetchPage, no fetchAttachments
+        expect(await fs.readText("/vault/p.md")).toContain("![[F1-L1.png]]");
+    });
+
+    it("on a cache hit falls back to fetchAttachments when an image is missing on disk", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const seed = new StubHttpClient()
+            .on("GET", pageURL("123"), { body: pageBody("123", 1, mediaADF) })
+            .on("GET", attachmentsURL("123"), { body: attachmentsBody })
+            .on("GET", "https://ex.atlassian.net/wiki/download/x", {
+                body: "IMG",
+            });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+
+        // Simulate an earlier pull interrupted after caching the ADF but before
+        // downloading the image: the body is cached, but the asset is gone.
+        await fs.remove("/vault/_docket-media/F1-L1.png");
+
+        const warm = new StubHttpClient()
+            .on("GET", attachmentsURL("123"), { body: attachmentsBody })
+            .on("GET", "https://ex.atlassian.net/wiki/download/x", {
+                body: "IMG2",
+            });
+        const { puller } = pullerFor(
+            config,
+            warm,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 1]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.errors).toEqual([]);
+        // The body still came from the cache (no page fetch), but the missing
+        // image forced the attachment round-trip and a re-download.
+        expect(warm.requests.some((r) => r.url === pageURL("123"))).toBe(false);
+        expect(warm.requests.some((r) => r.url === attachmentsURL("123"))).toBe(
+            true,
+        );
+        expect(await fs.readText("/vault/_docket-media/F1-L1.png")).toBe(
+            "IMG2",
+        );
+    });
+});
+
+describe("pullConfig (discovery + pull)", () => {
+    it("discovers a folder, pulls its pages, and writes the link index", async () => {
+        const config = testConfig({});
+        // buildConfig above only set pages; rebuild with a folder.
+        const cfg = buildConfig(
+            { folders: { docs: "/wiki/spaces/X/folder/100" } },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        void config;
+        const stub = new StubHttpClient()
+            .on(
+                "GET",
+                "https://ex.atlassian.net/wiki/api/v2/folders/100/direct-children",
+                {
+                    body: JSON.stringify({
+                        results: [
+                            {
+                                id: "7",
+                                type: "page",
+                                title: "Guide",
+                                status: "current",
+                            },
+                        ],
+                        _links: {},
+                    }),
+                },
+            )
+            .on("GET", pageURL("7"), { body: pageBody("7", 2) });
+        const fs = new MemFS();
+        const client = new ConfluenceClient(stub, {
+            host: cfg.host,
+            account: cfg.account,
+            token: cfg.token,
+        });
+
+        const out = await pullConfig({
+            client,
+            fs,
+            config: cfg,
+            reporter: new NoopReporter(),
+            cacheDir: "/data/cache",
+            assetsDir: "/vault/_docket-media",
+            linksPath: "/data/cache/links.json",
+        });
+
+        expect(out.stats).toMatchObject({ added: 1, total: 1 });
+        expect(out.errors).toEqual([]);
+        expect(await fs.readText("/vault/docs/guide.md")).toContain("hello");
+        const links = await fs.readText("/data/cache/links.json");
+        expect(links).toContain('"id": "7"');
+        expect(links).toContain('"dest": "docs/guide.md"');
+    });
+
+    it("relocates a moved page's note and removes the stale copy", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        // A note left at the page's old path by an earlier pull.
+        await fs.write("/vault/docs/old.md", managedNote("7", 2, "hello"));
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.errors).toEqual([]);
+        expect(out.log).toContain("moving docs/old.md -> docs/guide.md");
+        expect(await fs.exists("/vault/docs/old.md")).toBe(false);
+        expect(await fs.readText("/vault/docs/guide.md")).toContain("hello");
+    });
+
+    it("keeps the id of a page renamed upstream across re-pulls", async () => {
+        const cfg = folderConfig();
+        const fs = new MemFS();
+        const first = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        await pullConfigWith(cfg, first, fs);
+        const before = await fs.readText("/vault/docs/guide.md");
+        // Upstream renames page 7 to "Handbook", so it pulls to a new path.
+        const renamed = JSON.parse(pageBody("7", 3)) as Record<string, unknown>;
+        renamed["title"] = "Handbook";
+        const second = new StubHttpClient()
+            .on(
+                "GET",
+                "https://ex.atlassian.net/wiki/api/v2/folders/100/direct-children",
+                {
+                    body: JSON.stringify({
+                        results: [
+                            {
+                                id: "7",
+                                type: "page",
+                                title: "Handbook",
+                                status: "current",
+                            },
+                        ],
+                        _links: {},
+                    }),
+                },
+            )
+            .on("GET", pageURL("7"), { body: JSON.stringify(renamed) });
+
+        const out = await pullConfigWith(cfg, second, fs);
+
+        expect(out.errors).toEqual([]);
+        expect(out.log).toContain("moving docs/guide.md -> docs/handbook.md");
+        expect(await fs.exists("/vault/docs/guide.md")).toBe(false);
+        const after = await fs.readText("/vault/docs/handbook.md");
+        expect(before).toContain('docket_mode: pull\nid: "7"\n');
+        expect(after).toContain('docket_mode: pull\nid: "7"\n');
+        expect(after).toContain('title: "Handbook"\n');
+        expect(after).toContain("docket_page_version: 3\n");
+    });
+
+    it("keeps a name override across an upstream rename and a local one", async () => {
+        const cfg = buildConfig(
+            {
+                folders: { docs: "/wiki/spaces/X/folder/100" },
+                names: { "7": "Start" },
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        const stubTitled = (title: string, version: number): StubHttpClient => {
+            const body = JSON.parse(pageBody("7", version)) as Record<
+                string,
+                unknown
+            >;
+            body["title"] = title;
+            return new StubHttpClient()
+                .on(
+                    "GET",
+                    "https://ex.atlassian.net/wiki/api/v2/folders/100/direct-children",
+                    {
+                        body: JSON.stringify({
+                            results: [
+                                {
+                                    id: "7",
+                                    type: "page",
+                                    title,
+                                    status: "current",
+                                },
+                            ],
+                            _links: {},
+                        }),
+                    },
+                )
+                .on("GET", pageURL("7"), { body: JSON.stringify(body) });
+        };
+        const fs = new MemFS();
+
+        // The first pull names the note by the override, not "guide".
+        const first = await pullConfigWith(cfg, stubTitled("Guide", 2), fs);
+        expect(first.errors).toEqual([]);
+        expect(await fs.readText("/vault/docs/Start.md")).toContain("hello");
+        expect(await fs.exists("/vault/docs/guide.md")).toBe(false);
+
+        // An upstream title change keeps the override name.
+        const second = await pullConfigWith(cfg, stubTitled("Handbook", 3), fs);
+        expect(second.errors).toEqual([]);
+        expect(await fs.readText("/vault/docs/Start.md")).toContain(
+            'title: "Handbook"\n',
+        );
+        expect(await fs.exists("/vault/docs/handbook.md")).toBe(false);
+
+        // A local rename is moved back on the next pull.
+        await fs.write(
+            "/vault/docs/mine.md",
+            await fs.readText("/vault/docs/Start.md"),
+        );
+        await fs.remove("/vault/docs/Start.md");
+        const third = await pullConfigWith(cfg, stubTitled("Handbook", 3), fs);
+        expect(third.errors).toEqual([]);
+        expect(third.log).toContain("moving docs/mine.md -> docs/Start.md");
+        expect(await fs.exists("/vault/docs/mine.md")).toBe(false);
+        expect(await fs.readText("/vault/docs/Start.md")).toContain("hello");
+    });
+
+    it("renames a moved page's cached base to its new path", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        await fs.write("/vault/docs/old.md", managedNote("7", 2, "hello"));
+        await writePage(fs, "/data/cache/docs/old.v2.json", {
+            name: "docs/old.md",
+            id: "7",
+            title: "Title",
+            version: 2,
+            spaceId: "9",
+            parentId: "7",
+            spaceKey: "",
+            domain: "",
+            adf: JSON.stringify(paras("hello")),
+        });
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.errors).toEqual([]);
+        expect(await fs.exists("/data/cache/docs/old.v2.json")).toBe(false);
+        const have = await readCachedPage(fs, "/data/cache/docs/guide.v2.json");
+        expect(have?.name).toBe("docs/guide.md");
+    });
+
+    it("carries unpushed edits from the stale copy onto the moved page", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        // The freshly-pulled duplicate (clean) plus the old note the user edited.
+        await fs.write("/vault/docs/guide.md", managedNote("7", 2, "hello"));
+        await fs.write("/vault/docs/old.md", managedNote("7", 2, "hello EDIT"));
+        await fs.write("/data/cache/docs/guide.v2.md", cacheNote(2, "hello"));
+        await fs.write("/data/cache/docs/old.v2.md", cacheNote(2, "hello"));
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.errors).toEqual([]);
+        expect(await fs.exists("/vault/docs/old.md")).toBe(false);
+        // The edit survived onto the moved page; the remote (unchanged) did not
+        // clobber it.
+        expect(await fs.readText("/vault/docs/guide.md")).toContain(
+            "hello EDIT",
+        );
+    });
+
+    it("leaves both copies when each carries unpushed edits", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        await fs.write("/vault/docs/guide.md", managedNote("7", 2, "new edit"));
+        await fs.write("/vault/docs/old.md", managedNote("7", 2, "old edit"));
+        await fs.write("/data/cache/docs/guide.v2.md", cacheNote(2, "hello"));
+        await fs.write("/data/cache/docs/old.v2.md", cacheNote(2, "hello"));
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.log).toContain("both hold unpushed edits");
+        expect(await fs.exists("/vault/docs/old.md")).toBe(true);
+        expect(await fs.readText("/vault/docs/old.md")).toContain("old edit");
+    });
+
+    it("deletes a note whose Confluence page no longer exists", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        // A managed note for a page the folder no longer lists (id 99), clean
+        // against its cached base — so it is a pure leftover of a deletion.
+        await fs.write("/vault/docs/gone.md", managedNote("99", 2, "stale"));
+        await fs.write("/data/cache/docs/gone.v2.md", cacheNote(2, "stale"));
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.errors).toEqual([]);
+        expect(out.stats.deleted).toBe(1);
+        expect(out.log).toContain("deleted");
+        expect(out.log).toContain("docs/gone.md");
+        expect(await fs.exists("/vault/docs/gone.md")).toBe(false);
+        // The live page was still pulled.
+        expect(await fs.exists("/vault/docs/guide.md")).toBe(true);
+    });
+
+    it("keeps a vanished page's note when it has unpushed edits", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        // The note diverges from its cached base: unpushed local edits the pull
+        // must not throw away, even though the remote page is gone.
+        await fs.write("/vault/docs/gone.md", managedNote("99", 2, "my edit"));
+        await fs.write("/data/cache/docs/gone.v2.md", cacheNote(2, "stale"));
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.stats.deleted).toBe(0);
+        expect(out.log).toContain("unpushed edits");
+        expect(await fs.exists("/vault/docs/gone.md")).toBe(true);
+    });
+
+    it("refuses to delete when a root discovery returns no pages", async () => {
+        const cfg = folderConfig();
+        // Folder 100 lists no children — a suspect empty listing, not a genuine
+        // emptying, so the managed note under it must survive.
+        const stub = new StubHttpClient().on(
+            "GET",
+            "https://ex.atlassian.net/wiki/api/v2/folders/100/direct-children",
+            { body: JSON.stringify({ results: [], _links: {} }) },
+        );
+        const fs = new MemFS();
+        await fs.write("/vault/docs/gone.md", managedNote("99", 2, "stale"));
+        await fs.write("/data/cache/docs/gone.v2.md", cacheNote(2, "stale"));
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.stats.deleted).toBe(0);
+        expect(out.log).toContain("refusing to delete");
+        expect(await fs.exists("/vault/docs/gone.md")).toBe(true);
+    });
+
+    it("leaves a docket_local note alone when its would-be page is absent", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        // A locally-created note, never pulled: not a deletion candidate.
+        await fs.write(
+            "/vault/docs/local.md",
+            '---\ntitle: "Local"\ndocket_local: true\ndocket_mode: pull\n---\n\ndraft\n',
+        );
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.stats.deleted).toBe(0);
+        expect(await fs.exists("/vault/docs/local.md")).toBe(true);
+    });
+
+    it("leaves a legacy cf_local note alone when its would-be page is absent", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        await fs.write(
+            "/vault/docs/local.md",
+            '---\ntitle: "Local"\ncf_local: true\ndocket-plugin: pull\n---\n\ndraft\n',
+        );
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.stats.deleted).toBe(0);
+        expect(await fs.exists("/vault/docs/local.md")).toBe(true);
+    });
+
+    it("deletes a legacy-key note whose Confluence page no longer exists", async () => {
+        const cfg = folderConfig();
+        const stub = folderStub().on("GET", pageURL("7"), {
+            body: pageBody("7", 2),
+        });
+        const fs = new MemFS();
+        await fs.write(
+            "/vault/docs/gone.md",
+            toLegacy(managedNote("99", 2, "stale")),
+        );
+        await fs.write("/data/cache/docs/gone.v2.md", cacheNote(2, "stale"));
+
+        const out = await pullConfigWith(cfg, stub, fs);
+
+        expect(out.stats.deleted).toBe(1);
+        expect(await fs.exists("/vault/docs/gone.md")).toBe(false);
+    });
+
+    it("aborts on a destination collision before writing", async () => {
+        const cfg = buildConfig(
+            {
+                pages: { "docs/guide.md": "/wiki/spaces/X/pages/9/Guide" },
+                folders: { docs: "/wiki/spaces/X/folder/100" },
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        const stub = new StubHttpClient().on(
+            "GET",
+            "https://ex.atlassian.net/wiki/api/v2/folders/100/direct-children",
+            {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "7",
+                            type: "page",
+                            title: "Guide",
+                            status: "current",
+                        },
+                    ],
+                    _links: {},
+                }),
+            },
+        );
+        const fs = new MemFS();
+        const client = new ConfluenceClient(stub, {
+            host: cfg.host,
+            account: cfg.account,
+            token: cfg.token,
+        });
+
+        await expect(
+            pullConfig({
+                client,
+                fs,
+                config: cfg,
+                reporter: new NoopReporter(),
+                cacheDir: "/data/cache",
+                assetsDir: "/vault/_docket-media",
+                linksPath: "/data/cache/links.json",
+            }),
+        ).rejects.toThrow("claimed by more than one entry");
+        expect(await fs.exists("/data/cache/links.json")).toBe(false);
+    });
+});
+
+describe("resolvePageSource", () => {
+    const LINKS = "/data/cache/links.json";
+
+    function sourceDeps(
+        config: Config,
+        stub: StubHttpClient,
+        fs = new MemFS(),
+    ): ResolveSourceDeps {
+        const client = new ConfluenceClient(stub, {
+            host: config.host,
+            account: config.account,
+            token: config.token,
+        });
+        return {
+            client,
+            fs,
+            config,
+            reporter: new NoopReporter(),
+            linksPath: LINKS,
+        };
+    }
+
+    /** folderConfig configures one folder root `docs` at folder id 100 in space X. */
+    function folderConfig(): Config {
+        return buildConfig(
+            { folders: { docs: "/wiki/spaces/X/folder/100" } },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+    }
+
+    /** guideChildren stubs folder 100 as holding one page (id 7, "Guide"). */
+    function guideChildren(): StubHttpClient {
+        return new StubHttpClient().on(
+            "GET",
+            "https://ex.atlassian.net/wiki/api/v2/folders/100/direct-children",
+            {
+                body: JSON.stringify({
+                    results: [
+                        {
+                            id: "7",
+                            type: "page",
+                            title: "Guide",
+                            status: "current",
+                        },
+                    ],
+                    _links: {},
+                }),
+            },
+        );
+    }
+
+    it("resolves a configured page from the config without discovery", async () => {
+        const config = testConfig({ "a.md": "/wiki/spaces/X/pages/1/A" });
+        const deps = sourceDeps(config, new StubHttpClient());
+        const { src, spaceKey } = await resolvePageSource(deps, "/vault/a.md");
+        expect({ src, spaceKey }).toEqual({
+            src: "/wiki/spaces/X/pages/1/A",
+            spaceKey: "",
+        });
+    });
+
+    it("resolves a discovered page already in the persisted index", async () => {
+        const config = folderConfig();
+        const links = buildLinkIndex("/vault", {}, [
+            {
+                dest: "/vault/docs/guide.md",
+                id: "7",
+                title: "Guide",
+                url: "/wiki/spaces/X/pages/7",
+                parentId: "",
+                spaceKey: "",
+            },
+        ]);
+        // A stub with no routes: resolving from the index must not call out.
+        const deps = sourceDeps(config, new StubHttpClient());
+        await links.write(deps.fs, LINKS);
+        await deps.fs.write(
+            "/vault/docs/guide.md",
+            '---\ndocket_page_id: "7"\ndocket_page_version: 1\n---\nbody\n',
+        );
+        const { src, spaceKey } = await resolvePageSource(
+            deps,
+            "/vault/docs/guide.md",
+        );
+        expect({ src, spaceKey }).toEqual({
+            src: "/wiki/spaces/X/pages/7",
+            spaceKey: "",
+        });
+    });
+
+    it("auto-discovers the containing root when the page is not yet indexed", async () => {
+        const config = folderConfig();
+        const deps = sourceDeps(config, guideChildren());
+        const { src, spaceKey } = await resolvePageSource(
+            deps,
+            "/vault/docs/guide.md",
+        );
+        expect({ src, spaceKey }).toEqual({
+            src: "/wiki/spaces/X/pages/7",
+            spaceKey: "",
+        });
+        // The freshly discovered root is persisted so a later pull skips discovery.
+        const written = await deps.fs.readText(LINKS);
+        expect(written).toContain('"dest": "docs/guide.md"');
+        expect(written).toContain('"id": "7"');
+    });
+
+    it("keeps the reporter off the discovery counter while auto-discovering", async () => {
+        const config = folderConfig();
+        let found = 0;
+        const logs: string[] = [];
+        const reporter: Reporter = {
+            found: () => {
+                found++;
+            },
+            discovered: () => {},
+            item: () => {},
+            log: (l) => {
+                logs.push(l);
+            },
+            finish: () => {},
+            streamsLog: () => false,
+        };
+        const client = new ConfluenceClient(guideChildren(), {
+            host: config.host,
+            account: config.account,
+            token: config.token,
+        });
+        await resolvePageSource(
+            { client, fs: new MemFS(), config, reporter, linksPath: LINKS },
+            "/vault/docs/guide.md",
+        );
+        // The single page is announced by the caller, not this walk, so the walk
+        // must not fire found() — only its one contextual log line surfaces.
+        expect(found).toBe(0);
+        expect(logs.join("")).toContain("discovering folder docs");
+    });
+
+    it("rejects a path under no configured root", async () => {
+        const config = testConfig({ "a.md": "/wiki/spaces/X/pages/1/A" });
+        const deps = sourceDeps(config, new StubHttpClient());
+        await expect(resolvePageSource(deps, "/vault/z.md")).rejects.toThrow(
+            "not a managed page",
+        );
+    });
+
+    it("rejects a path under a root the discovery does not place", async () => {
+        const config = folderConfig();
+        const deps = sourceDeps(config, guideChildren());
+        await expect(
+            resolvePageSource(deps, "/vault/docs/missing.md"),
+        ).rejects.toThrow("not a managed page");
+    });
+});
+
+describe("helpers", () => {
+    it("resolvePagePath joins a relative path and cleans an absolute one", () => {
+        expect(resolvePagePath("/vault", "notes/a.md")).toBe(
+            "/vault/notes/a.md",
+        );
+        expect(resolvePagePath("/vault", "/other/a.md")).toBe("/other/a.md");
+    });
+
+    it("addStats sums element-wise", () => {
+        expect(
+            addStats(
+                {
+                    added: 1,
+                    updated: 2,
+                    unchanged: 3,
+                    conflict: 2,
+                    deleted: 1,
+                    rerendered: 1,
+                    total: 6,
+                },
+                {
+                    added: 1,
+                    updated: 0,
+                    unchanged: 1,
+                    conflict: 3,
+                    deleted: 4,
+                    rerendered: 0,
+                    total: 2,
+                },
+            ),
+        ).toEqual({
+            added: 2,
+            updated: 2,
+            unchanged: 4,
+            conflict: 5,
+            deleted: 5,
+            rerendered: 1,
+            total: 8,
+        });
+    });
+
+    it("pullSummary reports the per-action tally", () => {
+        expect(pullSummary({ ...emptyStats(), total: 1, added: 1 })).toContain(
+            "1 added, 0 updated",
+        );
+    });
+
+    it("pullSummary counts deletions only when any note was deleted", () => {
+        expect(
+            pullSummary({ ...emptyStats(), total: 1, added: 1, deleted: 2 }),
+        ).toContain("2 deleted");
+        expect(
+            pullSummary({ ...emptyStats(), total: 1, added: 1 }),
+        ).not.toContain("deleted");
+    });
+
+    it("pullSummary notes a re-render caveat only when any page re-rendered", () => {
+        expect(
+            pullSummary({
+                ...emptyStats(),
+                total: 1,
+                updated: 1,
+                rerendered: 1,
+            }),
+        ).toContain("show up as changes in git");
+        expect(
+            pullSummary({ ...emptyStats(), total: 1, added: 1 }),
+        ).not.toContain("show up as changes in git");
+    });
+});
+
+describe("stale link index after a local move", () => {
+    const LINKS = "/data/cache/links.json";
+    const SELF = "https://ex.atlassian.net/wiki/spaces/X/pages/1/T#Passkey";
+
+    /** selfLinkPage is page 1 at `version` linking to its own `Passkey` heading. */
+    function selfLinkPage(version: number): string {
+        return pageBody("1", version, {
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        {
+                            type: "text",
+                            text: "Passkey",
+                            marks: [{ type: "link", attrs: { href: SELF } }],
+                        },
+                    ],
+                },
+            ],
+        });
+    }
+
+    /** staleIndex persists an index still naming page 1's pre-move path. */
+    async function staleIndex(fs: MemFS): Promise<void> {
+        await fs.write(
+            LINKS,
+            '[{"id": "1", "dest": "a/x.md", "url": "/wiki/spaces/X/pages/1", "title": ""}]\n',
+        );
+    }
+
+    /** pullMoved resolves and pulls b/x.md the way a status-row action does. */
+    async function pullMoved(fs: MemFS, overwrite: boolean): Promise<string> {
+        const config = testConfig({ "b/x.md": "/wiki/spaces/X/pages/1/T" });
+        const stub = new StubHttpClient().on("GET", pageURL("1"), {
+            body: selfLinkPage(3),
+        });
+        const client = new ConfluenceClient(stub, {
+            host: config.host,
+            account: config.account,
+            token: config.token,
+        });
+        const { src, spaceKey, links } = await resolvePageSource(
+            {
+                client,
+                fs,
+                config,
+                reporter: new NoopReporter(),
+                linksPath: LINKS,
+            },
+            "/vault/b/x.md",
+        );
+        const puller = new Puller({
+            client,
+            fs,
+            config,
+            reporter: new NoopReporter(),
+            cacheDir: "/data/cache",
+            assetsDir: "/vault/_docket-media",
+            links,
+            flavor: obsidianFlavor,
+            overwrite,
+        });
+        await puller.pullOne("/vault/b/x.md", src, spaceKey);
+        return fs.readText("/vault/b/x.md");
+    }
+
+    it("renders self-links to the moved note's path on overwrite", async () => {
+        const fs = new MemFS();
+        await staleIndex(fs);
+        await fs.write("/vault/b/x.md", managedNote("1", 3, "edited"));
+
+        const have = await pullMoved(fs, true);
+
+        expect(have).toContain("[Passkey](x.md#Passkey)");
+        expect(have).not.toContain("a/x.md");
+        const index = await loadLinkIndex(fs, LINKS, "/vault");
+        expect(index?.byID.get("1")?.dest).toBe("b/x.md");
+    });
+
+    it("renders self-links to the configured path when no note exists yet", async () => {
+        const fs = new MemFS();
+        await staleIndex(fs);
+
+        const have = await pullMoved(fs, false);
+
+        expect(have).toContain("[Passkey](x.md#Passkey)");
+    });
+});
+
+describe("pullConfig with discovery errors", () => {
+    it("merges the partial index over the previous one and says so", async () => {
+        const cfg = buildConfig(
+            {
+                pages: { "b/x.md": "/wiki/spaces/X/pages/1/T" },
+                folders: { docs: "/wiki/spaces/X/folder/100" },
+            },
+            {
+                site: "ex",
+                account: "a@ex.com",
+                token: "secret",
+                syncRoot: "/vault",
+            },
+        );
+        // No route for folder 100's children: its discovery fails.
+        const stub = new StubHttpClient().on("GET", pageURL("1"), {
+            body: pageBody("1", 2),
+        });
+        const fs = new MemFS();
+        await fs.write("/vault/docs/y.md", managedNote("5", 1, "y"));
+        await fs.write(
+            "/data/cache/links.json",
+            "[" +
+                '{"id": "1", "dest": "a/x.md", "url": "/wiki/spaces/X/pages/1", "title": ""},' +
+                '{"id": "5", "dest": "docs/y.md", "url": "/wiki/spaces/X/pages/5", "title": "Y"}' +
+                "]\n",
+        );
+
+        const have = await pullConfigWith(cfg, stub, fs);
+
+        expect(have.errors.length).toBeGreaterThan(0);
+        expect(have.log).toContain(
+            "warning: link index merged with the previous one: 1 discovery " +
+                "error(s), so the pages not discovered keep their last-known paths",
+        );
+        const index = await loadLinkIndex(
+            fs,
+            "/data/cache/links.json",
+            "/vault",
+        );
+        expect(index?.byID.get("1")?.dest).toBe("b/x.md");
+        expect(index?.byID.get("5")?.dest).toBe("docs/y.md");
+    });
+});

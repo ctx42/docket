@@ -1,0 +1,448 @@
+[
+  {
+    "name": "lifecycle",
+    "calls": [
+      {
+        "name": "list_gaps",
+        "arguments": {}
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "Gift card refunds",
+          "demand": "SRD-4 needs the refund rule.",
+          "detail": "Not stated.",
+          "doc_id": "docs/ordering/checkout.md",
+          "heading_path": ["Checkout", "Payment Methods"],
+          "search_terms": ["refund gift card"],
+          "srd_ref": "SRD-4 §2",
+          "answer": "unknown",
+          "ask": ["Anna M", " anna m ", "Bob"],
+          "asked": "2026-10-04",
+          "target_claim": "Refunds go to the gift card."
+        }
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "Draft <b> & co",
+          "demand": "SRD-4 needs the refund rule.",
+          "detail": "Not stated.",
+          "draft": true
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {}
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "status": "draft"
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "query": "gift card refund"
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "ask": "ANNA",
+          "asked": true
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "asked": null
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "srd_ref": "SRD-4",
+          "stale": true
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "status": "resolved"
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "doc_id": "epub-delivery",
+          "detail": "States otherwise.",
+          "add_hit": true,
+          "topic": null
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "asked": "yesterday"
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0002"
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "kind": "bogus"
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "doc_id": "epub-delivery#download-link"
+        }
+      },
+      {
+        "name": "submit_gap",
+        "arguments": {
+          "gap_id": "gap-0003"
+        }
+      },
+      {
+        "name": "submit_gap",
+        "arguments": {
+          "gap_id": "gap-0003"
+        }
+      },
+      {
+        "name": "submit_gap",
+        "arguments": {
+          "gap_id": "gap-0404"
+        }
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "To discard",
+          "demand": "SRD-4 needs the refund rule.",
+          "detail": "Not stated.",
+          "draft": true
+        }
+      },
+      {
+        "name": "discard_gap",
+        "arguments": {
+          "gap_id": "gap-0004"
+        }
+      },
+      {
+        "name": "discard_gap",
+        "arguments": {
+          "gap_id": "gap-0002"
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "filled_by": ["epub-delivery#download-link"],
+          "remaining": "The unit is unknown."
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "filled_by": [
+            "docs/catalog/epub_delivery.md#download-link",
+            "epub-delivery#supported-readers",
+            "kb/shipping_times.md"
+          ],
+          "complete": true
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0003",
+          "filled_by": null,
+          "complete": true
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0003",
+          "filled_by": [],
+          "complete": true
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0003",
+          "filled_by": ["https://ex.com/a"],
+          "complete": true
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0003",
+          "filled_by": ["srd-wishlist-sharing#requirements"],
+          "complete": true
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0003",
+          "filled_by": ["epub-delivery#nope"],
+          "complete": true
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0001",
+          "filled_by": ["epub-delivery#download-link"],
+          "complete": true
+        }
+      },
+      {
+        "name": "reopen_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "reason": "Section rewritten."
+        }
+      },
+      {
+        "name": "reopen_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "reason": "again"
+        }
+      },
+      {
+        "name": "wontfix_gap",
+        "arguments": {
+          "gap_id": "gap-0003",
+          "reason": "Internal only."
+        }
+      },
+      {
+        "name": "wontfix_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "reason": " "
+        }
+      },
+      {
+        "name": "wontfix_gap",
+        "arguments": {
+          "gap_id": "gap-0002"
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {}
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "stale": true
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "query": "download"
+        }
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "t",
+          "demand": "d"
+        }
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "Gift card refunds",
+          "demand": "SRD-4 needs the refund rule.",
+          "detail": "Not stated.",
+          "heading_path": "A"
+        }
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "Gift card refunds",
+          "demand": "SRD-4 needs the refund rule.",
+          "detail": "Not stated.",
+          "heading_path": [1]
+        }
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "Gift card refunds",
+          "demand": "SRD-4 needs the refund rule.",
+          "detail": "Not stated.",
+          "ask": null
+        }
+      },
+      {
+        "name": "report_gap",
+        "arguments": {
+          "kind": "missing",
+          "topic": "Gift card refunds",
+          "demand": "SRD-4 needs the refund rule.",
+          "detail": "Not stated.",
+          "draft": "yes"
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {}
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "ask": "x"
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "add_hit": 1
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0002"
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0002",
+          "filled_by": "x"
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "asked": "yes"
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "x": 1
+        }
+      },
+      {
+        "name": "reopen_gap",
+        "arguments": {
+          "gap_id": "gap-0002"
+        }
+      },
+      {
+        "name": "wontfix_gap",
+        "arguments": {
+          "reason": "x"
+        }
+      },
+      {
+        "name": "submit_gap"
+      },
+      {
+        "name": "list_gaps"
+      }
+    ]
+  },
+  {
+    "name": "invalid-files",
+    "files": {
+      "gap/gap-0002-junk.md": "junk",
+      "gap/gap-0003-x.md": "---\nid: gap-0003\nstatus: [open\n---\n# T\n"
+    },
+    "calls": [
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "status": "draft"
+        }
+      },
+      {
+        "name": "submit_gap",
+        "arguments": {
+          "gap_id": "gap-0002"
+        }
+      },
+      {
+        "name": "update_gap",
+        "arguments": {
+          "gap_id": "gap-0003",
+          "add_hit": true
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {}
+      }
+    ]
+  },
+  {
+    "name": "stale",
+    "files": {
+      "docs/catalog/epub_delivery.md": "---\nid: epub-delivery\ntitle: EPUB Delivery\naliases: [ebook, \"digital edition\"]\nurl: https://help.example.com/epub-delivery\n---\n\n# EPUB Delivery\n\nHow a customer receives a purchased EPUB edition.\n\n## Download Link\n\nEdited first line.\n\nAfter payment clears, the shop emails a personal download link. The link is\nvalid for 48 hours and allows five downloads.\n\n## Supported Readers\n\nThe shop ships DRM-free EPUB 3 files, which open in any EPUB reader app.\n"
+    },
+    "calls": [
+      {
+        "name": "list_gaps",
+        "arguments": {}
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "stale": true
+        }
+      },
+      {
+        "name": "fill_gap",
+        "arguments": {
+          "gap_id": "gap-0001",
+          "filled_by": ["epub-delivery#download-link"],
+          "complete": true
+        }
+      },
+      {
+        "name": "list_gaps",
+        "arguments": {
+          "stale": true
+        }
+      }
+    ]
+  }
+]

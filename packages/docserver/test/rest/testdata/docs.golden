@@ -1,0 +1,3 @@
+GET /docs response body.
+---
+{"docs":[{"id":"shop/catalog/epub.md","path":"shop/catalog/epub.md","title":"EPUB Editions"},{"id":"intro-1","path":"shop/intro.md","title":"Intro"}]}

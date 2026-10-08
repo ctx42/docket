@@ -1,0 +1,1071 @@
+[
+  {
+    "name": "lifecycle",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "ops": [
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "kind": "wrong",
+          "answer": "",
+          "srd_ref": "SRD-8",
+          "doc_id": "kb/shipping.md",
+          "heading_path": ["Express"],
+          "search_terms": [],
+          "topic": "Express shipping",
+          "demand": "SRD-8 needs it.",
+          "detail": "Never stated.",
+          "target_claim": "",
+          "add_hit": true
+        }
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": ["epub#delivery"],
+        "remaining": "TTL unit."
+      },
+      {
+        "op": "list",
+        "filter": {}
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": ["docs/catalog/epub.md#tokens", "epub#tokens", "epub"],
+        "complete": true
+      },
+      {
+        "op": "wontfix",
+        "id": "gap-0001",
+        "reason": "no"
+      },
+      {
+        "op": "reopen",
+        "id": "gap-0001",
+        "reason": "  The section moved.  \n"
+      },
+      {
+        "op": "wontfix",
+        "id": "gap-0001",
+        "reason": "Internal detail."
+      },
+      {
+        "op": "reopen",
+        "id": "gap-0001",
+        "reason": "why"
+      },
+      {
+        "op": "list",
+        "filter": {}
+      },
+      {
+        "op": "bad_files"
+      }
+    ],
+    "files": {}
+  },
+  {
+    "name": "drafts",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "ops": [
+      {
+        "op": "draft",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "draft",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "Second draft ¿¡!?",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0002",
+        "patch": {
+          "topic": "Renamed draft",
+          "ask": ["Anna M", "ANNA M", "Carl"],
+          "asked": "2026-10-04"
+        }
+      },
+      {
+        "op": "submit",
+        "id": "gap-0001"
+      },
+      {
+        "op": "submit",
+        "id": "gap-0001"
+      },
+      {
+        "op": "discard",
+        "id": "gap-0001"
+      },
+      {
+        "op": "discard",
+        "id": "gap-0002"
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "Third",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "status": "draft"
+        }
+      },
+      {
+        "op": "list",
+        "filter": {}
+      }
+    ],
+    "files": {}
+  },
+  {
+    "name": "hand-edited",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "files": {
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\ntags: [srd, epub]   # Obsidian tags.\nstatus: open\nkind: missing\nanswer: deferred\nsrd_ref: 'SRD-7 §4.3'\ndoc_id: epub\nheading_path: [Catalog, Delivery]\nsearch_terms:\n    - token\n    - ttl\n\n# Counted by the server.\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nThe FAQ hints at 24h; asked the support lead.\n\n```text\n## Target claim\n```\n\n## Target claim\n\nToken valid 24h.\n\n## Notes\n\n- call on Monday\n"
+    },
+    "ops": [
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "target_claim": "Token valid 48h.",
+          "add_hit": true
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "ask": ["Bob"],
+          "asked": "2026-10-05",
+          "heading_path": ["One", "Two"]
+        }
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": ["epub#tokens"],
+        "complete": true
+      },
+      {
+        "op": "reopen",
+        "id": "gap-0001",
+        "reason": "Moved."
+      },
+      {
+        "op": "list",
+        "filter": {}
+      }
+    ]
+  },
+  {
+    "name": "flow-crlf-legacy",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "files": {
+      "gap-0003-t.md": "---\n{id: gap-0003, status: open, kind: wrong, hits: 1,\n created: 2026-07-14T10:00:00Z, x: y}\n---\n# T\n\n## Demand\n\nd\n\n## Detail\n\nx\n\n## Target claim\n",
+      "gap-0004-t.md": "---\r\nid: gap-0004\r\nstatus: open\r\nkind: wrong\r\nhits: 2\r\ncreated: 2026-07-14T10:00:00Z\r\n---\r\n# T\r\n## Demand\r\nd\r\n## Detail\r\nx\r\n## Target claim\r\n",
+      "gap-0005-t.md": "---\nid: gap-0005\nstatus: open\nkind: missing\nanswer: deferred\nsrd_ref: SRD-7\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n"
+    },
+    "ops": [
+      {
+        "op": "update",
+        "id": "gap-0003",
+        "patch": {
+          "srd_ref": "SRD-1"
+        }
+      },
+      {
+        "op": "wontfix",
+        "id": "gap-0003",
+        "reason": "Flow."
+      },
+      {
+        "op": "add_hit",
+        "id": "gap-0004"
+      },
+      {
+        "op": "update",
+        "id": "gap-0004",
+        "patch": {
+          "answer": "unknown",
+          "topic": "CRLF topic"
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0005",
+        "patch": {
+          "ask": ["Anna"],
+          "asked": "2026-10-04"
+        }
+      },
+      {
+        "op": "fill",
+        "id": "gap-0005",
+        "refs": ["kb/shipping.md#express-times"]
+      },
+      {
+        "op": "list",
+        "filter": {}
+      }
+    ]
+  },
+  {
+    "name": "misplaced-tidy",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "files": {
+      "closed/gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "gap-0007-epub-token-lifetime.md": "---\nid: gap-0007\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: ab\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n",
+      "gap-0008-x.md": "junk",
+      "closed/gap-0009-y.md": "junk"
+    },
+    "ops": [
+      {
+        "op": "reindex"
+      },
+      {
+        "op": "list",
+        "filter": {}
+      },
+      {
+        "op": "tidy"
+      },
+      {
+        "op": "tidy"
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "add_hit": true
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": "token"
+        }
+      },
+      {
+        "op": "bad_files"
+      }
+    ]
+  },
+  {
+    "name": "invalid-files",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "files": {
+      "gap-0001-broken.md": "---\nid: gap-0001\nstatus: [open\n---\n# T\n",
+      "gap-0002-no-kind.md": "---\nid: gap-0002\nstatus: open\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+      "gap-0003-bad-asked.md": "---\nid: gap-0003\nstatus: open\nkind: wrong\nask: [Anna M]\nasked: 4 Oct\nhits: 1\ncreated: 2026-07-14T10:00:00Z\n---\n# T\n## Demand\n## Detail\n## Target claim\n",
+      "gap-0007-moved.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "notes.md": "not a gap"
+    },
+    "ops": [
+      {
+        "op": "bad_files"
+      },
+      {
+        "op": "list",
+        "filter": {}
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "add_hit": true
+        }
+      },
+      {
+        "op": "submit",
+        "id": "gap-0002"
+      },
+      {
+        "op": "discard",
+        "id": "gap-0003"
+      },
+      {
+        "op": "wontfix",
+        "id": "gap-0007",
+        "reason": "why"
+      },
+      {
+        "op": "submit",
+        "id": "gap-0001"
+      },
+      {
+        "op": "fill",
+        "id": "gap-0005",
+        "refs": ["epub"],
+        "complete": true
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "tidy"
+      },
+      {
+        "op": "bad_files"
+      }
+    ]
+  },
+  {
+    "name": "shared-numbers",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "ops": [
+      {
+        "op": "bad_files"
+      },
+      {
+        "op": "list",
+        "filter": {}
+      },
+      {
+        "op": "submit",
+        "id": "gap-0001"
+      },
+      {
+        "op": "reopen",
+        "id": "gap-0002",
+        "reason": "x"
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "tidy"
+      }
+    ],
+    "files": {
+      "gap-0001-epub-download-token-ttl.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "gap-0001-copy.md": "---\nid: gap-0001\nstatus: open\nkind: missing\nanswer: deferred\nask: []\nasked: \"\"\nsrd_ref: SRD-7 §4.3\ndoc_id: epub\nheading_path:\n  - Catalog\n  - Delivery\nsearch_terms:\n  - token\n  - ttl\nhits: 1\ncreated: 2026-07-14T10:00:00Z\nfilled_by: []\n---\n# EPUB download token TTL\n\n## Demand\n\nSRD-7 needs the token TTL.\n\n## Detail\n\nTTL never stated.\n\n## Target claim\n\nToken valid 24h.\n",
+      "closed/gap-0002-x.md": "---\nid: gap-0002\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: ab\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n",
+      "gap-0002-y.md": "---\nid: gap-0002\nstatus: filled\nkind: incomplete\nanswer: \"\"\nask: []\nasked: \"\"\nsrd_ref: \"\"\ndoc_id: epub\nheading_path: []\nsearch_terms: []\nhits: 3\ncreated: 2026-05-02T08:30:00Z\nfilled_by:\n  - ref: epub#tokens\n    hash: ab\n---\n# EPUB token lifetime\n\n## Demand\n\nSRD-7 needs it.\n\n## Detail\n\nStated now.\n\n## Target claim\n"
+    }
+  },
+  {
+    "name": "import-stale",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "hashes": {
+      "epub#delivery": "edited",
+      "kb/shipping.md": ""
+    },
+    "ops": [
+      {
+        "op": "import",
+        "gap": {
+          "id": "gap-0007",
+          "status": "filled",
+          "kind": "incomplete",
+          "doc_id": "docs/catalog/epub.md",
+          "hits": 3,
+          "created": "2026-05-02T08:30:00Z",
+          "filled_by": [
+            {
+              "ref": "docs/catalog/epub.md#tokens",
+              "hash": "ab"
+            }
+          ],
+          "topic": "EPUB token lifetime",
+          "demand": "SRD-7 needs it.",
+          "detail": "Stated now."
+        }
+      },
+      {
+        "op": "import",
+        "gap": {
+          "id": "gap-0008",
+          "status": "open",
+          "kind": "incomplete",
+          "doc_id": "docs/catalog/epub.md",
+          "hits": 3,
+          "created": "2026-05-02T08:30:00Z",
+          "filled_by": [
+            {
+              "ref": "epub#delivery",
+              "hash": "x"
+            },
+            {
+              "ref": "kb/shipping.md"
+            },
+            {
+              "ref": "epub"
+            }
+          ],
+          "topic": "EPUB token lifetime",
+          "demand": "SRD-7 needs it.",
+          "detail": "Stated now."
+        }
+      },
+      {
+        "op": "import",
+        "gap": {
+          "id": "gap-0009",
+          "status": "filled",
+          "kind": "incomplete",
+          "doc_id": "docs/catalog/epub.md",
+          "hits": 0,
+          "created": "2026-05-02T08:30:00Z",
+          "filled_by": [
+            {
+              "ref": "docs/catalog/epub.md#tokens",
+              "hash": "ab"
+            }
+          ],
+          "topic": "EPUB token lifetime",
+          "demand": "SRD-7 needs it.",
+          "detail": "Stated now."
+        }
+      },
+      {
+        "op": "import",
+        "gap": {
+          "id": "gap-0007",
+          "status": "filled",
+          "kind": "incomplete",
+          "doc_id": "docs/catalog/epub.md",
+          "hits": 3,
+          "created": "2026-05-02T08:30:00Z",
+          "filled_by": [
+            {
+              "ref": "initiatives/int7.md#scope"
+            }
+          ],
+          "topic": "EPUB token lifetime",
+          "demand": "SRD-7 needs it.",
+          "detail": "Stated now."
+        }
+      },
+      {
+        "op": "import",
+        "gap": {
+          "id": "gap-0010",
+          "status": "filled",
+          "kind": "incomplete",
+          "doc_id": "docs/catalog/epub.md",
+          "hits": 3,
+          "created": "2026-05-02T08:30:00Z",
+          "filled_by": [
+            {
+              "ref": "epub#delivery",
+              "hash": ""
+            }
+          ],
+          "topic": "EPUB token lifetime",
+          "demand": "SRD-7 needs it.",
+          "detail": "Stated now."
+        }
+      },
+      {
+        "op": "list",
+        "filter": {}
+      },
+      {
+        "op": "list",
+        "filter": {
+          "stale": true
+        }
+      },
+      {
+        "op": "fill",
+        "id": "gap-0007",
+        "refs": ["epub#tokens"],
+        "complete": true
+      },
+      {
+        "op": "fill",
+        "id": "gap-0007",
+        "refs": ["epub#tokens"]
+      },
+      {
+        "op": "list",
+        "filter": {
+          "stale": true
+        }
+      }
+    ],
+    "files": {}
+  },
+  {
+    "name": "bookshop",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "hashes": {
+      "epub-delivery#download-link": "9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727"
+    },
+    "files": {
+      "gap-0001-epub-download-link-after-a-resend.md": "---\nid: gap-0001\nstatus: open\nkind: incomplete\nanswer: deferred\nsrd_ref: srd-wishlist-sharing\ndoc_id: epub-delivery\nheading_path:\n  - EPUB Delivery\n  - Download Link\nsearch_terms:\n  - resend download link\n  - EPUB link expiry\nhits: 1\ncreated: 2026-10-04T09:30:00Z\nfilled_by:\n  - ref: epub-delivery#download-link\n    hash: 9a737dab5e0e43e68f2ebe09201180d98355f062bcae93be2ed5d88aa4fb9727\n---\n# EPUB download link after a resend\n\n## Demand\n\nGifting an EPUB from a shared wishlist resends the download link to the\nrecipient; the SRD must say how long the resent link stays valid.\n\n## Detail\n\nThe Download Link section states a 48-hour lifetime and five downloads for\nthe link sent after payment. It does not say whether a resend starts a new\n48-hour window or reuses the original one. Support knows; not yet asked.\n\n## Target claim\n\nA resent download link is valid for 48 hours from the resend.\n"
+    },
+    "ops": [
+      {
+        "op": "list",
+        "filter": {}
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": "download link resend"
+        }
+      },
+      {
+        "op": "add_hit",
+        "id": "gap-0001"
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "payments",
+          "doc_id": "",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["refund gift card"],
+          "topic": "Gift card refunds",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": "gift refund"
+        }
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": ["epub-delivery#download-link"],
+        "complete": true
+      },
+      {
+        "op": "tidy"
+      },
+      {
+        "op": "list",
+        "filter": {
+          "status": "filled"
+        }
+      },
+      {
+        "op": "reindex"
+      }
+    ]
+  },
+  {
+    "name": "errors",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "ops": [
+      {
+        "op": "report",
+        "gap": {
+          "kind": "odd",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "kb/nope.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "epub#delivery",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": " ",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {}
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "asked": "4.10.26"
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "ask": [" "]
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0404",
+        "patch": {
+          "add_hit": true
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-1",
+        "patch": {
+          "add_hit": true
+        }
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": [],
+        "complete": true
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": ["epub#nope"],
+        "complete": true
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": ["initiatives/int7.md#scope"],
+        "complete": true
+      },
+      {
+        "op": "reopen",
+        "id": "gap-0001",
+        "reason": " "
+      },
+      {
+        "op": "wontfix",
+        "id": "gap-0001",
+        "reason": ""
+      },
+      {
+        "op": "list",
+        "filter": {
+          "status": "kb"
+        }
+      }
+    ],
+    "files": {}
+  },
+  {
+    "name": "no-resolver",
+    "no_resolver": true,
+    "files": {},
+    "ops": [
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "docs/catalog/epub.md",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7 §4.3",
+          "doc_id": "",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["token", "ttl"],
+          "topic": "EPUB download token TTL",
+          "demand": "SRD-7 needs the token TTL.",
+          "detail": "TTL never stated.",
+          "target_claim": "Token valid 24h."
+        }
+      },
+      {
+        "op": "fill",
+        "id": "gap-0001",
+        "refs": ["epub"],
+        "complete": true
+      },
+      {
+        "op": "import",
+        "gap": {
+          "id": "gap-0007",
+          "status": "filled",
+          "kind": "incomplete",
+          "doc_id": "docs/catalog/epub.md",
+          "hits": 3,
+          "created": "2026-05-02T08:30:00Z",
+          "filled_by": [
+            {
+              "ref": "docs/catalog/epub.md#tokens",
+              "hash": "ab"
+            }
+          ],
+          "topic": "EPUB token lifetime",
+          "demand": "SRD-7 needs it.",
+          "detail": "Stated now."
+        }
+      }
+    ]
+  },
+  {
+    "name": "queries",
+    "refs": {
+      "epub": "epub",
+      "docs/catalog/epub.md": "epub",
+      "epub#delivery": "epub#delivery",
+      "epub#tokens": "epub#tokens",
+      "docs/catalog/epub.md#tokens": "epub#tokens",
+      "kb/shipping.md": "kb/shipping.md",
+      "kb/shipping.md#express-times": "kb/shipping.md#express-times",
+      "initiatives/int7.md#scope": "initiatives/int7.md#scope",
+      "epub-delivery#download-link": "epub-delivery#download-link",
+      "epub-delivery": "epub-delivery"
+    },
+    "ops": [
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "",
+          "doc_id": "",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": [],
+          "topic": "Shipping rates for Canada",
+          "demand": "SRD-2 prices parcels.",
+          "detail": "No rate table.",
+          "target_claim": ""
+        }
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-7",
+          "doc_id": "",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": [],
+          "topic": "EPUB download token lifetime",
+          "demand": "SRD-7 needs the token lifetime.",
+          "detail": "Never stated.",
+          "target_claim": ""
+        }
+      },
+      {
+        "op": "report",
+        "gap": {
+          "kind": "missing",
+          "answer": "deferred",
+          "srd_ref": "SRD-9",
+          "doc_id": "",
+          "heading_path": ["Catalog", "Delivery"],
+          "search_terms": ["download"],
+          "topic": "Gift card expiry",
+          "demand": "SRD-9 sells gift cards.",
+          "detail": "Expiry rules missing.",
+          "target_claim": ""
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": "download token"
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": " \t"
+        }
+      },
+      {
+        "op": "wontfix",
+        "id": "gap-0002",
+        "reason": "out of scope"
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": "download token",
+          "status": "open",
+          "srd_ref": "SRD-"
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": "parcels canada"
+        }
+      },
+      {
+        "op": "update",
+        "id": "gap-0001",
+        "patch": {
+          "topic": "Parcel weight"
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "query": "parcel"
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "ask": "anna"
+        }
+      },
+      {
+        "op": "list",
+        "filter": {
+          "asked": false
+        }
+      }
+    ],
+    "files": {}
+  }
+]

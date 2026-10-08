@@ -1,0 +1,27 @@
+{
+  "name": "@docket/docserver-node",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node hosting for @docket/docserver: real filesystem, fs watching, HTTP and stdio transports, server startup.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -b",
+    "typecheck:test": "tsc --noEmit -p tsconfig.test.json"
+  },
+  "dependencies": {
+    "@docket/core": "workspace:*",
+    "@docket/docserver": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1"
+  }
+}

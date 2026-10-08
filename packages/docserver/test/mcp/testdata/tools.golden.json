@@ -1,0 +1,708 @@
+{
+  "serverInfo": {
+    "name": "docket",
+    "version": "0.0.0-oracle"
+  },
+  "tools": [
+    {
+      "description": "Delete a draft gap's file. Only a draft can be deleted; deleting the highest-numbered draft frees its number.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "description": "the ID of the draft gap"
+          }
+        },
+        "required": ["gap_id"],
+        "additionalProperties": false
+      },
+      "name": "discard_gap",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": ["ok"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Record the corpus sections that now state an open gap's fact, or refresh a filled gap's list. filled_by replaces the gap's list; each entry is <identity>#<anchor> naming a section or <identity> naming a whole document, where identity is a document id or path from search or list_docs and anchor is the GitHub-style slug of the section's heading text (lowercase, punctuation dropped, spaces as -, a repeated heading suffixed -1, -2). Every entry must resolve to a corpus document outside the initiatives folder and a heading in it; an SRD or a URL never fills a gap. Each entry is stored with the hash of its section's current text. complete true moves an open gap to filled; false keeps it open, partly filled. On a filled gap only complete true is accepted: it re-hashes the listed sections, clearing a stale flag, and the gap stays filled. remaining, when given, replaces the gap's Detail section, stating what is still missing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "description": "the ID of the open gap to fill, or of the filled gap to refresh"
+          },
+          "filled_by": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "corpus sections stating the fact, each \u003cidentity\u003e#\u003canchor\u003e or \u003cidentity\u003e; replaces the gap's list"
+          },
+          "complete": {
+            "type": "boolean",
+            "description": "true when the sections state the whole fact, moving an open gap to filled or refreshing a filled one; omit to keep an open gap open, partly filled"
+          },
+          "remaining": {
+            "type": ["null", "string"],
+            "description": "replaces the gap's Detail section: what is still missing"
+          }
+        },
+        "required": ["gap_id", "filled_by"],
+        "additionalProperties": false
+      },
+      "name": "fill_gap",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": ["ok"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Return the whole document with the given id or path, for reading full tables or following links. Both come from search results and list_docs; store the id, which survives the document moving.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "the document id or current path"
+          }
+        },
+        "required": ["id"],
+        "additionalProperties": false
+      },
+      "name": "get_doc",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "path", "title", "text"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "List the terms the glossary defines, each with its name, abbreviation, defining document id and path, heading anchor, and plain-text definition, optionally filtered by a substring of the term.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "term": {
+            "type": "string",
+            "description": "keep only terms whose heading contains this text, ignoring case; omit for every term"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "glossary_terms",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "terms": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "term": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "abbreviation": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "anchor": {
+                  "type": "string"
+                },
+                "definition": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "term",
+                "name",
+                "abbreviation",
+                "id",
+                "path",
+                "anchor",
+                "definition"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["terms"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "List the id, path, trust rank, and title of every document in the corpus.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "name": "list_docs",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "docs": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "rank": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "required": ["id", "path", "title"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["docs"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "List recorded gaps, each with its front-matter fields, topic, demand, detail, target claim, and file (its path in the gaps folder, under closed/ for filled and wontfix gaps), optionally filtered by status (draft, open, filled, wontfix), by a substring of the SRD reference, by a substring of a name in ask (the people who can answer, case ignored), and by asked (true: the questions were sent; false: not yet). With query the matching gaps are ranked by relevance, best first, each with a score; use it to find an existing gap before reporting a new one. A filled or open gap is stale when a filled_by section changed since it was hashed, no longer resolves, or was never hashed: it carries stale true and stale_refs naming each such entry with reason changed, vanished, or unhashed; its status is unchanged. stale true lists only stale gaps. invalid lists every gap file that fails to parse or breaks the gap format, whatever the filter, each with file and reason; its gap is left out of gaps, every operation on it is refused until the file is fixed, and the server never rewrites or deletes it. Gaps never appear in search.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "filter by status: draft, open, filled, or wontfix; empty returns all"
+          },
+          "srd_ref": {
+            "type": "string",
+            "description": "keep only gaps whose srd_ref contains this text, for example an SRD folder name"
+          },
+          "query": {
+            "type": "string",
+            "description": "free-text query; keeps only matching gaps, ranked by relevance best first, each with a score; omit to list in id order"
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "true keeps only stale gaps: filled or open gaps with a filled_by section changed, vanished, or unhashed"
+          },
+          "ask": {
+            "type": "string",
+            "description": "keep only gaps with a name in ask containing this text, case ignored"
+          },
+          "asked": {
+            "type": ["null", "boolean"],
+            "description": "true keeps only gaps whose questions were sent (asked set), false only those not yet sent; omit for all"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "list_gaps",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "gaps": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                },
+                "ask": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "asked": {
+                  "type": "string"
+                },
+                "srd_ref": {
+                  "type": "string"
+                },
+                "doc_id": {
+                  "type": "string"
+                },
+                "heading_path": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "search_terms": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "hits": {
+                  "type": "integer"
+                },
+                "created": {
+                  "type": "string"
+                },
+                "filled_by": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "type": "string"
+                      },
+                      "hash": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["ref"],
+                    "additionalProperties": false
+                  }
+                },
+                "topic": {
+                  "type": "string"
+                },
+                "demand": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "target_claim": {
+                  "type": "string"
+                },
+                "file": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "number"
+                },
+                "stale": {
+                  "type": "boolean"
+                },
+                "stale_refs": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["ref", "reason"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "kind",
+                "answer",
+                "ask",
+                "asked",
+                "srd_ref",
+                "doc_id",
+                "heading_path",
+                "search_terms",
+                "hits",
+                "created",
+                "filled_by",
+                "topic",
+                "demand",
+                "detail",
+                "target_claim",
+                "file"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "invalid": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": ["file", "reason"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["gaps", "invalid"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Move a filled gap back to open, appending reason to its Detail section. Its filled_by list is kept, so it can be filled again with a corrected list.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "description": "the ID of the gap"
+          },
+          "reason": {
+            "type": "string",
+            "description": "why, appended to the gap's Detail section"
+          }
+        },
+        "required": ["gap_id", "reason"],
+        "additionalProperties": false
+      },
+      "name": "reopen_gap",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": ["ok"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Record a gap: a fact SRD work needs that the corpus documents outside the initiatives folder do not supply reliably because it is missing, wrong, incomplete, or ambiguous; or a question SRD work deferred (answer deferred) or nobody could answer (answer unknown). A gap closes only when the fact appears in a corpus document outside the initiatives folder, never in an SRD and never on a bare URL. doc_id, when given, names any corpus document by id or path and is stored as its id. ask names the people who can answer the gap's question, as you would type them; asked is the date (YYYY-MM-DD) the questions were sent to them, set only once the user confirms they went out. Returns the new gap ID. With draft set the gap is recorded unconfirmed, to be edited with update_gap and then confirmed with submit_gap or dropped with discard_gap.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "description": "one of missing, wrong, incomplete, ambiguous"
+          },
+          "topic": {
+            "type": "string",
+            "description": "short one-line label for the needed fact"
+          },
+          "doc_id": {
+            "type": "string",
+            "description": "id or path of the corpus document the gap is about, from a search or list_docs result; omit when no document covers the topic"
+          },
+          "heading_path": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "heading trail within doc_id the gap is about, copied verbatim from a result"
+          },
+          "demand": {
+            "type": "string",
+            "description": "why the SRD work needs the fact"
+          },
+          "detail": {
+            "type": "string",
+            "description": "what the corpus says now and what is missing, wrong, incomplete, or ambiguous"
+          },
+          "target_claim": {
+            "type": "string",
+            "description": "the sentence the corpus should state once the gap is filled, when known"
+          },
+          "search_terms": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "queries tried against the corpus that did not supply the fact"
+          },
+          "srd_ref": {
+            "type": "string",
+            "description": "the SRD, requirement, or session that needs the fact"
+          },
+          "answer": {
+            "type": "string",
+            "description": "deferred when someone knows but was not asked yet, unknown when nobody has pinned it down; omit otherwise"
+          },
+          "ask": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "names of the people who can answer the gap's question, as the user types them"
+          },
+          "asked": {
+            "type": "string",
+            "description": "date (YYYY-MM-DD) the questions were sent to the people in ask; set only once the user confirms they were sent"
+          },
+          "draft": {
+            "type": "boolean",
+            "description": "record the gap unconfirmed, in draft status; omit to record it open"
+          }
+        },
+        "required": ["kind", "topic", "demand", "detail"],
+        "additionalProperties": false
+      },
+      "name": "report_gap",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "gap_id": {
+            "type": "string"
+          }
+        },
+        "required": ["gap_id"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Search the documentation corpus and return the most relevant sections with citations. Each result carries its document's trust rank when the project ranks documents: 1 is the most trusted; settle conflicting statements by the lower rank. The rank never changes the order. Retrieval only; no LLM.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "the search query"
+          },
+          "k": {
+            "type": "integer",
+            "description": "maximum number of results, 1 to 100; omit for 10"
+          }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "name": "search",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "rank": {
+                  "type": "integer"
+                },
+                "heading_path": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "text": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "number"
+                },
+                "source_url": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "id", "path", "text", "score"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["results"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Confirm a draft gap, moving it to open status so it enters the backlog.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "description": "the ID of the draft gap"
+          }
+        },
+        "required": ["gap_id"],
+        "additionalProperties": false
+      },
+      "name": "submit_gap",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": ["ok"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Change fields of a draft or open gap. Only the fields given change, so edits made to the gap file by hand survive; add_hit counts one more encounter of the gap in SRD work. ask replaces the names of the people who can answer; asked records the date (YYYY-MM-DD) the questions were sent, an empty string clears it. Filled and wontfix gaps cannot be edited; they keep ask and asked as history.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "description": "the ID of the draft or open gap to edit"
+          },
+          "kind": {
+            "type": ["null", "string"],
+            "description": "one of missing, wrong, incomplete, ambiguous"
+          },
+          "topic": {
+            "type": ["null", "string"],
+            "description": "short one-line label for the needed fact"
+          },
+          "doc_id": {
+            "type": ["null", "string"],
+            "description": "id or path of the corpus document the gap is about; empty clears it"
+          },
+          "heading_path": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "heading trail within doc_id the gap is about"
+          },
+          "demand": {
+            "type": ["null", "string"],
+            "description": "why the SRD work needs the fact"
+          },
+          "detail": {
+            "type": ["null", "string"],
+            "description": "what the corpus says now and what is missing"
+          },
+          "target_claim": {
+            "type": ["null", "string"],
+            "description": "the sentence the corpus should state once the gap is filled"
+          },
+          "search_terms": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "queries tried against the corpus that did not supply the fact"
+          },
+          "srd_ref": {
+            "type": ["null", "string"],
+            "description": "the SRD, requirement, or session that needs the fact"
+          },
+          "answer": {
+            "type": ["null", "string"],
+            "description": "deferred, unknown, or empty"
+          },
+          "ask": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "names of the people who can answer the gap's question; replaces the list, empty clears it"
+          },
+          "asked": {
+            "type": ["null", "string"],
+            "description": "date (YYYY-MM-DD) the questions were sent, once the user confirms; empty clears it"
+          },
+          "add_hit": {
+            "type": "boolean",
+            "description": "count one more encounter of the gap in SRD work"
+          }
+        },
+        "required": ["gap_id"],
+        "additionalProperties": false
+      },
+      "name": "update_gap",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": ["ok"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "Close an open gap the corpus will not carry, appending reason to its Detail section.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "description": "the ID of the gap"
+          },
+          "reason": {
+            "type": "string",
+            "description": "why, appended to the gap's Detail section"
+          }
+        },
+        "required": ["gap_id", "reason"],
+        "additionalProperties": false
+      },
+      "name": "wontfix_gap",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": ["ok"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

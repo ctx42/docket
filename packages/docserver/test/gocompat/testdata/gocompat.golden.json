@@ -1,0 +1,1105 @@
+{
+  "duration_format": [
+    {
+      "nanos": "0",
+      "string": "0s"
+    },
+    {
+      "nanos": "1",
+      "string": "1ns"
+    },
+    {
+      "nanos": "999",
+      "string": "999ns"
+    },
+    {
+      "nanos": "1000",
+      "string": "1µs"
+    },
+    {
+      "nanos": "1001",
+      "string": "1.001µs"
+    },
+    {
+      "nanos": "1500",
+      "string": "1.5µs"
+    },
+    {
+      "nanos": "999999",
+      "string": "999.999µs"
+    },
+    {
+      "nanos": "1000000",
+      "string": "1ms"
+    },
+    {
+      "nanos": "1500000",
+      "string": "1.5ms"
+    },
+    {
+      "nanos": "1234567",
+      "string": "1.234567ms"
+    },
+    {
+      "nanos": "500000000",
+      "string": "500ms"
+    },
+    {
+      "nanos": "999999999",
+      "string": "999.999999ms"
+    },
+    {
+      "nanos": "1000000000",
+      "string": "1s"
+    },
+    {
+      "nanos": "1500000000",
+      "string": "1.5s"
+    },
+    {
+      "nanos": "60000000000",
+      "string": "1m0s"
+    },
+    {
+      "nanos": "61000000000",
+      "string": "1m1s"
+    },
+    {
+      "nanos": "3600000000000",
+      "string": "1h0m0s"
+    },
+    {
+      "nanos": "3723500000000",
+      "string": "1h2m3.5s"
+    },
+    {
+      "nanos": "90061000000001",
+      "string": "25h1m1.000000001s"
+    },
+    {
+      "nanos": "-1500000000",
+      "string": "-1.5s"
+    },
+    {
+      "nanos": "-1",
+      "string": "-1ns"
+    },
+    {
+      "nanos": "-1000",
+      "string": "-1µs"
+    },
+    {
+      "nanos": "9223372036854775807",
+      "string": "2562047h47m16.854775807s"
+    },
+    {
+      "nanos": "-9223372036854775808",
+      "string": "-2562047h47m16.854775808s"
+    },
+    {
+      "nanos": "360000000000000",
+      "string": "100h0m0s"
+    },
+    {
+      "nanos": "1000000001",
+      "string": "1.000000001s"
+    }
+  ],
+  "duration_parse": [
+    {
+      "input": "0",
+      "nanos": "0"
+    },
+    {
+      "input": "+0",
+      "nanos": "0"
+    },
+    {
+      "input": "-0",
+      "nanos": "0"
+    },
+    {
+      "input": "",
+      "err": "time: invalid duration \"\""
+    },
+    {
+      "input": "500ms",
+      "nanos": "500000000"
+    },
+    {
+      "input": "1m",
+      "nanos": "60000000000"
+    },
+    {
+      "input": "1h2m3.5s",
+      "nanos": "3723500000000"
+    },
+    {
+      "input": "1.5h",
+      "nanos": "5400000000000"
+    },
+    {
+      "input": ".5s",
+      "nanos": "500000000"
+    },
+    {
+      "input": "5.s",
+      "nanos": "5000000000"
+    },
+    {
+      "input": "1",
+      "err": "time: missing unit in duration \"1\""
+    },
+    {
+      "input": "1x",
+      "err": "time: unknown unit \"x\" in duration \"1x\""
+    },
+    {
+      "input": "1µs",
+      "nanos": "1000"
+    },
+    {
+      "input": "1μs",
+      "nanos": "1000"
+    },
+    {
+      "input": "1us",
+      "nanos": "1000"
+    },
+    {
+      "input": "1ns",
+      "nanos": "1"
+    },
+    {
+      "input": "-1.5h",
+      "nanos": "-5400000000000"
+    },
+    {
+      "input": "+3s",
+      "nanos": "3000000000"
+    },
+    {
+      "input": "3s5",
+      "err": "time: missing unit in duration \"3s5\""
+    },
+    {
+      "input": ".s",
+      "err": "time: invalid duration \".s\""
+    },
+    {
+      "input": "-.s",
+      "err": "time: invalid duration \"-.s\""
+    },
+    {
+      "input": "1h1h",
+      "nanos": "7200000000000"
+    },
+    {
+      "input": "9223372036854775807ns",
+      "nanos": "9223372036854775807"
+    },
+    {
+      "input": "9223372036854775808ns",
+      "err": "time: invalid duration \"9223372036854775808ns\""
+    },
+    {
+      "input": "2562047h47m16.854775807s",
+      "nanos": "9223372036854775807"
+    },
+    {
+      "input": "2562047h47m16.854775808s",
+      "err": "time: invalid duration \"2562047h47m16.854775808s\""
+    },
+    {
+      "input": "-9223372036854775808ns",
+      "nanos": "-9223372036854775808"
+    },
+    {
+      "input": "1.0000000000000000000001s",
+      "nanos": "1000000000"
+    },
+    {
+      "input": "0.333333333333333333h",
+      "nanos": "1199999999999"
+    },
+    {
+      "input": "1e3s",
+      "err": "time: unknown unit \"e\" in duration \"1e3s\""
+    },
+    {
+      "input": "1 s",
+      "err": "time: unknown unit \" s\" in duration \"1 s\""
+    },
+    {
+      "input": " 1s",
+      "err": "time: invalid duration \" 1s\""
+    },
+    {
+      "input": "1s ",
+      "err": "time: unknown unit \"s \" in duration \"1s \""
+    },
+    {
+      "input": "abc",
+      "err": "time: invalid duration \"abc\""
+    },
+    {
+      "input": "1é",
+      "err": "time: unknown unit \"\\xc3\\xa9\" in duration \"1\\xc3\\xa9\""
+    },
+    {
+      "input": "1\u0000s",
+      "err": "time: unknown unit \"\\x00s\" in duration \"1\\x00s\""
+    },
+    {
+      "input": "1.123456789123s",
+      "nanos": "1123456789"
+    },
+    {
+      "input": "100000000000000000000s",
+      "err": "time: invalid duration \"100000000000000000000s\""
+    },
+    {
+      "input": "0.0000000001s",
+      "nanos": "0"
+    },
+    {
+      "input": "1m.5s",
+      "nanos": "60500000000"
+    },
+    {
+      "input": "3.5",
+      "err": "time: missing unit in duration \"3.5\""
+    },
+    {
+      "input": "0.99999999999999999999s",
+      "nanos": "1000000000"
+    },
+    {
+      "input": "0.9223372036854775809s",
+      "nanos": "922337203"
+    },
+    {
+      "input": "1.9223372036854775808h",
+      "nanos": "6920413933267"
+    }
+  ],
+  "json_string": [
+    {
+      "input": "",
+      "escaped": "\"\"",
+      "raw": "\"\""
+    },
+    {
+      "input": "plain",
+      "escaped": "\"plain\"",
+      "raw": "\"plain\""
+    },
+    {
+      "input": "a\"b\\c",
+      "escaped": "\"a\\\"b\\\\c\"",
+      "raw": "\"a\\\"b\\\\c\""
+    },
+    {
+      "input": "\b\f\n\r\t",
+      "escaped": "\"\\b\\f\\n\\r\\t\"",
+      "raw": "\"\\b\\f\\n\\r\\t\""
+    },
+    {
+      "input": "\u0000\u0001\u001f",
+      "escaped": "\"\\u0000\\u0001\\u001f\"",
+      "raw": "\"\\u0000\\u0001\\u001f\""
+    },
+    {
+      "input": "",
+      "escaped": "\"\"",
+      "raw": "\"\""
+    },
+    {
+      "input": "<a href=\"x\">&amp;</a>",
+      "escaped": "\"\\u003ca href=\\\"x\\\"\\u003e\\u0026amp;\\u003c/a\\u003e\"",
+      "raw": "\"<a href=\\\"x\\\">&amp;</a>\""
+    },
+    {
+      "input": "\u2028\u2029",
+      "escaped": "\"\\u2028\\u2029\"",
+      "raw": "\"\\u2028\\u2029\""
+    },
+    {
+      "input": "é漢字",
+      "escaped": "\"é漢字\"",
+      "raw": "\"é漢字\""
+    },
+    {
+      "input": "😀",
+      "escaped": "\"😀\"",
+      "raw": "\"😀\""
+    },
+    {
+      "input": "�",
+      "escaped": "\"�\"",
+      "raw": "\"�\""
+    },
+    {
+      "input": "/",
+      "escaped": "\"/\"",
+      "raw": "\"/\""
+    },
+    {
+      "input": "'",
+      "escaped": "\"'\"",
+      "raw": "\"'\""
+    },
+    {
+      "input": "mixed <b>\u2028</b>\n",
+      "escaped": "\"mixed \\u003cb\\u003e\\u2028\\u003c/b\\u003e\\n\"",
+      "raw": "\"mixed <b>\\u2028</b>\\n\""
+    }
+  ],
+  "json_float": [
+    {
+      "input": "0",
+      "output": "0"
+    },
+    {
+      "input": "-0",
+      "output": "-0"
+    },
+    {
+      "input": "1",
+      "output": "1"
+    },
+    {
+      "input": "-1",
+      "output": "-1"
+    },
+    {
+      "input": "0.1",
+      "output": "0.1"
+    },
+    {
+      "input": "0.17610081964600727",
+      "output": "0.17610081964600727"
+    },
+    {
+      "input": "1e20",
+      "output": "100000000000000000000"
+    },
+    {
+      "input": "1e21",
+      "output": "1e+21"
+    },
+    {
+      "input": "123456789012345678901234",
+      "output": "1.2345678901234569e+23"
+    },
+    {
+      "input": "1e-6",
+      "output": "0.000001"
+    },
+    {
+      "input": "9.99999e-7",
+      "output": "9.99999e-7"
+    },
+    {
+      "input": "1e-7",
+      "output": "1e-7"
+    },
+    {
+      "input": "1.5e-7",
+      "output": "1.5e-7"
+    },
+    {
+      "input": "5e-324",
+      "output": "5e-324"
+    },
+    {
+      "input": "1.7976931348623157e308",
+      "output": "1.7976931348623157e+308"
+    },
+    {
+      "input": "100",
+      "output": "100"
+    },
+    {
+      "input": "1.5",
+      "output": "1.5"
+    },
+    {
+      "input": "-2.5e-10",
+      "output": "-2.5e-10"
+    },
+    {
+      "input": "123.456",
+      "output": "123.456"
+    },
+    {
+      "input": "1e100",
+      "output": "1e+100"
+    },
+    {
+      "input": "1e-100",
+      "output": "1e-100"
+    },
+    {
+      "input": "NaN",
+      "err": "json: unsupported value: NaN"
+    },
+    {
+      "input": "+Inf",
+      "err": "json: unsupported value: +Inf"
+    },
+    {
+      "input": "-Inf",
+      "err": "json: unsupported value: -Inf"
+    },
+    {
+      "input": "9007199254740993",
+      "output": "9007199254740992"
+    },
+    {
+      "input": "4.35",
+      "output": "4.35"
+    },
+    {
+      "input": "0.000001",
+      "output": "0.000001"
+    },
+    {
+      "input": "2e-6",
+      "output": "0.000002"
+    },
+    {
+      "input": "1e-10",
+      "output": "1e-10"
+    },
+    {
+      "input": "-1e21",
+      "output": "-1e+21"
+    },
+    {
+      "input": "3.0000000000000004",
+      "output": "3.0000000000000004"
+    }
+  ],
+  "time_format": [
+    {
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": 0,
+      "rfc3339": "2026-07-14T10:00:00Z",
+      "json": "\"2026-07-14T10:00:00Z\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": 7200,
+      "rfc3339": "2026-07-14T12:00:00+02:00",
+      "json": "\"2026-07-14T12:00:00+02:00\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": -18000,
+      "rfc3339": "2026-07-14T05:00:00-05:00",
+      "json": "\"2026-07-14T05:00:00-05:00\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": 19800,
+      "rfc3339": "2026-07-14T15:30:00+05:30",
+      "json": "\"2026-07-14T15:30:00+05:30\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": 3661,
+      "rfc3339": "2026-07-14T11:01:01+01:01",
+      "json": "\"2026-07-14T11:01:01+01:01\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": -3661,
+      "rfc3339": "2026-07-14T08:58:59-01:01",
+      "json": "\"2026-07-14T08:58:59-01:01\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784071800,
+      "nsec": 0,
+      "offset": 3600,
+      "rfc3339": "2026-07-15T00:30:00+01:00",
+      "json": "\"2026-07-15T00:30:00+01:00\"",
+      "date_only": "2026-07-15"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 500000000,
+      "offset": 0,
+      "rfc3339": "2026-07-14T10:00:00Z",
+      "json": "\"2026-07-14T10:00:00.5Z\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 123456789,
+      "offset": 7200,
+      "rfc3339": "2026-07-14T12:00:00+02:00",
+      "json": "\"2026-07-14T12:00:00.123456789+02:00\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 100,
+      "offset": 0,
+      "rfc3339": "2026-07-14T10:00:00Z",
+      "json": "\"2026-07-14T10:00:00.0000001Z\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 1784023200,
+      "nsec": 120000000,
+      "offset": 0,
+      "rfc3339": "2026-07-14T10:00:00Z",
+      "json": "\"2026-07-14T10:00:00.12Z\"",
+      "date_only": "2026-07-14"
+    },
+    {
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "rfc3339": "1970-01-01T00:00:00Z",
+      "json": "\"1970-01-01T00:00:00Z\"",
+      "date_only": "1970-01-01"
+    },
+    {
+      "unix": -1,
+      "nsec": 999999999,
+      "offset": 0,
+      "rfc3339": "1969-12-31T23:59:59Z",
+      "json": "\"1969-12-31T23:59:59.999999999Z\"",
+      "date_only": "1969-12-31"
+    },
+    {
+      "unix": -86400,
+      "nsec": 0,
+      "offset": -3600,
+      "rfc3339": "1969-12-30T23:00:00-01:00",
+      "json": "\"1969-12-30T23:00:00-01:00\"",
+      "date_only": "1969-12-30"
+    },
+    {
+      "unix": 253402300799,
+      "nsec": 0,
+      "offset": 0,
+      "rfc3339": "9999-12-31T23:59:59Z",
+      "json": "\"9999-12-31T23:59:59Z\"",
+      "date_only": "9999-12-31"
+    },
+    {
+      "unix": 253402300799,
+      "nsec": 0,
+      "offset": 3600,
+      "rfc3339": "10000-01-01T00:59:59+01:00",
+      "json": "error: Time.MarshalJSON: year outside of range [0,9999]",
+      "date_only": "10000-01-01"
+    },
+    {
+      "unix": -62135596800,
+      "nsec": 0,
+      "offset": 0,
+      "rfc3339": "0001-01-01T00:00:00Z",
+      "json": "\"0001-01-01T00:00:00Z\"",
+      "date_only": "0001-01-01"
+    },
+    {
+      "unix": -62135596800,
+      "nsec": 0,
+      "offset": -3600,
+      "rfc3339": "0000-12-31T23:00:00-01:00",
+      "json": "\"0000-12-31T23:00:00-01:00\"",
+      "date_only": "0000-12-31"
+    },
+    {
+      "unix": 1709208000,
+      "nsec": 0,
+      "offset": 86400,
+      "rfc3339": "2024-03-01T12:00:00+24:00",
+      "json": "error: Time.MarshalJSON: timezone hour outside of range [0,23]",
+      "date_only": "2024-03-01"
+    },
+    {
+      "unix": 1709208000,
+      "nsec": 0,
+      "offset": -86340,
+      "rfc3339": "2024-02-28T12:01:00-23:59",
+      "json": "\"2024-02-28T12:01:00-23:59\"",
+      "date_only": "2024-02-28"
+    }
+  ],
+  "time_parse": [
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00Z",
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+02:00",
+      "unix": 1784016000,
+      "nsec": 0,
+      "offset": 7200
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00-05:30",
+      "unix": 1784043000,
+      "nsec": 0,
+      "offset": -19800
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00.5Z",
+      "unix": 1784023200,
+      "nsec": 500000000,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00,5Z",
+      "unix": 1784023200,
+      "nsec": 500000000,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00.123456789123Z",
+      "unix": 1784023200,
+      "nsec": 123456789,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00.Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00.Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \".Z\" as \"Z07:00\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"Z07:00\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"T\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "today",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"today\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"today\" as \"2006\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"2006\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14t10:00:00z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14t10:00:00z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"t10:00:00z\" as \"T\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14 10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14 10:00:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \" 10:00:00Z\" as \"T\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-7-14T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-7-14T10:00:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"7-14T10:00:00Z\" as \"01\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-13-14T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-13-14T10:00:00Z\": month out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-00-14T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-00-14T10:00:00Z\": month out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-02-29T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-02-29T10:00:00Z\": day out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2024-02-29T10:00:00Z",
+      "unix": 1709200800,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-04-31T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-04-31T10:00:00Z\": day out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T24:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T24:00:00Z\": hour out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T1:00:00Z",
+      "unix": 1783990800,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:60:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:60:00Z\": minute out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:60Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:60Z\": second out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+25:00",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00+25:00\": time zone offset hour out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+24:00",
+      "unix": 1783936800,
+      "nsec": 0,
+      "offset": 86400
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+02:61",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00+02:61\": time zone offset minute out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+0200",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00+0200\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"+0200\" as \"Z07:00\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00Zextra",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00Zextra\": extra text: \"extra\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+02:00 ",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00+02:00 \": extra text: \" \""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "20a6-07-14T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"20a6-07-14T10:00:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"20a6-07-14T10:00:00Z\" as \"2006\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "0000-01-01T00:00:00Z",
+      "unix": -62167219200,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "9999-12-31T23:59:59Z",
+      "unix": 253402300799,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00Zé",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00Z\\xc3\\xa9\": extra text: \"\\xc3\\xa9\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00\u0001Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00\\x01Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\\x01Z\" as \"Z07:00\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": " 2026-07-14T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \" 2026-07-14T10:00:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \" 2026-07-14T10:00:00Z\" as \"2006\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00-00:00",
+      "unix": 1784023200,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-00T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-00T10:00:00Z\": day out of range"
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-1T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-1T10:00:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"1T10:00:00Z\" as \"02\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00*02:00",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00*02:00\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"*02:00\" as \"Z07:00\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+0a:00",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00+0a:00\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"+0a:00\" as \"Z07:00\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:5:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:5:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"5:00Z\" as \"04\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "-026-07-14T10:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"-026-07-14T10:00:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"-026-07-14T10:00:00Z\" as \"2006\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00.000000001+01:00",
+      "unix": 1784019600,
+      "nsec": 1,
+      "offset": 3600
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"Z\" as \":\""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2026-07-14",
+      "unix": 1783987200,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2026-7-14",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-7-14\" as \"2006-01-02\": cannot parse \"7-14\" as \"01\""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2026-02-30",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-02-30\": day out of range"
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2026-07-14T",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T\": extra text: \"T\""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"\" as \"2006-01-02\": cannot parse \"\" as \"2006\""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "today",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"today\" as \"2006-01-02\": cannot parse \"today\" as \"2006\""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2026-07-14 ",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14 \": extra text: \" \""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "+026-07-14",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"+026-07-14\" as \"2006-01-02\": cannot parse \"+026-07-14\" as \"2006\""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2026-13-01",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-13-01\": month out of range"
+    },
+    {
+      "layout": "DateOnly",
+      "value": "02026-07-14",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"02026-07-14\" as \"2006-01-02\": cannot parse \"6-07-14\" as \"-\""
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2024-02-29",
+      "unix": 1709164800,
+      "nsec": 0,
+      "offset": 0
+    },
+    {
+      "layout": "DateOnly",
+      "value": "2026-07-14�",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14\\xef\\xbf\\xbd\": extra text: \"\\xef\\xbf\\xbd\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T:00:00Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T:00:00Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \":00:00Z\" as \"15\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:0Z",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:0Z\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"0Z\" as \"05\""
+    },
+    {
+      "layout": "RFC3339",
+      "value": "2026-07-14T10:00:00+02:0",
+      "unix": 0,
+      "nsec": 0,
+      "offset": 0,
+      "err": "parsing time \"2026-07-14T10:00:00+02:0\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"+02:0\" as \"Z07:00\""
+    }
+  ]
+}

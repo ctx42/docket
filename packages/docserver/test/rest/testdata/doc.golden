@@ -1,0 +1,3 @@
+GET /docs/shop/catalog/epub.md response body.
+---
+{"id":"shop/catalog/epub.md","path":"shop/catalog/epub.md","title":"EPUB Editions","source_url":"https://docs.example.com/epub","text":"---\ntitle: EPUB Editions\n---\n\nReaders download book data as EPUB.\nSee https://docs.example.com/epub\n"}

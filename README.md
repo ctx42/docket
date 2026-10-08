@@ -1,0 +1,562 @@
+[![CI](https://github.com/ctx42/docket/actions/workflows/ci.yml/badge.svg)](https://github.com/ctx42/docket/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+
+# docket
+
+Edit Atlassian Confluence pages as local Markdown — from your terminal **or**
+from inside Obsidian — without ever corrupting the page.
+
+## Overview
+
+Would you rather write in Markdown than fight the Confluence editor? `docket`
+pulls a page down as clean Markdown, lets you edit it however you like, and
+pushes your edits back — on one promise:
+
+> [!IMPORTANT]
+> A push either applies exactly what you changed or is safely rejected.
+> **It never corrupts the page.**
+
+Confluence stores far more than Markdown can express — panels, macros, table
+structure, node ids. `docket` keeps all of it: only the blocks you actually
+changed are written back, and anything Markdown can't represent stays
+read-only, refused with a message rather than guessed. Sync a single page, a
+whole folder, or an entire space, mirrored into a local directory tree that
+tracks the remote layout.
+
+The round-trip stays lossless through a *retentive lens*: on pull, `docket`
+caches the original Atlassian Document Format (ADF) alongside the Markdown; on
+push, it back-ports your changes onto that cache, recovering everything
+Markdown can't carry from the original.
+
+`docket` is a ground-up TypeScript rewrite of the author's earlier Go tool of
+the same name, which it now supersedes.
+
+## Two ways to use it, one engine
+
+`docket` ships **two front ends over one runtime-neutral core**, so a page
+pulled by one round-trips cleanly through the other. Pick whichever fits how
+you work — or use both against the same vault.
+
+| Surface             | What it is                                               | Reach for it when…                                    |
+|---------------------|----------------------------------------------------------|-------------------------------------------------------|
+| **CLI**             | A single self-contained binary (`docket`).               | You script it, run it in CI, or live in the terminal. |
+| **Obsidian plugin** | A control-center panel and settings tab inside Obsidian. | You want pull/push on a click, next to your notes.    |
+
+## Features
+
+- **Lossless round-trip.** Only changed blocks are written back; unexpressible
+  content is preserved verbatim, never guessed.
+- **Clean Markdown out.** Pages render to readable Markdown with images pulled
+  into a shared `_assets/` directory and embedded as Obsidian `![[wikilinks]]`.
+- **Whole-tree mirroring.** A folder or space — pages and nested sub-folders —
+  maps to a local directory tree; names derive from page titles.
+- **Rich formatting survives.** Panels, tables, mentions, status/date/emoji,
+  colored and underlined text, and macros all round-trip.
+- **Comments (opt-in).** Inline and footer comments pull in as `[!comment]`
+  callouts with `[^cf-…]` anchors; a push preserves them, and resolves an
+  inline comment whose callout and anchor you removed. Off by default.
+- **Safe concurrent edits.** A three-way merge folds in non-overlapping remote
+  changes; a genuine conflict is refused, not clobbered.
+- **Cross-page links** rewrite to local `.md` paths on pull and restore on push.
+- **Create pages** from a local note and restrict them to you.
+- **Housekeeping:** garbage-collect unreferenced assets and prune local files
+  deleted upstream.
+
+## Packages
+
+`docket` is a [Bun](https://bun.sh) workspace of three packages:
+
+| Package                                               | What it is                                                                                                                     |
+|-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| [`@docket/core`](packages/core)                       | Runtime-neutral core: the ADF↔Markdown lens, sync orchestration, and injected I/O ports. Imports no `node:`/`bun:`/`obsidian`. |
+| [`@docket/cli`](packages/cli)                         | The standalone CLI: Node/Bun port adapters, config + `.env` loading, compiled to one binary.                                   |
+| [`@docket/obsidian-plugin`](packages/obsidian-plugin) | The Obsidian plugin: adapters, settings tab, control-center panel, indent rendering.                                           |
+
+## Prerequisites
+
+- **[Bun](https://bun.sh) 1.x** to build either front end. The compiled CLI
+  binary then runs standalone (Bun embeds its own runtime); Bun stays required
+  only if you run the CLI from source.
+- An **Atlassian API token** for the account you sync with. Create one at
+  <https://id.atlassian.com/manage-profile/security/api-tokens>.
+- For the plugin: **Obsidian 1.5.0+**, desktop (the plugin is desktop-only).
+
+## Installation
+
+Clone the repository:
+
+```sh
+git clone https://github.com/ctx42/docket
+cd docket
+bun install
+```
+
+### CLI
+
+The bundled `scripts/install.sh` builds the CLI and installs it as a single
+binary. It runs the same from any directory. The install directory mirrors Go's
+`GOBIN`: `$TSBIN` when set, otherwise `~/bin`. The command name is `$TSBIN_NAME`
+when set, otherwise `docket`:
+
+```sh
+./scripts/install.sh                        # -> ~/bin/docket
+TSBIN=/usr/local/bin ./scripts/install.sh   # -> /usr/local/bin/docket
+```
+
+It warns if the destination isn't on your `PATH`, or if another command of the
+same name already resolves elsewhere. Then verify:
+
+```sh
+docket version
+```
+
+Prefer to build by hand? The script just wraps this:
+
+```sh
+bun run --filter '@docket/cli' build
+./packages/cli/dist/docket version
+```
+
+This compiles a self-contained binary at `packages/cli/dist/docket`; symlink or
+copy it onto your `PATH` wherever you keep your own executables.
+
+> [!NOTE]
+> To run the CLI from source (so it picks up edits without a rebuild), point a
+> wrapper at the entry point instead: `bun packages/cli/src/index.ts <args>`.
+> Bun must stay installed for that form.
+
+### Obsidian plugin
+
+Install it from the Obsidian community-plugin store — no build required:
+
+1. **Settings → Community plugins**, and turn off Restricted mode if it's on.
+2. **Browse**, search for **docket**, and click **Install**.
+3. **Enable** the plugin.
+
+Then jump to [In Obsidian](#in-obsidian) to connect and start syncing.
+
+> [!NOTE]
+> Building from source instead? Compile the bundle and copy its three shipping
+> files into your vault:
+>
+> ```sh
+> bun run --filter '@docket/obsidian-plugin' build
+> mkdir -p /path/to/vault/.obsidian/plugins/ctx42-docket
+> cp packages/obsidian-plugin/dist/{main.js,manifest.json,styles.css} \
+>    /path/to/vault/.obsidian/plugins/ctx42-docket/
+> ```
+>
+> The repo also has a helper that builds and deploys into a vault in one step
+> (and can symlink for a hot-reload dev loop):
+>
+> ```sh
+> bun run deploy:plugin /path/to/vault          # build + copy
+> bun run deploy:plugin /path/to/vault --link   # build + symlink (dev)
+> ```
+
+## Quickstart
+
+### With the CLI
+
+Two files sit side by side: a committable config that says *what* to sync, and
+a git-ignored `.env` that holds the secrets. Create `.docket.yaml`:
+
+```yaml
+# .docket.yaml — what to sync (no secrets here)
+timeout: 30s
+pages:
+  notes/onboarding.md: /wiki/spaces/TEAM/pages/12345/Onboarding
+folders:
+  glossary: /wiki/spaces/TEAM/folder/67890
+spaces:
+  team-wiki: /wiki/spaces/TEAM
+```
+
+and `.env` beside it:
+
+```sh
+# .env — secrets and the sync root (never commit this)
+DOCKET_SITE=your-site
+DOCKET_ACCOUNT=you@example.com
+DOCKET_TOKEN=your-api-token
+DOCKET_ROOT=/absolute/path/to/your/vault
+```
+
+`DOCKET_SITE` is just the subdomain — the part before `.atlassian.net` (for
+`https://your-site.atlassian.net`, it is `your-site`). Then:
+
+```sh
+docket test                     # verify authenticated access to the Site
+docket pull                     # pull everything configured, to Markdown
+docket pull notes/onboarding.md # or re-pull one managed page
+```
+
+Each configured page — and every page inside a configured folder or space — is
+rendered to its `.md` file under the sync root, its images downloaded to
+`_assets/`, and the source ADF cached under `.adf_cache/`. Edit the `.md` files
+in any editor, then push:
+
+```sh
+docket push                     # push every edited page
+docket push notes/onboarding.md # or push one page
+```
+
+An unchanged page is skipped. If the remote page moved since you pulled,
+`docket` three-way merges your edits onto the new version and refuses only when
+the same block changed on both sides — re-pull and reapply in that case.
+
+To create a page, add a new `.md` file under a folder or space root with a
+title but no `docket_page_id`, then push — `docket` prompts, creates it under the
+parent derived from the directory, and restricts it to you:
+
+```sh
+docket push               # prompts: Create team-wiki/release_notes.md? [y/n/a/s]
+docket push --yes         # create without prompting
+```
+
+### In Obsidian
+
+1. Open **Settings → docket** and fill in the **Connection** section: your site
+   subdomain, account email, and API token. Click **Test** to confirm access.
+   The token is stored on this device only, never in the shareable settings.
+2. Under **Sync map**, add the pages, folders, and spaces to sync — each row
+   maps a vault path to a Confluence link. Already have a `.docket.yaml`?
+   **Import** it (credentials are never included; **Export** writes one back).
+3. Open the **control center** from the ribbon (the up/down-arrow icon) or the
+   command palette. It gives you four actions:
+
+   | Action                  | What it does                                   |
+   |-------------------------|------------------------------------------------|
+   | **Pull → Whole vault**  | Pull every configured page into the vault.     |
+   | **Pull → Current note** | Re-pull just the note you're viewing.          |
+   | **Push → Whole vault**  | Push all edited notes (shows a preview first). |
+   | **Push → Current note** | Push just the current note.                    |
+
+A push always opens a **review screen** first: one selectable row per
+candidate, flagging new pages and any whose remote version moved since you
+pulled, so you commit only what you mean to. Progress and a per-note result log
+stream live in the panel. The same actions are available as commands (search
+"docket" in the palette) for hotkey binding.
+
+## CLI commands
+
+```text
+docket <command> [flags] [page]
+
+test            Verify authenticated access to the Atlassian Site.
+pull [page]     Pull configured pages, folders, and spaces into the cache.
+                Reports each note as added, updated, unchanged, or conflict,
+                and removes notes whose Confluence page no longer exists (a
+                note with unpushed edits is kept, with a warning). With a page
+                path, pull only that one managed page.
+push [page]     Push edited Markdown back to Confluence, creating confirmed
+                new pages. With a page path, push only that page.
+status          List managed pages whose Confluence version has moved ahead
+                of your local copy (the pages a pull would update). One bulk
+                request, so it is cheap even for a whole space.
+gc              List orphaned files in the shared _assets directory. Add
+                --prune to delete them.
+clean           Remove local files under configured folder and space roots
+                that no longer exist in Confluence, including notes with
+                unpushed edits that a pull keeps back. Prompts unless --yes.
+version         Print the program version and exit.
+help [command]  Print help, or help for a command.
+```
+
+Every config-reading command accepts these flags after the command name; run
+`docket help <command>` for a command's own flags:
+
+```text
+--config <path>     Configuration file path (default ./.docket.yaml).
+--env <path>        Path to the .env file (default ./.env). An exported value
+                    wins over it.
+--sync-root <path>  Folder pages sync under; overrides DOCKET_ROOT.
+--yes               Skip confirmation prompts (push, clean).
+--force             Repush pages whose ADF changed even if the Markdown did
+                    not (push).
+--drop-comments     Detach open inline comments whose highlighted text an
+                    edit rewrote, instead of moving them (push).
+--prune             Delete the orphaned asset files (gc).
+-h, --help          Print the command's help and exit.
+```
+
+The exit code is `0` on success and `1` on any failure; a partial run (some
+pages failed) prints the per-page log and exits `1`.
+
+## Configuration
+
+The Site credentials and the sync root come from the environment (or a `.env`
+file), never from the config file — setting any of them in `.docket.yaml` is an
+error. A value already exported in the environment wins over `.env`.
+
+| Setting   | Source                             | Required | Description                                       |
+|-----------|------------------------------------|----------|---------------------------------------------------|
+| site      | `DOCKET_SITE`                      | yes      | Site subdomain, e.g. `your-site`.                 |
+| account   | `DOCKET_ACCOUNT`                   | yes      | Atlassian account email; the Basic-auth username. |
+| token     | `DOCKET_TOKEN`                     | yes      | Atlassian API token; the Basic-auth password.     |
+| sync root | `--sync-root` / `DOCKET_ROOT`      | yes      | Folder every mapped destination resolves under¹.  |
+
+¹ A relative sync root is resolved against the directory of the config file;
+`--sync-root` wins over `DOCKET_ROOT`.
+
+The config file (YAML) holds only what to sync:
+
+| Key               | Required | Description                                                     |
+|-------------------|----------|-----------------------------------------------------------------|
+| `timeout`         | no       | Per-request HTTP timeout, e.g. `45s` (default `30s`).           |
+| `markdown.margin` | no       | Hard-wrap column for Markdown text; `0`/unset = no wrap.        |
+| `comments`        | no       | Pull comments as `[!comment]` callouts; push resolves (off).    |
+| `pages`           | no²      | Map of destination `.md` under the sync root → Confluence path. |
+| `folders`         | no²      | Map of destination dir under the sync root → Confluence folder. |
+| `spaces`          | no²      | Map of destination dir under the sync root → Confluence space.  |
+
+² `pages`, `folders`, and `spaces` are each optional, but configure at least
+one — a config with none has nothing to sync. No single page may be claimed by
+more than one entry.
+
+Under the sync root, `docket` manages three reserved locations:
+
+| Location      | Contents                                                              |
+|---------------|-----------------------------------------------------------------------|
+| `_assets/`    | Downloaded images, shared across pages; embedded as `![[name]]`.      |
+| `.adf_cache/` | The cached source ADF (`.vN.json`) and the link index (`links.json`). |
+| `_index.md`   | A directory's own page, when a folder or space page has children.     |
+
+### What `docket` ignores
+
+Not every file under a mapped root is synced. `docket` skips:
+
+- **Non-`.md` files** — only Markdown notes are considered; anything else is
+  left alone.
+- **The `.adf_cache/` directory** — its cached `.md` copies are sync artifacts,
+  never your notes, so the maintenance commands (`push`, `gc`, `clean`) never
+  walk into it.
+- **Notes that aren't managed pages** — a `.md` file with no frontmatter, or
+  whose frontmatter has neither a `docket_page_id` nor a `title`, is not a page
+  `docket` owns and is skipped by `push`.
+- **Locally-created notes not yet pushed** — a note marked
+  `docket_local: true` is excluded everywhere until you create it.
+- **Notes you explicitly hold back** — add `docket_mode: ignore-push` to a
+  note's frontmatter and `push` leaves it out entirely: it is never created,
+  updated, or reported by `status` as having moved. Use it to keep an
+  in-progress or intentionally-local edit out of Confluence without moving or
+  renaming the file. (The marker shares the `docket_mode` key with the
+  managed-note `pull` value, so re-pulling the page rewrites it back to `pull`;
+  re-add `ignore-push` after a pull if you still want it held back.)
+
+> [!TIP]
+> The Obsidian plugin reads and writes the **same `.docket.yaml` sync map** —
+> Import one you already have, or Export the map you built in settings to share
+> it with CLI users. Credentials are never part of it.
+
+The plugin keeps the equivalent settings in its **Settings → docket** tab: the
+connection fields and Markdown options (flavor, wrap margin, request timeout,
+and a vault-relative sync-root subfolder), plus the same page/folder/space
+maps. The API token is stored per-device, outside the vault; everything else
+lives in the vault's shareable plugin data (`data.json`).
+
+### Inside an Obsidian vault
+
+Run from inside a vault that has the docket plugin, the CLI needs no
+`.docket.yaml` or `.env`: it uses the plugin's configuration, so the two can
+never drift apart, and it shares the plugin's cache, so a note pulled in
+Obsidian can be pushed from the terminal and the other way round.
+
+- **Detection** — the CLI walks up from the working directory; the first folder
+  holding `.obsidian/plugins/ctx42-docket/data.json` is the vault. Every run there
+  prints `config: vault <path> (docket plugin, schema vN)` on stderr. A vault
+  whose Obsidian config folder is renamed (not `.obsidian`) is not detected, and
+  the CLI falls back to `.docket.yaml`.
+- **One source of config** — inside a vault, `--config`, `--env`, `--sync-root`,
+  and a `.docket.yaml` in the working directory are errors. `DOCKET_*`
+  variables and a default `.env` are ignored, with a warning naming them. The
+  sync root is the plugin's sync-root subfolder (or the vault), whichever
+  folder you run from.
+- **Cache and token** — the plugin keeps its ADF cache, link index, and API
+  token outside the vault, in the per-user cache directory, and records where in
+  a per-device file under `.obsidian/plugins/ctx42-docket/devices/`. If that file is
+  missing or was written on another device, the CLI refuses to run: open the
+  vault in Obsidian on this device once, with the plugin enabled.
+- **One run at a time** — the CLI and the plugin take a lock in the shared cache
+  for every operation. While one runs, the other refuses and names it (`busy:
+  docket CLI pull, pid 4242`); the plugin's panel keeps its last result,
+  marked stale. A lock left by a crashed process is cleared automatically.
+- **Versions** — the plugin's `data.json` carries a schema version. A CLI older
+  than the plugin that wrote it refuses to run and asks to be upgraded.
+
+Exporting a `.docket.yaml` into the vault from the plugin asks for confirmation
+first, since the CLI then refuses to run from that folder.
+
+## Markdown dialect
+
+`docket` reads and writes an **Obsidian-native** Markdown dialect, so a pulled
+page is a first-class Obsidian note. Standard Markdown carries the obvious
+things — headings, paragraphs, **bold**/*italic*/~~strikethrough~~/`code`,
+links, bullet and numbered lists, fenced code blocks, and GFM tables.
+Everything Confluence adds on top round-trips through the small set of
+extensions below.
+
+### Inline extensions
+
+- **Images** are Obsidian embeds — `![[onboarding-diagram.png]]` — resolved
+  against `_assets/`, not `![alt](path)` links. An externally-hosted image
+  stays a plain `![alt](url)`.
+- **Underlined and colored text**, which Markdown has no syntax for, use inline
+  HTML: `<u>…</u>` for underline and `<span style="color:red">…</span>` for a
+  text color.
+- **Smart links** (Confluence inline cards) render as bare autolinks —
+  `<https://example.com>` — kept distinct from a normal `[label](url)` link so
+  they round-trip as cards.
+- **Confluence-only inline nodes** round-trip as `` `adf:…` `` code spans, keyed
+  by a leading sigil, so they survive an edit untouched and never render as
+  broken Markdown:
+  - status lozenge — `` `adf:!In progress|color=blue` ``
+  - date — `` `adf:#2026-07-19|ts=1768…` ``
+  - emoji — `` `adf::smile` ``
+  - mention — `` `adf:@Jane Doe` `` (an id is appended when the name is
+    ambiguous on the page)
+  - any other inline macro — `` `adf:*inlineExtension:…` ``
+- **Unsupported inline nodes** freeze as an invisible `%%adf:…%%` comment:
+  read-only and preserved verbatim.
+
+### Block extensions
+
+- **Panels** map to GitHub-style alerts — `> [!INFO]`, `> [!WARNING]`, … — the
+  uppercased panel type as the tag, with the body quoted below it. A plain
+  blockquote (no tag) stays a bare `> ` quote.
+- **Expand** blocks become a `> [!EXPAND] Title` alert; the title after the tag
+  stays editable.
+- **Indented paragraphs** carry their nesting depth as an `N> ` marker on the
+  first line — `1> `, `2> `, … The Obsidian plugin renders the marker as a
+  visually indented paragraph in both Live Preview and Reading view; without
+  the plugin the literal `N> ` marker is shown.
+- **Multi-line table cells** join their lines with `<br>`.
+- **Blocks Markdown can't express** (macros, an `EXPAND`-type panel, unusual
+  tables) are frozen in fenced ` ```adf ` blocks with a YAML body: read-only,
+  preserved verbatim, and refused rather than corrupted if you edit inside them.
+
+### Comments
+
+Opt in with `comments: true` in the config (or the plugin's **Comments** toggle);
+it is off by default. A pull then brings each page's Confluence comments in
+alongside the body:
+
+- An **inline comment** appends a `[^cf-<id>]` footnote anchor after the run of
+  text it annotates, and a `> [!comment]` callout after that block. The callout's
+  first line carries the thread's id, author, date, and resolution; replies nest
+  as deeper callouts.
+- **Footer comments** (page-level) collect in a trailing `## Comments` section.
+- The pull mirrors what Confluence shows on the page, so it **omits** two kinds of
+  comment Confluence itself hides: **resolved** inline comments (once a thread is
+  resolved it drops out entirely — reopening it in the UI brings it back on the
+  next pull), and **dangling** inline comments — ones whose highlighted text was
+  deleted, so the anchor no longer exists in the body.
+
+Comments are **managed on Confluence**, with one exception: a push can
+**resolve** an inline comment. A push **strips** the callouts and `[^cf-…]`
+anchors before reconstructing the body, so it never sends a reply, an edit, or a
+new comment — do those in the Confluence UI.
+
+- **Resolve** an inline comment by removing **both** its `[!comment]` callout and
+  its `[^cf-…]` anchor from the note, then pushing. Deleting the whole commented
+  paragraph together with its callout counts. A note whose only change is a
+  resolve pushes no page update and no new version. The push report (and the
+  plugin's push review) lists each resolve by id and highlighted text.
+- Removing **only one** of the two — the callout but not the anchor, or the
+  anchor but not the callout — **fails the push** before anything is sent:
+  remove both to resolve, or restore the removed part to keep the comment.
+- If the thread **changed on Confluence** since your last pull — a new reply, or
+  an edited comment — the push fails and asks you to **pull first**, so a reply
+  you have not seen is never resolved away. A thread already resolved or deleted
+  on Confluence is skipped and reported as already done.
+- **Footer comments** and **replies** are never changed by a push: removing or
+  editing their callouts is ignored, and the next pull restores them.
+- A resolve that fails after the page update succeeded is a warning — the pushed
+  page stands, the comment's callout comes back, and removing it again retries.
+- After a push the note is re-rendered with the comments still open.
+
+What a push *also* guarantees is that it never detaches an existing comment: a
+Confluence inline comment is an anchor mark the platform owns and the body
+can't otherwise express, so before each update the push re-grafts the live
+page's comment anchors onto the body. A comment survives as long as the text it
+highlights still exists — anywhere it now occurs, the closest to its original
+spot wins — or survives lightly edited: a change of case, or a near-match within
+its own paragraph (a word changed, not a rewrite). When an edit rewrites the
+highlighted words beyond that (keeping the anchor), the push **moves** each open
+comment onto the nearest remaining text — its own paragraph when that still
+exists, else the closest surviving one — and names it in a warning; push with
+`--drop-comments` to detach them deliberately instead. Edit prose freely — just
+don't hand-edit the `[!comment]` metadata lines or the `[^cf-…]` anchors, which
+are `docket`-managed. Comments are not versioned with the page, so every pull
+re-fetches them; a note left comment-free by an earlier pull picks them up on
+the next one.
+
+You freely edit prose, headings, list items, blockquotes, panels, expands, and
+table cells, and add paragraphs and images; the frozen ` ```adf ` blocks and
+`%%adf:…%%` comments carry everything else through unchanged, and an
+`` `adf:…` `` span is safe to move but not to hand-edit. Frontmatter — the
+`docket_mode: pull` marker that flags the note as `docket`-managed, plus the
+bookkeeping fields that track each note's Confluence page — must be left
+intact. Every key `docket` keeps for itself carries the `docket_` prefix, so it
+never collides with a key another tool reads:
+
+| Key                   | Holds                                                |
+|-----------------------|------------------------------------------------------|
+| `docket_mode`         | `pull` (managed) or `ignore-push` (held back)        |
+| `docket_local`        | `true` on a page created locally, not yet pushed     |
+| `docket_page_path`    | The note's path under the sync root                  |
+| `docket_page_id`      | The Confluence page ID                               |
+| `docket_page_version` | The page version the note is based on                |
+| `docket_space_id`     | The ID of the page's space                           |
+| `docket_parent_id`    | The parent page ID; absent on a space homepage       |
+| `docket_space_key`    | The space key; only on a page pulled through a space |
+| `docket_domain`       | The Site host the page was pulled from               |
+| `docket_page_images`  | The page's images: local ID, file, and alt text      |
+| `docket_mentions`     | Mention display names mapped to account IDs          |
+
+The remaining keys are shared with other Markdown tools and stay unprefixed.
+`title` is the page title. `id`, right after the marker, is the Confluence page
+ID as a quoted string, the same value as `docket_page_id`, so it stays the same
+when the page is moved or renamed upstream and a Markdown indexer can key the
+note on it. `url` is the page's Confluence URL, so a Markdown indexer can cite
+the page without knowing Confluence. Every pull and push rewrites them. Section
+anchors are not written: `docket` keeps no per-heading key in the note, and a
+pull or push drops the `heading_anchors` list earlier versions wrote.
+
+Notes written before the `docket_` prefix carry the old unprefixed keys
+(`docket-plugin`, `cf_local`, `page_id`, `page_version`, `page_path`,
+`space_id`, `parent_id`, `space_key`, `cf_domain`, `page_images`, `mentions`).
+`docket` still reads them — an old `docket-plugin: ignore-push` still holds a
+note back, and an old `cf_local` still marks it local — but writes only the
+prefixed keys, so the next pull of a note, or a push that updates it, rewrites
+its frontmatter to the new names. Rename a hand-written `docket-plugin:` or
+`cf_local:` marker yourself; a pull does not touch a note it does not manage.
+
+## Development
+
+The workspace is driven with Bun. From the repository root:
+
+```sh
+bun run typecheck      # tsc -b across all packages
+bun run lint           # biome
+bun run test           # vitest (the whole suite is hermetic — no network)
+bun run build          # build the plugin bundle and the CLI binary
+bun run check          # typecheck + lint + test
+```
+
+The core is runtime-neutral by contract: it imports nothing from `node:`,
+`bun:`, or `obsidian`, and a boundary test fails the suite on any leak. All I/O
+— HTTP, filesystem, clock, environment, streams — is injected through ports, so
+the same orchestration runs under the CLI's Node adapters, the plugin's
+Obsidian adapters, and the tests' in-memory fakes.
+
+## Status
+
+Both front ends cover the full pull / edit / push / create / gc / clean cycle
+against a real Confluence Site. The **CLI** ships as a single self-contained
+binary; the **Obsidian plugin** is available in the community-plugin store and
+drives the same cycle — connect, map, and pull/push from the control center.
+
+## License
+
+[MIT](LICENSE.md) — see the `LICENSE.md` file.
