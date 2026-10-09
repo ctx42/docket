@@ -290,11 +290,16 @@ export default class docketPlugin extends Plugin {
         void this.mcp.setEnabled(on);
     }
 
-    /** setDiffSigns shows or hides the editor change bars on this device. */
+    /**
+     * setDiffSigns shows or hides the editor change bars on this device; hiding
+     * them drops a commit picked in History.
+     */
     setDiffSigns(on: boolean): void {
         this.diffSigns = on;
         saveDiffSigns(this, on);
         this.signs.setEnabled(on);
+        if (!on) this.barBase.pick(null);
+        this.controller.touch();
     }
 
     /**

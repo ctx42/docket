@@ -789,6 +789,20 @@ div.docket-review-row .docket-review-main {
     overflow-wrap: anywhere;
     user-select: text;
 }
+.docket-history-row.is-pickable {
+    cursor: pointer;
+    border-radius: var(--radius-s);
+}
+.docket-history-row.is-pickable:hover {
+    background: var(--background-modifier-hover);
+}
+.docket-history-row.is-selected {
+    color: var(--text-normal);
+    background: var(--background-modifier-active-hover);
+}
+.docket-history-row.is-blocked {
+    color: var(--text-muted);
+}
 .docket-history > button {
     align-self: flex-start;
 }

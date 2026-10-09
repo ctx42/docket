@@ -5,11 +5,14 @@
 // `DD/MM/YY HH:MM: <subject>` each, newest first, a page at a time. Note
 // follows the active note across renames — committed ones through
 // `git log --follow`, and a move not yet committed through the change list's
-// rename. DOM shell over the controller's `log`.
+// rename. In Note mode, clicking a row compares the note's change bars against
+// that commit, and clicking it again ends that (history-pick.ts). DOM shell
+// over the controller's `log`.
 
 import { type LogEntry, logLine } from "@docket/core";
 import { setIcon } from "obsidian";
 import type docketPlugin from "../main.ts";
+import { isPicked, nextPick, pickBlock } from "./history-pick.ts";
 
 /** PAGE_SIZE is how many commits one load (and each Load more) adds. */
 export const PAGE_SIZE = 100;
@@ -62,12 +65,28 @@ export class HistoryTab {
         if (this.error !== "") {
             list.createDiv({ cls: "docket-error", text: this.error });
         }
+        const note = this.note();
+        const block =
+            note === null ? null : pickBlock(this.plugin.diffSigns, note);
+        const bars = this.plugin.barBase;
         for (const e of this.rows) {
-            list.createDiv({
+            const row = list.createDiv({
                 cls: "docket-history-row",
                 text: logLine(e),
-                attr: { "aria-label": e.hash.slice(0, 10) },
+                attr: { "aria-label": block ?? e.hash.slice(0, 10) },
             });
+            if (note === null || path === null) continue;
+            if (block !== null) {
+                row.addClass("is-blocked");
+                continue;
+            }
+            row.addClass("is-pickable");
+            row.toggleClass("is-selected", isPicked(bars.commit, note, e));
+            row.onclick = () => {
+                // A drag that selected the row's text is not a pick.
+                if (window.getSelection()?.toString() !== "") return;
+                bars.pick(nextPick(bars.commit, note, path, e));
+            };
         }
         if (this.loading) {
             list.createDiv({ cls: "docket-muted", text: "Loading…" });
@@ -98,6 +117,12 @@ export class HistoryTab {
         };
         item("note", "Note", "file-text");
         item("vault", "Vault", "vault");
+    }
+
+    /** note is the active note's path in Note mode, else null. */
+    private note(): string | null {
+        if (this.mode === "vault") return null;
+        return this.plugin.app.workspace.getActiveFile()?.path ?? null;
     }
 
     /**
