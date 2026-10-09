@@ -300,3 +300,71 @@ describe("create a new note under a root over the real adapter", () => {
         expect(await readFile(note, "utf8")).toContain('docket_page_id: "500"');
     });
 });
+
+describe("publish a created page over the real adapter", () => {
+    it("lifts an author-only restriction, then reports it published", async () => {
+        const state = started(newState(HOST, "acc-9"));
+        const cfg = await writeConfig("spaces:\n  team: /wiki/spaces/T\n");
+        const note = join(dir, "team/release_notes.md");
+        await mkdir(dirname(note), { recursive: true });
+        await writeFile(
+            note,
+            '---\ntitle: "Release Notes"\ndocket_space_id: "9"\ndocket_parent_id: "100"\n---\n\nFirst draft.\n',
+        );
+        expect((await run(["push", "--yes", ...cfg])).code).toBe(EXIT_OK);
+        state.restrictions.set("500", ["acc-9"]);
+
+        const have = await run([
+            "publish",
+            "--yes",
+            ...cfg,
+            "team/release_notes.md",
+        ]);
+
+        expect(have.code).toBe(EXIT_OK);
+        expect(have.err).toContain(
+            "docket: publishing team/release_notes.md lifts your restriction from:\n" +
+                '  page "Release Notes"\n',
+        );
+        expect(have.out).toBe(
+            "docket: published team/release_notes.md\n" +
+                '  page "Release Notes" is now visible\n',
+        );
+        expect(state.restrictions.has("500")).toBe(false);
+
+        const again = await run(["publish", ...cfg, "team/release_notes.md"]);
+
+        expect(again.code).toBe(EXIT_OK);
+        expect(again.out).toBe(
+            "docket: team/release_notes.md is already published\n",
+        );
+    });
+
+    it("refuses to prompt without a terminal", async () => {
+        const state = started(newState(HOST, "acc-9"));
+        const cfg = await writeConfig("spaces:\n  team: /wiki/spaces/T\n");
+        const note = join(dir, "team/a.md");
+        await mkdir(dirname(note), { recursive: true });
+        await writeFile(
+            note,
+            '---\ntitle: "A"\ndocket_space_id: "9"\ndocket_parent_id: "100"\n---\n\nbody\n',
+        );
+        expect((await run(["push", "--yes", ...cfg])).code).toBe(EXIT_OK);
+        state.restrictions.set("500", ["acc-9"]);
+
+        const have = await run(["publish", ...cfg, "team/a.md"]);
+
+        expect(have.code).not.toBe(EXIT_OK);
+        expect(have.err).toContain("re-run with --yes");
+        expect(state.restrictions.get("500")).toEqual(["acc-9"]);
+    });
+
+    it("needs a page", async () => {
+        const cfg = await writeConfig("spaces:\n  team: /wiki/spaces/T\n");
+
+        const have = await run(["publish", ...cfg]);
+
+        expect(have.code).not.toBe(EXIT_OK);
+        expect(have.err).toBe("docket: publish needs a page\n");
+    });
+});

@@ -10,7 +10,12 @@
 // reader over readline.
 
 import { createInterface } from "node:readline/promises";
-import { type CreateInput, pageName, type StaleItem } from "@docket/core";
+import {
+    type CreateInput,
+    type PublishPlan,
+    pageName,
+    type StaleItem,
+} from "@docket/core";
 import { type KeySource, runSelect } from "./select.ts";
 
 /** PromptOptions are the shared inputs for a confirmation. */
@@ -108,6 +113,38 @@ export async function confirmStale(
         .trim()
         .toLowerCase();
     return line === "y" || line === "yes" ? items : [];
+}
+
+/**
+ * confirmPublish asks once before a publish clears restrictions, listing every
+ * page and folder that becomes visible. `--yes` accepts without asking; without
+ * a terminal it refuses. It returns whether to go on.
+ */
+export async function confirmPublish(
+    plan: PublishPlan,
+    opts: PromptOptions,
+): Promise<boolean> {
+    let out = `docket: publishing ${pageName(opts.syncRoot, plan.dest)} lifts your restriction from:\n`;
+    for (const item of plan.items) {
+        out += `  ${item.kind} "${item.title}"\n`;
+    }
+    opts.err(out);
+    if (opts.yes) {
+        return true;
+    }
+    if (!opts.isTTY) {
+        throw new Error(
+            "refusing to prompt without a terminal; re-run with --yes",
+        );
+    }
+    const line = (
+        await opts.ask(
+            "Make them visible to everyone with space access? [y/N]: ",
+        )
+    )
+        .trim()
+        .toLowerCase();
+    return line === "y" || line === "yes";
 }
 
 /**

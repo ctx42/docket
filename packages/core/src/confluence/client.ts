@@ -133,6 +133,29 @@ export interface Attachment {
 }
 
 /**
+ * ContentRestriction is one operation's direct restriction on a page or folder:
+ * the users and groups the operation is limited to.
+ */
+export interface ContentRestriction {
+    /** The restricted operation, e.g. `read` or `update`. */
+    operation: string;
+    /** The account ids of the users the operation is limited to. */
+    users: string[];
+    /** The names (or ids, when unnamed) of the groups it is limited to. */
+    groups: string[];
+}
+
+/** ContentNode is a page's or folder's title and place in the content tree. */
+export interface ContentNode {
+    id: string;
+    title: string;
+    /** The parent's id, `""` at a space root. */
+    parentId: string;
+    /** The parent's kind (`page`, `folder`, …), `""` at a space root. */
+    parentType: string;
+}
+
+/**
  * PageComment is one Confluence comment as the sync layer reads it — an inline
  * comment (anchored to a run of body text) or a footer comment (page-level),
  * with its reply thread nested under {@link PageComment.replies} in order. The
@@ -827,6 +850,89 @@ export class ConfluenceClient {
         }
         const ver = asInt(asObj(res["version"])["number"]);
         return { id, version: ver === 0 ? 1 : ver };
+    }
+
+    /**
+     * fetchRestrictions returns the direct content restrictions on the page or
+     * folder `id`, one entry per restricted operation, via the v1 restriction
+     * endpoint. An operation open to everyone is omitted, so an unrestricted id
+     * yields `[]`. Restrictions inherited from an ancestor are not included. It
+     * throws on a non-2xx status.
+     */
+    async fetchRestrictions(id: string): Promise<ContentRestriction[]> {
+        const resp = await this.get(
+            `${this.cfg.host}${RESTRICTION_PREFIX}${id}${RESTRICTION_SUFFIX}` +
+                "?expand=restrictions.user,restrictions.group",
+        );
+        if (!ok(resp.status)) {
+            throw new Error(`restrictions of ${id}: HTTP ${resp.status}`);
+        }
+        let rr: unknown;
+        try {
+            rr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding restrictions of ${id}: ${message(err)}`);
+        }
+        const out: ContentRestriction[] = [];
+        for (const r of asArr(asObj(rr)["results"])) {
+            const o = asObj(r);
+            const by = asObj(o["restrictions"]);
+            const users = asArr(asObj(by["user"])["results"])
+                .map((u) => asStr(asObj(u)["accountId"]))
+                .filter((a) => a !== "");
+            const groups = asArr(asObj(by["group"])["results"])
+                .map((g) => asStr(asObj(g)["name"]) || asStr(asObj(g)["id"]))
+                .filter((g) => g !== "");
+            if (users.length > 0 || groups.length > 0) {
+                out.push({ operation: asStr(o["operation"]), users, groups });
+            }
+        }
+        return out;
+    }
+
+    /**
+     * clearRestrictions removes every direct content restriction (read and
+     * update) from the page or folder `id`, via the v1 restriction endpoint, so
+     * it inherits its ancestors' visibility. It throws on a non-2xx status.
+     */
+    async clearRestrictions(id: string): Promise<void> {
+        const resp = await this.http.do({
+            method: "DELETE",
+            url: `${this.cfg.host}${RESTRICTION_PREFIX}${id}${RESTRICTION_SUFFIX}`,
+            headers: {
+                Authorization: this.auth,
+                "X-Atlassian-Token": "no-check",
+            },
+        });
+        if (!ok(resp.status)) {
+            throw new Error(`clear restrictions of ${id}: HTTP ${resp.status}`);
+        }
+    }
+
+    /**
+     * fetchNode returns the title and parent of the page or folder `id`, without
+     * its body — the step a walk up the content tree takes. It throws on a non-2xx
+     * status or an undecodable response.
+     */
+    async fetchNode(kind: "page" | "folder", id: string): Promise<ContentNode> {
+        const base = kind === "folder" ? FOLDER_ENDPOINT : PAGE_ENDPOINT;
+        const resp = await this.get(`${this.cfg.host}${base}${id}`);
+        if (!ok(resp.status)) {
+            throw new Error(`${kind} ${id}: HTTP ${resp.status}`);
+        }
+        let nr: unknown;
+        try {
+            nr = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding ${kind} ${id}: ${message(err)}`);
+        }
+        const o = asObj(nr);
+        return {
+            id: asStr(o["id"]),
+            title: asStr(o["title"]),
+            parentId: asStr(o["parentId"]),
+            parentType: asStr(o["parentType"]),
+        };
     }
 
     /**

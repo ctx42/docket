@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 
 import { describe, expect, it } from "vitest";
-import { noteActions, noteLink } from "../../src/ui/note-actions.ts";
+import {
+    canPublish,
+    noteActions,
+    noteLink,
+} from "../../src/ui/note-actions.ts";
 
 describe("noteActions", () => {
     it("offers pull, push, and discard on a pulled note", () => {
@@ -39,6 +43,26 @@ describe("noteActions", () => {
         const have = noteActions(fm);
 
         expect(have).toEqual([]);
+    });
+});
+
+describe("canPublish", () => {
+    it("offers publish on a note with a page id", () => {
+        const fm = { docket_page_id: "42", docket_mode: "ignore-push" };
+
+        const have = canPublish(fm);
+
+        expect(have).toBe(true);
+    });
+
+    it.each([
+        ["no frontmatter", undefined],
+        ["a never-pushed note", { title: "New" }],
+        ["a local note", { docket_page_id: "42", docket_local: true }],
+    ])("does not offer publish on %s", (_, fm) => {
+        const have = canPublish(fm);
+
+        expect(have).toBe(false);
     });
 });
 

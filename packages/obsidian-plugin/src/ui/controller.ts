@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The plugin's run controller: it owns every pull, push, discard, status check,
-// and status apply, so commands, menus, the panel, and the status bar share one
+// The plugin's run controller: it owns every pull, push, discard, publish,
+// status check, and status apply, so commands, menus, the panel, and the status bar share one
 // busy flag, one live RunState, and one last status report. Runs happen in the
 // background — nothing here reveals the panel unless the user must look (a
 // failure or a conflict); the push review is a modal. Subscribers re-render on
@@ -14,7 +14,10 @@ import {
     describeHolder,
     overwrites,
     type PreflightEntry,
+    type PublishPlan,
     pageName,
+    planPublish,
+    publish,
     type RemoteBody,
     RunLockError,
     type StatusReport,
@@ -179,6 +182,53 @@ export class SyncController {
                 warn: outcome.unchanged,
                 err: outcome.errors.length,
             });
+        });
+    }
+
+    /**
+     * publish makes the page of the note `dest` visible to others: it plans
+     * which author-only restrictions to lift (the page and the author-only
+     * folders directly above it), confirms them in a dialog, and clears them under a
+     * fresh run. A page restricted to anyone else is refused by the plan.
+     */
+    async publish(dest: string): Promise<void> {
+        if (this.refuseBusy()) return;
+        const rt = this.runtime();
+        if (rt === null) return;
+        this.setBusy(true, "publish check");
+        let plan: PublishPlan;
+        try {
+            plan = await planPublish(rt, dest);
+        } catch (err) {
+            this.setBusy(false);
+            this.fail(err);
+            return;
+        }
+        this.setBusy(false);
+        const name = pageName(this.plugin.settings.syncRoot, dest);
+        const warn = plan.warning === "" ? "" : ` (${plan.warning})`;
+        if (plan.items.length === 0) {
+            new Notice(`docket: ${name} is already published${warn}`);
+            return;
+        }
+        const yes = await confirmModal(
+            this.app,
+            "Publish to Confluence?",
+            "Your restriction will be lifted from these, making them visible " +
+                "to everyone with access to the space:",
+            plan.items.map((i) => `${i.kind} "${i.title}"`),
+            "Publish",
+        );
+        if (!yes) return;
+        await this.execute("publishing", async (rt, reporter) => {
+            const cleared = await publish(rt.client, plan);
+            for (const i of cleared) {
+                reporter.log(`${i.kind} "${i.title}" is now visible`);
+            }
+            if (plan.warning !== "") {
+                reporter.log(`warning: ${plan.warning}`);
+            }
+            reporter.setCounts({ ok: cleared.length, warn: 0, err: 0 });
         });
     }
 

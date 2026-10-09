@@ -14,7 +14,12 @@ import {
     type TFolder,
 } from "obsidian";
 import type docketPlugin from "../main.ts";
-import { type NoteAction, noteActions, noteLink } from "./note-actions.ts";
+import {
+    canPublish,
+    type NoteAction,
+    noteActions,
+    noteLink,
+} from "./note-actions.ts";
 import { toDest } from "./operations.ts";
 
 /** SECTION groups docket's items so Obsidian draws them as one menu section. */
@@ -62,8 +67,9 @@ export function copyLink(url: string): void {
 }
 
 /**
- * addNoteItems adds the docket section for one note: its sync actions (greyed
- * out while a run is in flight), then open / copy its Confluence link. It
+ * addNoteItems adds the docket section for one note: its sync actions and
+ * publish (greyed out while a run is in flight), then open / copy its
+ * Confluence link. It
  * returns whether it added anything. `skip` leaves out actions the caller
  * already shows as buttons.
  */
@@ -87,6 +93,19 @@ export function addNoteItems(
             if (warning) item.setWarning(true);
         });
     }
+    const publishable = canPublish(fm);
+    if (publishable) {
+        menu.addItem((item) =>
+            item
+                .setSection(SECTION)
+                .setTitle("Publish to Confluence…")
+                .setIcon("globe")
+                .setDisabled(busy)
+                .onClick(
+                    () => void plugin.controller.publish(toDest(file.path)),
+                ),
+        );
+    }
     const url = noteLink(fm);
     if (url !== "") {
         menu.addItem((item) =>
@@ -104,7 +123,7 @@ export function addNoteItems(
                 .onClick(() => copyLink(url)),
         );
     }
-    return actions.length > 0 || url !== "";
+    return actions.length > 0 || publishable || url !== "";
 }
 
 /** syncedUnder returns the notes under `folder` that offer `action`. */

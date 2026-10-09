@@ -32,12 +32,14 @@ const DONE: Record<string, string> = {
     pushing: "Pushed",
     discarding: "Discarded local changes",
     applying: "Applied",
+    publishing: "Published",
 };
 
 /**
  * summaryParts lists a finished run's non-zero outcomes in reading order: a
  * pull's added/updated/deleted/conflict/unchanged plus failures, an apply's
- * applied/failed, a push's pushed/unchanged/refused.
+ * applied/failed, a publish's made-visible/failed, a push's
+ * pushed/unchanged/refused.
  */
 export function summaryParts(s: RunState): SummaryPart[] {
     const parts: SummaryPart[] = [];
@@ -55,6 +57,9 @@ export function summaryParts(s: RunState): SummaryPart[] {
             t.conflict === 1 ? "conflict" : "conflicts",
         );
         add("unchanged", t.unchanged, "unchanged");
+        add("err", s.counts.err, "failed");
+    } else if (s.verb === "publishing") {
+        add("ok", s.counts.ok, "made visible");
         add("err", s.counts.err, "failed");
     } else if (s.verb === "applying") {
         add("ok", s.counts.ok, "applied");

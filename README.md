@@ -218,6 +218,18 @@ docket push               # pick create / ask later / never push per new note
 docket push --yes         # create every new note without the list
 ```
 
+A page restricted to you alone, along with the folders above it restricted
+the same way, can be made visible by publishing it:
+
+```sh
+docket publish team-wiki/release_notes.md  # lists what becomes visible, asks first
+```
+
+Publish clears only restrictions that name you alone. A page or folder
+restricted to anyone else is refused, never widened. A private parent page is
+reported, not published. In Obsidian, use **Publish to Confluence…** in a
+note's context menu or the command palette.
+
 ### In Obsidian
 
 1. Open **Settings → docket** and fill in the **Connection** section: your site

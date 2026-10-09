@@ -61,6 +61,17 @@ describe("runSummary", () => {
         expect(have).toBe("Pushed: 1 pushed · 2 refused");
     });
 
+    it("words a publish's outcome", () => {
+        const s = run({
+            verb: "publishing",
+            counts: { ok: 2, warn: 0, err: 0 },
+        });
+
+        const have = runSummary(s);
+
+        expect(have).toBe("Published: 2 made visible");
+    });
+
     it("says when nothing happened", () => {
         const have = runSummary(run({ verb: "applying" }));
 

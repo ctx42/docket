@@ -28,11 +28,14 @@ import {
     overwrites,
     type PageAction,
     type PreflightEntry,
+    type PublishPlan,
     Puller,
     Pusher,
     pageLine,
     pageName,
     planCreates,
+    planPublish,
+    publish,
     pullConfig,
     pullSummary,
     type Reporter,
@@ -70,6 +73,9 @@ export interface CliDeps {
 
 /** ConfirmOverwrite asks whether to discard the local edits of the named notes. */
 export type ConfirmOverwrite = (names: string[]) => Promise<boolean>;
+
+/** ConfirmPublish asks whether to clear the restrictions a publish plan lists. */
+export type ConfirmPublish = (plan: PublishPlan) => Promise<boolean>;
 
 /** ConfirmCreates decides which create candidates to make (dest → create). */
 export type ConfirmCreates = (
@@ -575,4 +581,37 @@ function selectedSummary(action: PageAction): string {
  */
 function streamed(d: CliDeps, log: string, summary: string): string {
     return d.reporter.streamsLog() ? summary : log + summary;
+}
+
+/**
+ * runPublish makes the page of the note `selected` visible to others: it lifts
+ * an author-only restriction from the page, and from the author-only folders
+ * directly above it, once `confirm` agrees. Restrictions naming anyone else are
+ * refused, never cleared.
+ */
+export async function runPublish(
+    d: CliDeps,
+    selected: string,
+    confirm: ConfirmPublish,
+): Promise<CommandResult> {
+    const dest = resolvePagePath(d.config.syncRoot, selected);
+    const name = pageName(d.config.syncRoot, dest);
+    const plan = await planPublish(d, dest);
+    const warn =
+        plan.warning === "" ? "" : `docket: warning: ${plan.warning}\n`;
+    if (plan.items.length === 0) {
+        return {
+            out: `docket: ${name} is already published\n${warn}`,
+            error: null,
+        };
+    }
+    if (!(await confirm(plan))) {
+        return { out: "docket: nothing published\n", error: null };
+    }
+    const cleared = await publish(d.client, plan);
+    let out = `docket: published ${name}\n`;
+    for (const item of cleared) {
+        out += `  ${item.kind} "${item.title}" is now visible\n`;
+    }
+    return { out: out + warn, error: null };
 }

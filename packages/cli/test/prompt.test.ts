@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-import type { CreateInput, StaleItem } from "@docket/core";
+import type { CreateInput, PublishPlan, StaleItem } from "@docket/core";
 import { describe, expect, it } from "vitest";
 import {
     confirmCreates,
     confirmOverwrite,
+    confirmPublish,
     confirmStale,
     type PromptOptions,
 } from "../src/prompt.ts";
@@ -177,6 +178,47 @@ describe("confirmOverwrite", () => {
         );
         await expect(
             confirmOverwrite(["a.md"], opts({ isTTY: false })),
+        ).rejects.toThrow("re-run with --yes");
+    });
+});
+
+describe("confirmPublish", () => {
+    const plan: PublishPlan = {
+        dest: "/v/docs/p.md",
+        accountId: "me",
+        items: [
+            { id: "F1", kind: "folder", title: "Docs" },
+            { id: "555", kind: "page", title: "Page" },
+        ],
+        warning: "",
+    };
+
+    it("lists what becomes visible and goes on only on yes", async () => {
+        let shown = "";
+        const o = opts({ err: (t) => (shown += t) }, ["yes"]);
+
+        expect(await confirmPublish(plan, o)).toBe(true);
+        expect(shown).toBe(
+            "docket: publishing docs/p.md lifts your restriction from:\n" +
+                '  folder "Docs"\n  page "Page"\n',
+        );
+        expect(await confirmPublish(plan, opts({}, ["n"]))).toBe(false);
+    });
+
+    it("accepts with --yes and refuses without a terminal", async () => {
+        let asked = 0;
+        const o = opts({
+            yes: true,
+            ask: () => {
+                asked++;
+                return Promise.resolve("");
+            },
+        });
+
+        expect(await confirmPublish(plan, o)).toBe(true);
+        expect(asked).toBe(0);
+        await expect(
+            confirmPublish(plan, opts({ isTTY: false })),
         ).rejects.toThrow("re-run with --yes");
     });
 });

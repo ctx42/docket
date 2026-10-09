@@ -40,6 +40,7 @@ import {
     type CommandResult,
     runClean,
     runGc,
+    runPublish,
     runPull,
     runPush,
     runStatus,
@@ -59,7 +60,12 @@ import {
     runtimeDirs,
 } from "./config-load.ts";
 import { MCP_USAGE, runMcp } from "./mcp.ts";
-import { confirmCreates, confirmOverwrite, confirmStale } from "./prompt.ts";
+import {
+    confirmCreates,
+    confirmOverwrite,
+    confirmPublish,
+    confirmStale,
+} from "./prompt.ts";
 import { newReporter } from "./reporter.ts";
 import { type KeySource, runSelect } from "./select.ts";
 import { findVault, loadVaultConfig, type VaultHost } from "./vault.ts";
@@ -70,7 +76,14 @@ export const EXIT_OK = 0;
 export const EXIT_ERR = 1;
 
 /** The config-reading commands, dispatched through {@link runConfigCommand}. */
-type ConfigCommand = "test" | "pull" | "push" | "status" | "gc" | "clean";
+type ConfigCommand =
+    | "test"
+    | "pull"
+    | "push"
+    | "publish"
+    | "status"
+    | "gc"
+    | "clean";
 
 /** MainCtx is the injected environment {@link main} runs against. */
 export interface MainCtx {
@@ -163,6 +176,7 @@ export async function main(ctx: MainCtx): Promise<number> {
         case "test":
         case "pull":
         case "push":
+        case "publish":
         case "status":
         case "gc":
         case "clean":
@@ -386,6 +400,10 @@ function runCommand(
                 flags.force,
                 flags.dropComments,
             );
+        case "publish":
+            return runPublish(deps, flags.page, (plan) =>
+                confirmPublish(plan, promptOpts),
+            );
         case "status":
             return runStatus(
                 deps,
@@ -427,7 +445,11 @@ function parseFlags(
     cmd: ConfigCommand,
     args: string[],
 ): ConfigFlags | "help" | "error" {
-    const withPage = cmd === "pull" || cmd === "push" || cmd === "status";
+    const withPage =
+        cmd === "pull" ||
+        cmd === "push" ||
+        cmd === "publish" ||
+        cmd === "status";
     const withSyncRoot = cmd !== "test";
     // Register only the flags the command documents, so an irrelevant flag
     // (e.g. `gc --yes`, `pull --force`) is rejected rather than silently ignored.
@@ -439,7 +461,12 @@ function parseFlags(
     if (withSyncRoot) {
         options["sync-root"] = { type: "string" };
     }
-    if (cmd === "push" || cmd === "clean" || cmd === "pull") {
+    if (
+        cmd === "push" ||
+        cmd === "clean" ||
+        cmd === "pull" ||
+        cmd === "publish"
+    ) {
         options["yes"] = { type: "boolean" };
     }
     if (cmd === "pull") {
@@ -485,6 +512,10 @@ function parseFlags(
             ctx.streams.stderr.write(
                 `docket: ${cmd} accepts at most one page\n`,
             );
+            return "error";
+        }
+        if (cmd === "publish" && positionals.length === 0) {
+            ctx.streams.stderr.write("docket: publish needs a page\n");
             return "error";
         }
         return {
@@ -568,6 +599,7 @@ const USAGE =
     "  test      Verify authenticated access to the Atlassian Site.\n" +
     "  pull      Pull configured pages, folders, and spaces into the cache.\n" +
     "  push      Push edited Markdown back to Confluence.\n" +
+    "  publish   Make a page restricted to you visible to others.\n" +
     "  status    Show what a push would send and a pull would bring.\n" +
     "  gc        List orphaned files in the shared _docket-media directory.\n" +
     "  clean     Remove local files no longer in Confluence.\n" +
@@ -618,6 +650,19 @@ const COMMAND_USAGE: Record<ConfigCommand, string> = {
         "  --yes               Create new pages without asking.\n" +
         "  --force             Repush pages whose ADF changed even if the Markdown did not.\n" +
         "  --drop-comments     Detach open inline comments an edit rewrote, not move them.\n",
+    publish:
+        "docket publish — make a page restricted to you visible to others.\n" +
+        "\nUsage:\n  docket publish [flags] <page>\n" +
+        "\n" +
+        "Publish lifts a restriction naming only you from the page of <page>\n" +
+        "— a sync-root-relative or absolute path to a managed .md file — and from\n" +
+        "the folders directly above it restricted the same way, after listing\n" +
+        "them and asking (add --yes to skip it).\n" +
+        "A restriction naming anyone but you is refused, never cleared. A\n" +
+        "private parent page is reported, not published.\n" +
+        "\nFlags:\n" +
+        FLAGS_COMMON +
+        "  --yes               Publish without asking.\n",
     status:
         "docket status — show what a push would send and a pull would bring.\n" +
         "\nUsage:\n  docket status [flags] [path]\n" +

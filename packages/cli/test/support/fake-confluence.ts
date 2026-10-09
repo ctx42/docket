@@ -40,6 +40,8 @@ export interface FakeState {
     requests: LoggedRequest[];
     /** How many more times `user/current` should fail with 503 (for retry tests). */
     failUserTimes: number;
+    /** Each restricted content id → the account ids its read/update name. */
+    restrictions: Map<string, string[]>;
 }
 
 /** newState builds a fresh fake with the given host, account, and seed pages. */
@@ -55,6 +57,7 @@ export function newState(
         nextId: 500,
         requests: [],
         failUserTimes: 0,
+        restrictions: new Map(),
     };
 }
 
@@ -162,6 +165,38 @@ export function handlers(state: FakeState) {
             });
             return HttpResponse.json({ id, version: { number: 1 } });
         }),
+
+        // Read content restrictions: read and update, both naming the
+        // restricted users; none when the content is open.
+        http.get(
+            `${h}/wiki/rest/api/content/:id/restriction`,
+            ({ request, params }) => {
+                log(request);
+                const users = state.restrictions.get(String(params["id"]));
+                if (users === undefined) {
+                    return HttpResponse.json({ results: [] });
+                }
+                const user = {
+                    results: users.map((accountId) => ({ accountId })),
+                };
+                return HttpResponse.json({
+                    results: ["read", "update"].map((operation) => ({
+                        operation,
+                        restrictions: { user, group: { results: [] } },
+                    })),
+                });
+            },
+        ),
+
+        // Clear every restriction on content.
+        http.delete(
+            `${h}/wiki/rest/api/content/:id/restriction`,
+            ({ request, params }) => {
+                log(request);
+                state.restrictions.delete(String(params["id"]));
+                return HttpResponse.json({});
+            },
+        ),
     ];
 }
 

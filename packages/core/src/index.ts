@@ -51,6 +51,7 @@ export * from "./sync/gc.ts";
 export * from "./sync/images.ts";
 export * from "./sync/linkindex.ts";
 export { hasConflictMarkers } from "./sync/merge.ts";
+export * from "./sync/publish.ts";
 export * from "./sync/pull.ts";
 export * from "./sync/push.ts";
 export * from "./sync/remote.ts";

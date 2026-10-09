@@ -62,7 +62,13 @@ import {
     openInConfluence,
     runNoteAction,
 } from "./ui/menus.ts";
-import { type NoteAction, noteActions, noteLink } from "./ui/note-actions.ts";
+import {
+    canPublish,
+    type NoteAction,
+    noteActions,
+    noteLink,
+} from "./ui/note-actions.ts";
+import { toDest } from "./ui/operations.ts";
 import { RemoteDiffFeature } from "./ui/remote-diff-feature.ts";
 import { barText, statusCounts } from "./ui/summary.ts";
 import { docketView, VIEW_TYPE } from "./ui/view.ts";
@@ -474,6 +480,18 @@ export default class docketPlugin extends Plugin {
             "Discard local changes in current note…",
             "discard",
         );
+        this.addCommand({
+            id: "docket-publish-current",
+            name: "Publish current note to Confluence…",
+            checkCallback: (checking) => {
+                const file = this.activeNote();
+                if (file === null || !canPublish(frontmatter(this, file))) {
+                    return false;
+                }
+                if (!checking) void c.publish(toDest(file.path));
+                return true;
+            },
+        });
         const linkCommand = (
             id: string,
             name: string,

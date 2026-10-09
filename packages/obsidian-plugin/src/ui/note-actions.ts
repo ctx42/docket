@@ -22,6 +22,17 @@ export function noteActions(fm: unknown): NoteAction[] {
 }
 
 /**
+ * canPublish reports whether a note's page can be offered for publishing: it
+ * is on Confluence (carries a page id) and not marked local. Whether it is
+ * still restricted is only known remotely, so publish checks that itself.
+ */
+export function canPublish(fm: unknown): boolean {
+    if (fm === null || fm === undefined) return false;
+    const meta = parseMeta(fm);
+    return meta.pageId !== "" && !meta.local;
+}
+
+/**
  * noteLink returns the Confluence page URL a synced note carries in its `url`
  * frontmatter, or `""` when it has none (or it is not an http(s) URL).
  */
