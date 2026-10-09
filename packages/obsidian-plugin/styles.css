@@ -796,6 +796,12 @@ div.docket-review-row .docket-review-main {
 /* Editor change bars against HEAD, and their hover popup. Gutter styling
    ported from obsidian-git's styles.css (MIT, (c) 2020 Vinzent03, Denis
    Olehov). */
+/* A fixed width, that of the widest sign (a deletion marker): sized by its
+   signs, the gutter would widen as a deletion marker appears and reflow the
+   note's text, and clip a hovered sign's growth. */
+.docket-signs-gutter {
+    width: 0.8rem;
+}
 .docket-signs-gutter .cm-gutterElement {
     display: grid;
     /* Align the sign with lines of any height (headings, list items). */
@@ -830,17 +836,20 @@ div.docket-review-row .docket-review-main {
 }
 .docket-sign-delete {
     align-self: end;
+    transform-origin: bottom;
 }
 .docket-sign-topdelete {
     align-self: start;
+    transform-origin: top;
 }
+/* Grow the hovered sign with a transform: it changes no layout. */
 div:hover > .docket-sign-add,
 div:hover > .docket-sign-change {
-    width: 0.6rem;
+    transform: scaleX(3);
 }
 div:hover > .docket-sign-delete,
 div:hover > .docket-sign-topdelete {
-    height: 0.6rem;
+    transform: scaleY(3);
 }
 /* Keep the text from shifting when the change bars are the only gutter. */
 .cm-gutters.cm-gutters-before:has(> .docket-signs-gutter:only-child) {
@@ -889,8 +898,17 @@ div:hover > .docket-sign-topdelete {
 .docket-diff-ins::before {
     content: "+";
 }
+.docket-diff-word {
+    border-radius: 2px;
+}
+.docket-diff-del .docket-diff-word {
+    background-color: rgba(var(--color-red-rgb), 0.35);
+}
+.docket-diff-ins .docket-diff-word {
+    background-color: rgba(var(--color-green-rgb), 0.35);
+}
 
-/* MCP server: the sync tab's line and the status-bar segment's error. */
+/* MCP server: the MCP tab's state line and the status-bar segment's error. */
 .docket-mcp-line {
     display: flex;
     align-items: center;

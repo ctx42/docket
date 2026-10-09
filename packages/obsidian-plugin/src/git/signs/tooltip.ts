@@ -6,7 +6,8 @@
 // Copyright (c) 2020 Vinzent03, Denis Olehov.
 //
 // The change bars' hover popup: hovering a gutter marker shows the lines the
-// hunk replaced, as they read in the base — HEAD, or the Confluence page.
+// hunk replaced, as they read in the base — HEAD, or the Confluence page —
+// then the lines that replaced them, with the edited words marked.
 // Read-only — obsidian-git's click-to-pin, stage, and reset buttons are not
 // ported.
 
@@ -14,6 +15,7 @@ import { StateEffect, StateField } from "@codemirror/state";
 import { showTooltip, type Tooltip } from "@codemirror/view";
 import { findHunk, type Hunk } from "./hunks.ts";
 import { type BaseKind, baseKind, hunksState } from "./state.ts";
+import { type Segment, wordDiff } from "./words.ts";
 
 /** hoverHunk sets the position of the hunk the pointer is over, or null. */
 export const hoverHunk = StateEffect.define<number | null>();
@@ -73,7 +75,8 @@ const HEADS: Record<BaseKind, Record<Hunk["type"], string>> = {
 
 /**
  * popup renders a hunk as a small unified diff: its base lines (HEAD, or the
- * Confluence page), then the lines that replaced them.
+ * Confluence page), then the lines that replaced them, each marking the words
+ * that changed.
  */
 function popup(hunk: Hunk, kind: BaseKind): HTMLElement {
     const el = document.createElement("div");
@@ -81,13 +84,26 @@ function popup(hunk: Hunk, kind: BaseKind): HTMLElement {
     const head = el.appendChild(document.createElement("div"));
     head.className = "docket-diff-head";
     head.textContent = HEADS[kind][hunk.type];
-    const line = (text: string, cls: string): void => {
+    const line = (segs: Segment[], cls: string): void => {
         const row = el.appendChild(document.createElement("div"));
         row.className = `docket-diff-line ${cls}`;
-        row.textContent = text === "" ? "\u00a0" : text;
+        if (segs.every((s) => s.text === "")) {
+            row.textContent = "\u00a0";
+            return;
+        }
+        for (const s of segs) {
+            if (!s.changed) {
+                row.append(s.text);
+                continue;
+            }
+            const word = row.appendChild(document.createElement("span"));
+            word.className = "docket-diff-word";
+            word.textContent = s.text;
+        }
     };
-    for (const l of hunk.removed.lines) line(l, "docket-diff-del");
-    for (const l of hunk.added.lines) line(l, "docket-diff-ins");
+    const words = wordDiff(hunk);
+    for (const l of words.removed) line(l, "docket-diff-del");
+    for (const l of words.added) line(l, "docket-diff-ins");
     return el;
 }
 
