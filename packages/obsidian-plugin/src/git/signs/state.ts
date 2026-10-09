@@ -5,8 +5,9 @@
 // (https://github.com/Vinzent03/obsidian-git), MIT License,
 // Copyright (c) 2020 Vinzent03, Denis Olehov.
 //
-// The editor state behind the change bars: the note's base text (HEAD, or the
-// Confluence page — see {@link baseKind}), set by the signs feature through
+// The editor state behind the change bars: the note's base text (HEAD, the
+// Confluence page, or a commit — see {@link baseSource}), set by the signs
+// feature through
 // {@link baseTextEffect}, and the hunks of the editor
 // text against it. Hunks are recomputed on every edit — incrementally, from the
 // previous chunks and the edits since — except that a large edit, or a note
@@ -22,6 +23,7 @@ import {
     type Transaction,
 } from "@codemirror/state";
 import { type Debouncer, debounce, editorEditorField } from "obsidian";
+import { type BaseSource, HEAD } from "./base.ts";
 import { computeHunks } from "./diff.ts";
 import type { Hunk } from "./hunks.ts";
 
@@ -49,18 +51,15 @@ interface ComputedHunks {
 /** baseTextEffect sets the note's base text. */
 export const baseTextEffect = StateEffect.define<string | undefined>();
 
-/** BaseKind names what the base text is: git HEAD, or the Confluence page. */
-export type BaseKind = "head" | "confluence";
+/** baseSourceEffect sets what the base text is. */
+export const baseSourceEffect = StateEffect.define<BaseSource>();
 
-/** baseKindEffect sets what the base text is. */
-export const baseKindEffect = StateEffect.define<BaseKind>();
-
-/** baseKind is what the note's base text is; HEAD until told otherwise. */
-export const baseKind = StateField.define<BaseKind>({
-    create: () => "head",
-    update: (kind, tr) => {
-        for (const e of tr.effects) if (e.is(baseKindEffect)) return e.value;
-        return kind;
+/** baseSource is what the note's base text is; HEAD until told otherwise. */
+export const baseSource = StateField.define<BaseSource>({
+    create: () => HEAD,
+    update: (src, tr) => {
+        for (const e of tr.effects) if (e.is(baseSourceEffect)) return e.value;
+        return src;
     },
 });
 
@@ -229,4 +228,4 @@ const debouncer = StateField.define<DebouncerData>({
 });
 
 /** hunksExtensions are the state fields the change bars need. */
-export const hunksExtensions = [hunksState, baseKind, debouncer];
+export const hunksExtensions = [hunksState, baseSource, debouncer];

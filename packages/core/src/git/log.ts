@@ -43,9 +43,14 @@ export function parseLog(out: string): LogEntry[] {
 
 /** logLine formats a commit as `DD/MM/YY HH:MM: <subject>` in local time. */
 export function logLine(e: LogEntry): string {
-    const d = new Date(e.at);
+    const subject = e.subject.trim() === "" ? "(no message)" : e.subject;
+    return `${logTime(e.at)}: ${subject}`;
+}
+
+/** logTime formats epoch milliseconds `at` as `DD/MM/YY HH:MM` in local time. */
+export function logTime(at: number): string {
+    const d = new Date(at);
     const two = (n: number): string => String(n).padStart(2, "0");
     const date = `${two(d.getDate())}/${two(d.getMonth() + 1)}/${two(d.getFullYear() % 100)}`;
-    const subject = e.subject.trim() === "" ? "(no message)" : e.subject;
-    return `${date} ${two(d.getHours())}:${two(d.getMinutes())}: ${subject}`;
+    return `${date} ${two(d.getHours())}:${two(d.getMinutes())}`;
 }

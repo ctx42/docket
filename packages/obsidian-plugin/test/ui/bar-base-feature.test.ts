@@ -9,13 +9,16 @@ import { confluenceBase } from "../../src/ui/remote-diff.ts";
 
 /**
  * FakePlugin is the slice of the plugin the feature reaches: the workspace's
- * active file and events, event registration, and the controller's status,
- * subscription and touch.
+ * active file and events, event registration, the controller's status,
+ * subscription and touch, and git's text at a commit.
  */
 class FakePlugin {
     active: string | null = null;
     touches = 0;
     bodies = new Map<string, RemoteBody>();
+    /** Commit texts by `hash:path`; a missing one fails the read. */
+    texts = new Map<string, string>();
+    reads = 0;
     private readonly events = new Map<string, () => void>();
     private listener: () => void = () => {};
 
@@ -38,6 +41,16 @@ class FakePlugin {
         },
         touch: () => {
             this.touches++;
+        },
+    };
+
+    readonly git = {
+        textAt: (hash: string, path: string): Promise<string> => {
+            this.reads++;
+            const text = this.texts.get(`${hash}:${path}`);
+            return text === undefined
+                ? Promise.reject(new Error("bad revision"))
+                : Promise.resolve(text);
         },
     };
 
@@ -67,7 +80,7 @@ function setup(): { p: FakePlugin; f: BarBaseFeature; refreshes: number[] } {
 }
 
 describe("BarBaseFeature", () => {
-    it("toggles the opened note into Confluence mode", () => {
+    it("toggles the opened note into Confluence mode", async () => {
         const { p, f } = setup();
         p.bodies.set("a.md", { body: "remote\n" });
 
@@ -76,30 +89,31 @@ describe("BarBaseFeature", () => {
 
         expect(f.opened).toBe("a.md");
         expect(f.isOn("a.md")).toBe(true);
-        expect(f.base("a.md", "local\n")).toBe(
-            confluenceBase("local\n", "remote\n"),
-        );
+        expect(await f.base("a.md", "local\n")).toEqual({
+            source: { kind: "confluence" },
+            text: confluenceBase("local\n", "remote\n"),
+        });
         expect(p.touches).toBe(2);
     });
 
-    it("compares against HEAD for another note or with the diff off", () => {
+    it("compares against HEAD for another note or with the diff off", async () => {
         const { p, f } = setup();
         p.bodies.set("a.md", { body: "remote\n" });
         f.open("a.md");
 
-        expect(f.base("a.md", "local\n")).toBeNull();
+        expect(await f.base("a.md", "local\n")).toBeNull();
         f.toggle("b.md");
-        expect(f.base("b.md", "local\n")).toBeNull();
+        expect(await f.base("b.md", "local\n")).toBeNull();
         expect(p.touches).toBe(1);
     });
 
-    it("compares against HEAD when the remote body failed to load", () => {
+    it("compares against HEAD when the remote body failed to load", async () => {
         const { p, f } = setup();
         p.bodies.set("a.md", { error: "HTTP 500" });
         f.open("a.md");
         f.toggle("a.md");
 
-        const have = f.base("a.md", "local\n");
+        const have = await f.base("a.md", "local\n");
 
         expect(have).toBeNull();
     });
@@ -118,17 +132,44 @@ describe("BarBaseFeature", () => {
         expect(p.touches).toBe(2);
     });
 
-    it("compares against the picked commit, not Confluence", () => {
+    it("compares against the picked commit, not Confluence", async () => {
         const { p, f } = setup();
         p.bodies.set("a.md", { body: "remote\n" });
+        p.texts.set("h1:old.md", "then\n");
         f.open("a.md");
         f.toggle("a.md");
 
-        f.pick({ note: "a.md", hash: "h1", path: "a.md", at: 0 });
+        f.pick({ note: "a.md", hash: "h1", path: "old.md", at: 7 });
 
         expect(f.commit?.hash).toBe("h1");
-        expect(f.base("a.md", "local\n")).toBeNull();
+        expect(await f.base("a.md", "local\n")).toEqual({
+            source: { kind: "commit", at: 7 },
+            text: "then\n",
+        });
         expect(p.touches).toBe(3);
+    });
+
+    it("reads a picked commit's text once", async () => {
+        const { p, f } = setup();
+        p.texts.set("h1:a.md", "then\n");
+        f.pick({ note: "a.md", hash: "h1", path: "a.md", at: 0 });
+
+        await f.base("a.md", "");
+        await f.base("a.md", "");
+
+        expect(p.reads).toBe(1);
+    });
+
+    it("shows no bars when the commit cannot be read", async () => {
+        const { f } = setup();
+        f.pick({ note: "a.md", hash: "gone", path: "a.md", at: 0 });
+
+        const have = await f.base("a.md", "");
+
+        expect(have).toEqual({
+            source: { kind: "commit", at: 0 },
+            text: undefined,
+        });
     });
 
     it("forgets the pick when another note is focused", () => {

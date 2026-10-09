@@ -4,15 +4,18 @@
 // The Obsidian side of what the change bars compare against: it tracks the
 // active note against the note opened from its changes row and the commit
 // picked in History, feeds the change bars the Confluence base of the note in
-// Confluence mode, and re-feeds them whenever a status check replaces the
-// remote bodies. The model is bar-base.ts.
+// Confluence mode or the picked commit's text, and re-feeds them whenever a
+// status check replaces the remote bodies. The model is bar-base.ts.
 
+import type { Override } from "../git/signs/feature.ts";
 import type docketPlugin from "../main.ts";
 import { BarBaseState, type CommitPick } from "./bar-base.ts";
 import { confluenceBase } from "./remote-diff.ts";
 
 export class BarBaseFeature {
     private readonly state = new BarBaseState();
+    /** The last commit text read; a commit's text never changes. */
+    private cached: { hash: string; path: string; text: string } | null = null;
     /** refreshBars re-reads every open editor's base text. */
     private refreshBars: () => void = () => {};
 
@@ -68,13 +71,38 @@ export class BarBaseFeature {
     }
 
     /**
-     * base is the text `path`'s change bars compare against in Confluence mode,
-     * built from the editor text `doc`, or null to compare against HEAD.
+     * base is what `path`'s change bars compare against: the picked commit's
+     * text, or in Confluence mode a base built from the editor text `doc`; null
+     * compares against HEAD.
      */
-    base(path: string, doc: string): string | null {
-        if (this.state.base(path).kind !== "confluence") return null;
+    async base(path: string, doc: string): Promise<Override | null> {
+        const b = this.state.base(path);
+        if (b.kind === "commit") {
+            return {
+                source: { kind: "commit", at: b.commit.at },
+                text: await this.text(b.commit),
+            };
+        }
+        if (b.kind !== "confluence") return null;
         const body = this.body(path);
-        return body === null ? null : confluenceBase(doc, body);
+        if (body === null) return null;
+        return {
+            source: { kind: "confluence" },
+            text: confluenceBase(doc, body),
+        };
+    }
+
+    /** text is the note's text at a picked commit; undefined if unreadable. */
+    private async text(c: CommitPick): Promise<string | undefined> {
+        const hit = this.cached;
+        if (hit?.hash === c.hash && hit.path === c.path) return hit.text;
+        try {
+            const text = await this.plugin.git.textAt(c.hash, c.path);
+            this.cached = { hash: c.hash, path: c.path, text };
+            return text;
+        } catch {
+            return undefined;
+        }
     }
 
     /** body is `path`'s remote body from the last status check, or null. */

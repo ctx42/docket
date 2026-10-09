@@ -7,8 +7,8 @@
 //
 // The change bars' Obsidian side: it registers the editor extensions (toggled
 // by a per-device setting, without a reload) and feeds every open editor its
-// note's HEAD text — or, for a note in Confluence mode, the base the
-// {@link BaseOverride} supplies. Where obsidian-git keeps a pub-sub of editors
+// note's HEAD text — or, for a note in Confluence mode or with a commit picked
+// in History, the base the {@link BaseOverride} supplies. Where obsidian-git keeps a pub-sub of editors
 // per path, a view plugin here records each live editor, and a refresh reads
 // each one's current path. Refreshes run on opening a note, a rename, a docket
 // commit, and every 10 s for the active note (a commit made outside docket).
@@ -17,11 +17,11 @@ import type { Extension } from "@codemirror/state";
 import { type EditorView, ViewPlugin } from "@codemirror/view";
 import { editorInfoField, type Plugin } from "obsidian";
 import type { GitController } from "../controller.ts";
+import { type BaseSource, HEAD, sameSource } from "./base.ts";
 import { gutterExtensions } from "./gutter.ts";
 import {
-    type BaseKind,
-    baseKind,
-    baseKindEffect,
+    baseSource,
+    baseSourceEffect,
     baseTextEffect,
     hunksExtensions,
     hunksState,
@@ -32,10 +32,22 @@ import { tooltipExtensions } from "./tooltip.ts";
 const INTERVAL_MS = 10_000;
 
 /**
- * BaseOverride supplies the text a note's bars compare against in place of its
+ * Override is the base a note's bars compare against in place of its HEAD
+ * version; an undefined `text` shows no bars (the base could not be read).
+ */
+export interface Override {
+    source: BaseSource;
+    text: string | undefined;
+}
+
+/**
+ * BaseOverride supplies the base a note's bars compare against in place of its
  * HEAD version — given its vault path and editor text — or null to use HEAD.
  */
-export type BaseOverride = (path: string, doc: string) => string | null;
+export type BaseOverride = (
+    path: string,
+    doc: string,
+) => Promise<Override | null>;
 
 export class SignsFeature {
     /** The registered extension array, mutated in place to toggle the bars. */
@@ -46,7 +58,7 @@ export class SignsFeature {
     constructor(
         private readonly plugin: Plugin,
         private readonly git: GitController,
-        private readonly override: BaseOverride = () => null,
+        private readonly override: BaseOverride = () => Promise.resolve(null),
     ) {}
 
     /** load registers the extensions and the refresh triggers. */
@@ -116,11 +128,11 @@ export class SignsFeature {
     private async refresh(view: EditorView): Promise<void> {
         const path = pathOf(view);
         if (path === undefined) return;
-        const over = this.override(path, view.state.doc.toString());
-        const kind: BaseKind = over === null ? "head" : "confluence";
+        const over = await this.override(path, view.state.doc.toString());
+        const source = over?.source ?? HEAD;
         let base: string | undefined;
         if (over !== null) {
-            base = over;
+            base = over.text;
         } else {
             try {
                 base = await this.git.baseText(path);
@@ -132,12 +144,12 @@ export class SignsFeature {
         if (!this.editors.has(view) || pathOf(view) !== path) return;
         if (
             view.state.field(hunksState, false)?.base === base &&
-            view.state.field(baseKind, false) === kind
+            sameSource(view.state.field(baseSource, false) ?? HEAD, source)
         ) {
             return;
         }
         view.dispatch({
-            effects: [baseKindEffect.of(kind), baseTextEffect.of(base)],
+            effects: [baseSourceEffect.of(source), baseTextEffect.of(base)],
         });
     }
 }

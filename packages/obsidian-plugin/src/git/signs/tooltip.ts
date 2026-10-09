@@ -6,15 +6,17 @@
 // Copyright (c) 2020 Vinzent03, Denis Olehov.
 //
 // The change bars' hover popup: hovering a gutter marker shows the lines the
-// hunk replaced, as they read in the base — HEAD, or the Confluence page —
-// then the lines that replaced them, with the edited words marked.
+// hunk replaced, as they read in the base — HEAD, the Confluence page, or a
+// commit picked in History — then the lines that replaced them, with the
+// edited words marked.
 // Read-only — obsidian-git's click-to-pin, stage, and reset buttons are not
 // ported.
 
 import { StateEffect, StateField } from "@codemirror/state";
 import { showTooltip, type Tooltip } from "@codemirror/view";
+import { type BaseSource, HEAD, popupTitle } from "./base.ts";
 import { findHunk, type Hunk } from "./hunks.ts";
-import { type BaseKind, baseKind, hunksState } from "./state.ts";
+import { baseSource, hunksState } from "./state.ts";
 import { type Segment, wordDiff } from "./words.ts";
 
 /** hoverHunk sets the position of the hunk the pointer is over, or null. */
@@ -51,7 +53,7 @@ const diffTooltip = StateField.define<readonly Tooltip[]>({
                 arrow: false,
                 strictSide: false,
                 create: () => ({
-                    dom: popup(hunk, tr.state.field(baseKind, false) ?? "head"),
+                    dom: popup(hunk, tr.state.field(baseSource, false) ?? HEAD),
                 }),
             },
         ];
@@ -59,31 +61,17 @@ const diffTooltip = StateField.define<readonly Tooltip[]>({
     provide: (f) => showTooltip.computeN([f], (state) => state.field(f)),
 });
 
-/** HEADS titles a popup by hunk type, for each kind of base text. */
-const HEADS: Record<BaseKind, Record<Hunk["type"], string>> = {
-    head: {
-        add: "Added since the last commit",
-        delete: "Deleted since the last commit",
-        change: "Changed since the last commit",
-    },
-    confluence: {
-        add: "Not on Confluence",
-        delete: "Only on Confluence",
-        change: "Differs from Confluence",
-    },
-};
-
 /**
- * popup renders a hunk as a small unified diff: its base lines (HEAD, or the
- * Confluence page), then the lines that replaced them, each marking the words
- * that changed.
+ * popup renders a hunk as a small unified diff: its base lines (HEAD, the
+ * Confluence page, or a commit), then the lines that replaced them, each
+ * marking the words that changed.
  */
-function popup(hunk: Hunk, kind: BaseKind): HTMLElement {
+function popup(hunk: Hunk, src: BaseSource): HTMLElement {
     const el = document.createElement("div");
     el.className = "docket-diff-tooltip";
     const head = el.appendChild(document.createElement("div"));
     head.className = "docket-diff-head";
-    head.textContent = HEADS[kind][hunk.type];
+    head.textContent = popupTitle(src, hunk.type);
     const line = (segs: Segment[], cls: string): void => {
         const row = el.appendChild(document.createElement("div"));
         row.className = `docket-diff-line ${cls}`;

@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { logLine, parseLog } from "../../src/git/log.ts";
+import { logLine, logTime, parseLog } from "../../src/git/log.ts";
 
 describe("parseLog", () => {
     it("reads one entry per NUL-separated record", () => {
@@ -48,5 +48,13 @@ describe("logLine", () => {
         expect(logLine({ hash: "h", at: 0, subject: "" })).toMatch(
             /: \(no message\)$/,
         );
+    });
+});
+
+describe("logTime", () => {
+    it("formats DD/MM/YY HH:MM in local time", () => {
+        const at = new Date(2026, 11, 31, 23, 5).getTime();
+
+        expect(logTime(at)).toBe("31/12/26 23:05");
     });
 });
