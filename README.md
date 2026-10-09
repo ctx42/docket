@@ -206,14 +206,16 @@ An unchanged page is skipped. If the remote page moved since you pulled,
 the same block changed on both sides — re-pull and reapply in that case.
 
 To create a page, add a new `.md` file under a folder or space root with a
-title but no `docket_page_id`, then push — `docket` prompts and creates it under
-the parent derived from the directory. A created page, and any folder `docket`
-creates above it, sets no restrictions of its own, so it inherits who can see it
-from its folder or space:
+title but no `docket_page_id`, then push. `docket` lists each new note with a
+choice — **ask later** (the default), **create**, or **never push** (writes
+`docket_mode: ignore-push` to its frontmatter) — then creates the ones marked
+create under the parent derived from the directory. A created page, and any
+folder `docket` creates above it, sets no restrictions of its own, so it
+inherits who can see it from its folder or space:
 
 ```sh
-docket push               # prompts: Create team-wiki/release_notes.md? [y/n/a/s]
-docket push --yes         # create without prompting
+docket push               # pick create / ask later / never push per new note
+docket push --yes         # create every new note without the list
 ```
 
 ### In Obsidian
