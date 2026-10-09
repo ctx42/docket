@@ -210,7 +210,10 @@ export class GitRepo {
         });
     }
 
-    /** log lists commits newest first; a path's history follows its renames. */
+    /**
+     * log lists commits newest first; a path's history follows its renames and
+     * gives each commit the path the file had there.
+     */
     async log(q: LogQuery): Promise<LogEntry[]> {
         const args = [
             "log",
@@ -219,7 +222,9 @@ export class GitRepo {
             `--max-count=${q.limit}`,
             `--skip=${q.skip}`,
         ];
-        if (q.path !== undefined) args.push("--follow", "--", q.path);
+        if (q.path !== undefined) {
+            args.push("--name-only", "--follow", "--", q.path);
+        }
         const out = await this.run(args);
         if (out.code !== 0) {
             // A repository without commits has no history yet.

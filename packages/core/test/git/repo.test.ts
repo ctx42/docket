@@ -165,17 +165,36 @@ describe("GitRepo.commit", () => {
 
 describe("GitRepo.log", () => {
     it("follows one file's renames", async () => {
-        const git = new StubGitExec();
+        const git = new StubGitExec().on("log", {
+            stdout: "h2\x1f2\x1fmove\0\nB/p.md\0h1\x1f1\x1fadd\0\nA/p.md\0",
+        });
 
-        await new GitRepo(git).log({ path: "B/p.md", skip: 100, limit: 101 });
+        const have = await new GitRepo(git).log({
+            path: "B/p.md",
+            skip: 100,
+            limit: 101,
+        });
 
-        expect(git.calls[0]?.args.slice(-5)).toEqual([
+        expect(git.calls[0]?.args.slice(-6)).toEqual([
             "--max-count=101",
             "--skip=100",
+            "--name-only",
             "--follow",
             "--",
             "B/p.md",
         ]);
+        expect(have.map((e) => e.path)).toEqual(["B/p.md", "A/p.md"]);
+    });
+
+    it("lists the whole vault without paths", async () => {
+        const git = new StubGitExec().on("log", {
+            stdout: "h1\x1f1\x1fadd\0",
+        });
+
+        const have = await new GitRepo(git).log({ skip: 0, limit: 10 });
+
+        expect(git.calls[0]?.args).not.toContain("--name-only");
+        expect(have).toEqual([{ hash: "h1", at: 1000, subject: "add" }]);
     });
 
     it("is empty before the first commit", async () => {

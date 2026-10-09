@@ -17,6 +17,21 @@ describe("parseLog", () => {
             { hash: "h2", at: 1_700_000_060_000, subject: "second: x" },
         ]);
     });
+
+    it("gives each commit its path from --name-only, across a rename", () => {
+        const out =
+            "h3\x1f3\x1fmove\0\nB/p.md\0" +
+            "h2\x1f2\x1fmerge\0" +
+            "h1\x1f1\x1ffirst\0\nA/p.md\0";
+
+        const have = parseLog(out);
+
+        expect(have).toEqual([
+            { hash: "h3", at: 3000, subject: "move", path: "B/p.md" },
+            { hash: "h2", at: 2000, subject: "merge" },
+            { hash: "h1", at: 1000, subject: "first", path: "A/p.md" },
+        ]);
+    });
 });
 
 describe("logLine", () => {

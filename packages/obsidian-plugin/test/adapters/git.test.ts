@@ -169,6 +169,7 @@ describe.skipIf(!hasGit)("GitRepo over NodeGitExec", () => {
         expect(await repo.status()).toEqual([]);
         const log = await repo.log({ path: "B/p.md", skip: 0, limit: 10 });
         expect(log.map((e) => e.subject)).toEqual(["docs: move", "init"]);
+        expect(log.map((e) => e.path)).toEqual(["B/p.md", "A/p.md"]);
     });
 
     it("commits a new untracked page", async () => {
