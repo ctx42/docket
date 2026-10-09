@@ -149,7 +149,7 @@ export class ChangesList {
         if (r.detail !== "") {
             inner.createSpan({ cls: "docket-change-detail", text: r.detail });
         }
-        const diff = this.plugin.remoteDiff;
+        const diff = this.plugin.barBase;
         if (
             remote !== null &&
             "body" in remote &&

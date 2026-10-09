@@ -1,16 +1,18 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The Confluence diff's Obsidian side: it tracks the active note against the
-// note opened from its changes row, feeds the change bars the Confluence base
-// of the note in Confluence mode, and re-feeds them whenever a status check
-// replaces the remote bodies. The model is remote-diff.ts.
+// The Obsidian side of what the change bars compare against: it tracks the
+// active note against the note opened from its changes row and the commit
+// picked in History, feeds the change bars the Confluence base of the note in
+// Confluence mode, and re-feeds them whenever a status check replaces the
+// remote bodies. The model is bar-base.ts.
 
 import type docketPlugin from "../main.ts";
-import { confluenceBase, RemoteDiffState } from "./remote-diff.ts";
+import { BarBaseState, type CommitPick } from "./bar-base.ts";
+import { confluenceBase } from "./remote-diff.ts";
 
-export class RemoteDiffFeature {
-    private readonly state = new RemoteDiffState();
+export class BarBaseFeature {
+    private readonly state = new BarBaseState();
     /** refreshBars re-reads every open editor's base text. */
     private refreshBars: () => void = () => {};
 
@@ -55,12 +57,22 @@ export class RemoteDiffFeature {
         if (this.state.toggle(path)) this.changed();
     }
 
+    /** commit is the commit picked in History, or null. */
+    get commit(): CommitPick | null {
+        return this.state.commit;
+    }
+
+    /** pick compares a note's bars against a commit, or clears it with null. */
+    pick(c: CommitPick | null): void {
+        if (this.state.pick(c)) this.changed();
+    }
+
     /**
      * base is the text `path`'s change bars compare against in Confluence mode,
      * built from the editor text `doc`, or null to compare against HEAD.
      */
     base(path: string, doc: string): string | null {
-        if (this.state.confluencePath !== path) return null;
+        if (this.state.base(path).kind !== "confluence") return null;
         const body = this.body(path);
         return body === null ? null : confluenceBase(doc, body);
     }

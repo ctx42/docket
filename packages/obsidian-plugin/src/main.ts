@@ -52,6 +52,7 @@ import {
     saveToken,
 } from "./settings/store.ts";
 import { docketSettingTab } from "./settings/tab.ts";
+import { BarBaseFeature } from "./ui/bar-base-feature.ts";
 import { SyncController } from "./ui/controller.ts";
 import {
     addFilesItems,
@@ -69,7 +70,6 @@ import {
     noteLink,
 } from "./ui/note-actions.ts";
 import { toDest } from "./ui/operations.ts";
-import { RemoteDiffFeature } from "./ui/remote-diff-feature.ts";
 import { barText, statusCounts } from "./ui/summary.ts";
 import { docketView, VIEW_TYPE } from "./ui/view.ts";
 
@@ -116,10 +116,10 @@ export default class docketPlugin extends Plugin {
         () => this.gitPath,
         (m) => this.recordCommitMessage(m),
     );
-    /** The Confluence diff the change bars show for a note opened from its row. */
-    readonly remoteDiff = new RemoteDiffFeature(this);
+    /** What the change bars compare against: HEAD, Confluence, or a commit. */
+    readonly barBase = new BarBaseFeature(this);
     private readonly signs = new SignsFeature(this, this.git, (path, doc) =>
-        this.remoteDiff.base(path, doc),
+        this.barBase.base(path, doc),
     );
 
     override async onload(): Promise<void> {
@@ -141,7 +141,7 @@ export default class docketPlugin extends Plugin {
         this.registerEditorExtension(indentViewPlugin);
         this.registerMarkdownPostProcessor(indentPostProcessor);
         this.signs.load(this.diffSigns);
-        this.remoteDiff.load(() => this.signs.refreshAll());
+        this.barBase.load(() => this.signs.refreshAll());
         this.watchGit();
         this.mcp.load();
 
