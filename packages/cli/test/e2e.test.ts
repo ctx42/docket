@@ -289,12 +289,13 @@ describe("create a new note under a root over the real adapter", () => {
         expect(pushed.out).toContain(
             "creating team/release_notes.md ... ok (v1)",
         );
-        // The fake Site created the page (id 500) via POST, restricted via PUT.
+        // The fake Site created the page (id 500) via POST and set no
+        // restriction, so the page inherits its parent's.
         expect(state.pages.get("500")?.title).toBe("Release Notes");
         expect(state.requests.some((q) => q.method === "POST")).toBe(true);
         expect(
             state.requests.some((q) => q.path.endsWith("/restriction")),
-        ).toBe(true);
+        ).toBe(false);
         // The note is now tracked, so a re-push would update, not re-create.
         expect(await readFile(note, "utf8")).toContain('docket_page_id: "500"');
     });

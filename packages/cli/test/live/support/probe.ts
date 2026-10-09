@@ -139,10 +139,10 @@ export function firstSpace(body: string): { id: string; homepageId: string } {
 const restrictionPath = (id: string): string =>
     `/wiki/rest/api/content/${id}/restriction`;
 
-/** putFolderRestriction restricts read+update on a folder to `accountId`. */
-export async function putFolderRestriction(
+/** putAuthorRestriction restricts read+update on a page or folder to `accountId`. */
+export async function putAuthorRestriction(
     creds: LiveCreds,
-    folderId: string,
+    id: string,
     accountId: string,
 ): Promise<{ status: number; body: string }> {
     const user = [{ type: "known", accountId }];
@@ -152,7 +152,7 @@ export async function putFolderRestriction(
             { operation: "update", restrictions: { user } },
         ],
     };
-    const resp = await fetch(`${creds.host}${restrictionPath(folderId)}`, {
+    const resp = await fetch(`${creds.host}${restrictionPath(id)}`, {
         method: "PUT",
         headers: {
             Authorization: basicAuth(creds.account, creds.token),
@@ -173,14 +173,6 @@ export async function deleteFolderRestriction(
         headers: { Authorization: basicAuth(creds.account, creds.token) },
     });
     return { status: resp.status, body: await resp.text() };
-}
-
-/** restrictionRead reads the read-operation restriction of a content id. */
-export async function restrictionRead(
-    creds: LiveCreds,
-    id: string,
-): Promise<{ status: number; body: string }> {
-    return probeGet(creds, `${restrictionPath(id)}/byOperation/read`);
 }
 
 /** collectTypes tallies every node type and mark type at or below `node`. */

@@ -1126,12 +1126,10 @@ describe("Pusher post-update robustness on a legacy-key note", () => {
 
 describe("Pusher.pushCreate stamp preservation (item 22)", () => {
     const createURL = "https://ex.atlassian.net/wiki/api/v2/pages";
-    const restrictURL =
-        "https://ex.atlassian.net/wiki/rest/api/content/555/restriction";
 
     it("preserves mentions, page images, space key and domain when stamping the create identity", async () => {
         // A create candidate carrying assets, mentions, space key and domain.
-        // After the page is created and restricted, the follow-up refresh fails
+        // After the page is created, the follow-up refresh fails
         // (v1 cache write) — the stamped note must still carry those fields so a
         // later push can resolve the page's assets and mentions.
         const noteText =
@@ -1147,11 +1145,9 @@ describe("Pusher.pushCreate stamp preservation (item 22)", () => {
         const dest = "/vault/new.md";
         const fs = new WriteFailFS((p) => p.endsWith(".json"));
         await fs.write(dest, noteText);
-        const stub = new StubHttpClient()
-            .on("POST", createURL, {
-                body: JSON.stringify({ id: "555", version: { number: 1 } }),
-            })
-            .on("PUT", restrictURL, { status: 200 });
+        const stub = new StubHttpClient().on("POST", createURL, {
+            body: JSON.stringify({ id: "555", version: { number: 1 } }),
+        });
 
         const input: CreateInput = {
             dest,
@@ -1160,10 +1156,10 @@ describe("Pusher.pushCreate stamp preservation (item 22)", () => {
             parentId: "",
             folders: [],
         };
-        // The create + restrict succeed; the follow-up cache write fails, so
+        // The create succeeds; the follow-up cache write fails, so
         // pushCreate rejects — but only after the identity was stamped.
         await expect(
-            pusherFor(stub, fs).pushCreate(dest, input, "acct-1", new Map()),
+            pusherFor(stub, fs).pushCreate(dest, input, new Map()),
         ).rejects.toThrow();
 
         const stamped = await fs.readText(dest);

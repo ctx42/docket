@@ -162,15 +162,6 @@ export function handlers(state: FakeState) {
             });
             return HttpResponse.json({ id, version: { number: 1 } });
         }),
-
-        // Restrict a page to its author.
-        http.put(
-            `${h}/wiki/rest/api/content/:id/restriction`,
-            ({ request }) => {
-                log(request);
-                return HttpResponse.json({});
-            },
-        ),
     ];
 }
 

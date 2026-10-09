@@ -609,10 +609,10 @@ const COMMAND_USAGE: Record<ConfigCommand, string> = {
         "Push edited Markdown back to Confluence. With a [page] argument, push\n" +
         "only that managed page. A new .md file under a folder or space root\n" +
         "(title but no docket_page_id) is created only when you tick it in a\n" +
-        "checkbox list, restricted to you. Each new note starts unticked: mark it\n" +
-        "create, leave it to be asked about next push, or mark it never (writes\n" +
-        "docket_mode: ignore-push to its frontmatter). Add --yes to create\n" +
-        "every new note without the list.\n" +
+        "checkbox list, and inherits its parent's permissions. Each new note\n" +
+        "starts unticked: mark it create, leave it to be asked about next push,\n" +
+        "or mark it never (writes docket_mode: ignore-push to its frontmatter).\n" +
+        "Add --yes to create every new note without the list.\n" +
         "\nFlags:\n" +
         FLAGS_COMMON +
         "  --yes               Create new pages without asking.\n" +

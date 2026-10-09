@@ -58,7 +58,7 @@ you work — or use both against the same vault.
 - **Safe concurrent edits.** A three-way merge folds in non-overlapping remote
   changes; a genuine conflict is refused, not clobbered.
 - **Cross-page links** rewrite to local `.md` paths on pull and restore on push.
-- **Create pages** from a local note and restrict them to you.
+- **Create pages** from a local note; they inherit the parent's permissions.
 - **Housekeeping:** garbage-collect unreferenced assets and prune local files
   deleted upstream.
 
@@ -206,8 +206,10 @@ An unchanged page is skipped. If the remote page moved since you pulled,
 the same block changed on both sides — re-pull and reapply in that case.
 
 To create a page, add a new `.md` file under a folder or space root with a
-title but no `docket_page_id`, then push — `docket` prompts, creates it under the
-parent derived from the directory, and restricts it to you:
+title but no `docket_page_id`, then push — `docket` prompts and creates it under
+the parent derived from the directory. A created page, and any folder `docket`
+creates above it, sets no restrictions of its own, so it inherits who can see it
+from its folder or space:
 
 ```sh
 docket push               # prompts: Create team-wiki/release_notes.md? [y/n/a/s]

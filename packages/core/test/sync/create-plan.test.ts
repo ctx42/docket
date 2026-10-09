@@ -3,9 +3,8 @@
 
 // Ported from the planning/routing half of pkg/docket (planCreates + the create
 // branch of pushDests). planCreates classifies disk candidates, asks the injected
-// confirm which to create (the prompt UX is the adapter's), and resolves the
-// author account once any create is confirmed; pushDests then routes each dest to
-// create, skip, or update. Driven through the ports with MemFS + the stub clients.
+// confirm which to create (the prompt UX is the adapter's); pushDests then routes
+// each dest to create, skip, or update. Driven through the ports with MemFS + the stub clients.
 
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
@@ -71,18 +70,14 @@ function pusherFor(http: QueueHttpClient, fs: MemFS): Pusher {
 }
 
 describe("planCreates", () => {
-    it("classifies, confirms, and resolves the author account", async () => {
+    it("classifies and confirms without any request", async () => {
         const fs = new MemFS();
         await fs.write(
             "/vault/docs/_index.md",
             note({ title: "Docs", pageId: "100", space: "9" }),
         );
         await fs.write("/vault/docs/new.md", note({ title: "New" }));
-        const stub = new StubHttpClient().on(
-            "GET",
-            `${H}/wiki/rest/api/user/current`,
-            { body: '{"accountId":"acc-1"}' },
-        );
+        const stub = new StubHttpClient();
         const deps = { client: client(stub), fs, yaml, config: config() };
 
         const plan = await planCreates(deps, ["/vault/docs/new.md"], (cands) =>
@@ -95,7 +90,7 @@ describe("planCreates", () => {
             spaceId: "9",
         });
         expect(plan?.decided.get("/vault/docs/new.md")).toBe(true);
-        expect(plan?.accountId).toBe("acc-1");
+        expect(stub.requests).toEqual([]);
     });
 
     it("returns null when nothing is to be created or refused", async () => {
@@ -109,10 +104,10 @@ describe("planCreates", () => {
         );
 
         expect(plan).toBeNull();
-        expect(stub.requests).toEqual([]); // no account lookup when no create
+        expect(stub.requests).toEqual([]);
     });
 
-    it("skips the account lookup when every candidate is declined", async () => {
+    it("records a declined candidate without any request", async () => {
         const fs = new MemFS();
         await fs.write(
             "/vault/docs/_index.md",
@@ -126,7 +121,7 @@ describe("planCreates", () => {
             Promise.resolve(new Map(cands.map((c) => [c.dest, false]))),
         );
 
-        expect(plan?.accountId).toBe("");
+        expect(plan?.decided.get("/vault/docs/new.md")).toBe(false);
         expect(stub.requests).toEqual([]);
     });
 });
@@ -136,7 +131,6 @@ describe("pushDests — create routing", () => {
         decided: new Map(),
         refused: new Map(),
         inputs: new Map(),
-        accountId: "",
         ...over,
     });
 
@@ -172,16 +166,16 @@ describe("pushDests — create routing", () => {
             parentId: "77",
             folders: [],
         };
-        const q = new QueueHttpClient()
-            .rsp(200, '{"id":"555","version":{"number":1}}')
-            .rsp(200, "{}");
+        const q = new QueueHttpClient().rsp(
+            200,
+            '{"id":"555","version":{"number":1}}',
+        );
 
         const out = await pusherFor(q, fs).pushDests(
             [dest],
             plan({
                 decided: new Map([[dest, true]]),
                 inputs: new Map([[dest, input]]),
-                accountId: "acc-1",
             }),
         );
 
@@ -189,5 +183,6 @@ describe("pushDests — create routing", () => {
         expect(out.errors).toEqual([]);
         expect(out.log).toContain("creating docs/new.md ... ok (v1)");
         expect(q.requests[0]?.url).toBe(`${H}/wiki/api/v2/pages`);
+        expect(q.count).toBe(1);
     });
 });

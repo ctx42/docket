@@ -10,7 +10,7 @@
 // ADF is PUT to Confluence and the cache and note refreshed to the pushed version.
 // Everything is driven through the {@link ConfluenceClient}, {@link FileSystem},
 // {@link Reporter}, and {@link Yaml} ports; the run is sequential. New-image
-// upload lands in the second layer; page creation + create-and-restrict is M7.4.
+// upload lands in the second layer; page creation is M7.4.
 
 import {
     annotationIds,
@@ -379,9 +379,8 @@ async function pushableFiles(
 
 /**
  * CreatePlan records, for one push run, which discovered new pages the user
- * confirmed and the author account created pages are restricted to. A `null` plan
- * means the run creates nothing; a dest absent from `decided` is an existing page
- * pushed as an update, not a create.
+ * confirmed. A `null` plan means the run creates nothing; a dest absent from
+ * `decided` is an existing page pushed as an update, not a create.
  */
 export interface CreatePlan {
     /** Each create candidate's dest → whether to create it. */
@@ -390,8 +389,6 @@ export interface CreatePlan {
     refused: Map<string, string>;
     /** Each candidate's dest → its resolved identity (space, parent, folders). */
     inputs: Map<string, CreateInput>;
-    /** The author every created page is restricted to; `""` when none is confirmed. */
-    accountId: string;
 }
 
 /**
@@ -417,10 +414,10 @@ export function planRefusal(plan: CreatePlan | null, dest: string): string {
 /**
  * planCreates classifies the note destinations into new-page candidates and
  * refusals (disk-only, from the configured folder and space roots), asks the
- * injected `confirm` which candidates to create (the prompt UX is the adapter's),
- * and resolves the author account once any create is confirmed. It resolves to
- * `null` when nothing is to be created or refused, so the caller pushes updates
- * only. `confirm` receives the candidates and returns each dest → create decision.
+ * injected `confirm` which candidates to create (the prompt UX is the adapter's).
+ * It resolves to `null` when nothing is to be created or refused, so the caller
+ * pushes updates only. `confirm` receives the candidates and returns each
+ * dest → create decision.
  */
 export async function planCreates(
     deps: Pick<PusherDeps, "client" | "fs" | "yaml" | "config">,
@@ -447,14 +444,7 @@ export async function planCreates(
     for (const c of candidates) {
         inputs.set(c.dest, c);
     }
-    let accountId = "";
-    for (const create of decided.values()) {
-        if (create) {
-            accountId = await deps.client.currentAccountID();
-            break;
-        }
-    }
-    return { decided, refused: refusals, inputs, accountId };
+    return { decided, refused: refusals, inputs };
 }
 
 /** Pusher back-ports edited notes to Confluence. It holds the ports for one run. */
@@ -511,7 +501,6 @@ export class Pusher {
                     const { version, reused, warning } = await this.pushCreate(
                         dest,
                         input,
-                        plan?.accountId ?? "",
                         folderIds,
                     );
                     out.pushed++;
@@ -561,27 +550,25 @@ export class Pusher {
     }
 
     /**
-     * pushCreate creates a new Confluence page from the note at `dest` and
-     * restricts it to `accountId`, first ensuring any ancestor folders the plan
-     * named exist (see {@link ensureFolders}). The space and parent come from the
-     * resolved `input`, not the note's (possibly empty) frontmatter, and the parent
-     * is the deepest new folder when this page created its own ancestors. On a
-     * create failure past the folders it rolls them back; on a restriction failure
-     * it deletes the world-visible page and rolls the folders back. Once the page
-     * is live it stamps the new id onto the note before the local refresh, so a
+     * pushCreate creates a new Confluence page from the note at `dest`, first
+     * ensuring any ancestor folders the plan named exist (see
+     * {@link ensureFolders}). The page sets no restrictions of its own, so it
+     * inherits who may view it from its parent. The space and parent come from
+     * the resolved `input`, not the note's (possibly empty) frontmatter, and the
+     * parent is the deepest new folder when this page created its own ancestors.
+     * On a create failure past the folders it rolls them back. Once the page is
+     * live it stamps the new id onto the note before the local refresh, so a
      * later refresh failure still leaves the page tracked rather than re-created.
      * `folderIds` is the run-scoped folder-dedupe map (see {@link pushDests}).
      */
     async pushCreate(
         dest: string,
         input: CreateInput,
-        accountId: string,
         folderIds: Map<string, string>,
     ): Promise<{ version: number; reused: string[]; warning: string }> {
         const { parent, created, reused } = await ensureFolders(
             this.d.client,
             input,
-            accountId,
             folderIds,
         );
         // Any failure past this point must also unwind the folders created above,
@@ -664,21 +651,6 @@ export class Pusher {
             version = res.version;
         } catch (err) {
             return fail(err);
-        }
-
-        // The page exists but is world-visible until restricted — the one state a
-        // create must not leave. On failure delete the page and unwind any folders
-        // this page created; surface a delete failure with the restriction error.
-        try {
-            await this.d.client.restrictToAuthor(id, accountId);
-        } catch (err) {
-            let joined = message(err);
-            try {
-                await this.d.client.deletePage(id);
-            } catch (delErr) {
-                joined = `${joined}; ${message(delErr)}`;
-            }
-            return fail(new Error(joined));
         }
 
         // Stamp the new identity onto the note before the full refresh so a later

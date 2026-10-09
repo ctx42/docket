@@ -12,7 +12,7 @@ import {
     deleteFolderRestriction,
     firstSpace,
     probeGet,
-    putFolderRestriction,
+    putAuthorRestriction,
     uniqueTitle,
 } from "./support/probe.ts";
 
@@ -69,7 +69,7 @@ describe.skipIf(!liveConfigured())("live folder-parent spike", () => {
 
         // Finding 2: does the v1 restriction PUT accept a folder id?
         const accountId = await client.currentAccountID();
-        const res = await putFolderRestriction(env, folderId, accountId);
+        const res = await putAuthorRestriction(env, folderId, accountId);
         console.log(`finding 2 - folder restriction PUT: HTTP ${res.status}`);
         if (res.status >= 200 && res.status < 300) {
             onTestFinished(async () => {

@@ -830,36 +830,8 @@ export class ConfluenceClient {
     }
 
     /**
-     * restrictToAuthor replaces the page's content restrictions so only
-     * `accountId` may read or update it, via the v1 restriction endpoint. Space and
-     * site admins retain access regardless, so the page is visible to the author
-     * plus those admins, never to nobody else. It throws on a non-2xx status.
-     */
-    async restrictToAuthor(pageId: string, accountId: string): Promise<void> {
-        const user = [{ type: "known", accountId }];
-        const payload = {
-            results: [
-                { operation: "read", restrictions: { user } },
-                { operation: "update", restrictions: { user } },
-            ],
-        };
-        const resp = await this.http.do({
-            method: "PUT",
-            url: `${this.cfg.host}${RESTRICTION_PREFIX}${pageId}${RESTRICTION_SUFFIX}`,
-            headers: {
-                Authorization: this.auth,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        });
-        if (!ok(resp.status)) {
-            throw new Error(`restrict page ${pageId}: HTTP ${resp.status}`);
-        }
-    }
-
-    /**
-     * deletePage deletes the page with the numeric id from the Site, used to roll
-     * back a page created but not restricted. It throws on a non-2xx status.
+     * deletePage deletes the page with the numeric id from the Site. It throws
+     * on a non-2xx status.
      */
     async deletePage(pageId: string): Promise<void> {
         const resp = await this.http.do({

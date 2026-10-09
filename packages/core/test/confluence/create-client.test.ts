@@ -78,28 +78,6 @@ describe("ConfluenceClient.createPage", () => {
     });
 });
 
-describe("ConfluenceClient.restrictToAuthor", () => {
-    it("puts read and update restrictions for the author", async () => {
-        const q = new QueueHttpClient().rsp(200, "{}");
-        await client(q).restrictToAuthor("555", "acc-1");
-
-        const req = q.requests[0];
-        expect(req?.method).toBe("PUT");
-        expect(req?.url).toBe(`${H}/wiki/rest/api/content/555/restriction`);
-        const body = q.bodyOf(0);
-        expect(body).toContain('"operation":"read"');
-        expect(body).toContain('"operation":"update"');
-        expect(body).toContain('"accountId":"acc-1"');
-    });
-
-    it("errors on a non-2xx status", async () => {
-        const q = new QueueHttpClient().rsp(403);
-        await expect(
-            client(q).restrictToAuthor("555", "acc-1"),
-        ).rejects.toThrow("restrict page 555: HTTP 403");
-    });
-});
-
 describe("ConfluenceClient.deletePage", () => {
     it("deletes the page by id", async () => {
         const q = new QueueHttpClient().rsp(204);

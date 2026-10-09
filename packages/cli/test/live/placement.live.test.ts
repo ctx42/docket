@@ -3,7 +3,8 @@
 
 // Ported from placement_live_test.go. Proves the page-placement pipeline against
 // the Site: a title-only Markdown file nested under new local directories pushes
-// as new restricted folders plus a restricted page, and a pre-existing folder is
+// as new folders plus a page, none with restrictions of its own, and a
+// pre-existing folder is
 // reused rather than duplicated. Everything created lives under a scratch folder
 // deleted (deepest-first) on completion.
 
@@ -25,7 +26,7 @@ import {
     requireEnv,
     seedClient,
 } from "./support/live-env.ts";
-import { probeGet, restrictionRead, uniqueTitle } from "./support/probe.ts";
+import { probeGet, uniqueTitle } from "./support/probe.ts";
 
 describe.skipIf(!liveConfigured())("live placement", () => {
     const env = requireEnv();
@@ -39,11 +40,10 @@ describe.skipIf(!liveConfigured())("live placement", () => {
         await rm(dir, { recursive: true, force: true });
     });
 
-    it("creates nested folders and a restricted page, and re-pull converges", async () => {
+    it("creates nested folders and an unrestricted page, and re-pull converges", async () => {
         const run = makeRun(env, dir);
         const ref = await client.resolveSpace(env.space);
         const spaceId = ref.id;
-        const accountId = await client.currentAccountID();
 
         // Scratch root folder under the space homepage.
         const rootId = await client.createFolder(
@@ -97,7 +97,7 @@ describe.skipIf(!liveConfigured())("live placement", () => {
             `---\ntitle: ${leafTitle}\n---\n\nplacement leaf body\n`,
         );
 
-        // Push: creates two folders and the page, chained + restricted.
+        // Push: creates two folders and the page, chained.
         const push1 = await run(["push", "--yes", "--config", cfgPath]);
         expect(push1.code, `${push1.err}${push1.out}`).toBe(0);
 
@@ -131,11 +131,13 @@ describe.skipIf(!liveConfigured())("live placement", () => {
         expect(pageNode.parentId).toBe(gammaId);
         expect(pageNode.parentType).toBe("folder");
 
-        // Both folders and the page are restricted to the author account.
+        // Neither folder nor the page carries a restriction of its own, so
+        // each inherits who may view it from its parent.
         for (const cid of [alphaId, gammaId, pageId]) {
-            const r = await restrictionRead(env, cid);
-            expect(r.status).toBe(200);
-            expect(r.body, `content ${cid} restricted`).toContain(accountId);
+            expect(
+                await client.fetchRestrictions(cid),
+                `content ${cid}`,
+            ).toEqual([]);
         }
 
         // A fresh pull reproduces the tree; a second pull rewrites nothing.

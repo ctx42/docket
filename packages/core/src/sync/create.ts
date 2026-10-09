@@ -521,14 +521,13 @@ export interface CreatedFolder {
  * reused, and each new folder is recorded there. A folder whose title collides
  * with an existing one in the space is reused when it sits under the intended
  * parent (reported in `reused`) and refused otherwise — folder titles are unique
- * per space. A new folder is restricted to the author like a page; any failure
- * rolls back the folders made in this call so no orphan chain survives, and the
- * roll back is joined into the thrown error.
+ * per space. A new folder sets no restrictions of its own, so it inherits its
+ * parent's. Any failure rolls back the folders made in this call so no orphan
+ * chain survives, and the roll back is joined into the thrown error.
  */
 export async function ensureFolders(
     client: ConfluenceClient,
     input: CreateInput,
-    accountId: string,
     folderIds: Map<string, string>,
 ): Promise<{ parent: string; created: CreatedFolder[]; reused: string[] }> {
     let parent = input.parentId;
@@ -574,20 +573,6 @@ export async function ensureFolders(
             throw err;
         }
 
-        // A folder is world-visible until restricted, like a page; delete it and
-        // unwind on failure so no unrestricted folder survives.
-        try {
-            await client.restrictToAuthor(id, accountId);
-        } catch (err) {
-            let joined = message(err);
-            try {
-                await client.deleteFolder(id);
-            } catch (delErr) {
-                joined = `${joined}; ${message(delErr)}`;
-            }
-            await rollbackFolders(client, folderIds, created);
-            throw new Error(joined);
-        }
         folderIds.set(fol.dir, id);
         created.push({ dir: fol.dir, id });
         parent = id;
