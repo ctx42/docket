@@ -7,14 +7,14 @@
 //
 // The change-bar gutter: one marker per line a hunk touches — added, changed,
 // or a deletion marker where lines were removed. Hovering a marker shows the
-// hunk's base lines (tooltip.ts). Markers are rebuilt when fresh hunks arrive
+// hunk's base lines (tooltip.ts), which outlive leaving the gutter briefly. Markers are rebuilt when fresh hunks arrive
 // and mapped through edits while a debounced diff is pending.
 
 import { RangeSet, StateField, type Transaction } from "@codemirror/state";
 import { type EditorView, GutterMarker, gutter } from "@codemirror/view";
 import { allSigns, findHunk, type SignType } from "./hunks.ts";
 import { baseTextEffect, debouncedHunksEffect, hunksState } from "./state.ts";
-import { hoveredHunk, hoverHunk } from "./tooltip.ts";
+import { hideSoon, hoveredHunk, hoverHunk, keepPopup } from "./tooltip.ts";
 
 class SignMarker extends GutterMarker {
     constructor(readonly type: SignType) {
@@ -60,7 +60,10 @@ const signsMarker = StateField.define<RangeSet<SignMarker>>({
     },
 });
 
-/** hoverAt shows the hunk under a gutter line, or hides the popup off one. */
+/**
+ * hoverAt shows the hunk under a gutter line, or off one hides the popup after
+ * the grace that lets the pointer reach it.
+ */
 function hoverAt(view: EditorView, pos: number): boolean {
     const data = view.state.field(hunksState, false);
     const lnum = view.state.doc.lineAt(pos).number;
@@ -71,6 +74,11 @@ function hoverAt(view: EditorView, pos: number): boolean {
             : view.state.doc.line(
                   Math.min(view.state.doc.lines, Math.max(1, hunk.added.start)),
               ).from;
+    if (at === null) {
+        hideSoon(view);
+        return false;
+    }
+    keepPopup(view);
     if (view.state.field(hoveredHunk, false) !== at) {
         view.dispatch({ effects: hoverHunk.of(at) });
     }
@@ -84,9 +92,7 @@ const signsGutter = gutter({
     domEventHandlers: {
         mousemove: (view, line) => hoverAt(view, line.from),
         mouseleave: (view) => {
-            if (view.state.field(hoveredHunk, false) !== null) {
-                view.dispatch({ effects: hoverHunk.of(null) });
-            }
+            hideSoon(view);
             return false;
         },
     },

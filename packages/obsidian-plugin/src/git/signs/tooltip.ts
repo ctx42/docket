@@ -8,12 +8,14 @@
 // The change bars' hover popup: hovering a gutter marker shows the lines the
 // hunk replaced, as they read in the base — HEAD, the Confluence page, or a
 // commit picked in History — then the lines that replaced them, with the
-// edited words marked.
+// edited words marked. Leaving the gutter hides the popup only after a short
+// grace, so the pointer can move onto it — to scroll a long one — and it stays
+// while the pointer is over it.
 // Read-only — obsidian-git's click-to-pin, stage, and reset buttons are not
 // ported.
 
 import { StateEffect, StateField } from "@codemirror/state";
-import { showTooltip, type Tooltip } from "@codemirror/view";
+import { type EditorView, showTooltip, type Tooltip } from "@codemirror/view";
 import { type BaseSource, HEAD, popupTitle } from "./base.ts";
 import { findHunk, type Hunk } from "./hunks.ts";
 import { baseSource, hunksState } from "./state.ts";
@@ -31,6 +33,37 @@ export const hoveredHunk = StateField.define<number | null>({
         return tr.changes.mapPos(pos);
     },
 });
+
+/** HIDE_DELAY_MS is how long a popup outlives the pointer leaving it. */
+const HIDE_DELAY_MS = 300;
+
+/** hideTimers are each editor's pending popup hides. */
+const hideTimers = new WeakMap<EditorView, number>();
+
+/**
+ * hideSoon hides `view`'s popup after {@link HIDE_DELAY_MS}; a hide already
+ * pending keeps its time, so a moving pointer cannot keep putting it off.
+ */
+export function hideSoon(view: EditorView): void {
+    if (hideTimers.has(view)) return;
+    hideTimers.set(
+        view,
+        window.setTimeout(() => {
+            hideTimers.delete(view);
+            if (!view.dom.isConnected) return;
+            if (view.state.field(hoveredHunk, false) === null) return;
+            view.dispatch({ effects: hoverHunk.of(null) });
+        }, HIDE_DELAY_MS),
+    );
+}
+
+/** keepPopup cancels a pending hide of `view`'s popup. */
+export function keepPopup(view: EditorView): void {
+    const t = hideTimers.get(view);
+    if (t === undefined) return;
+    window.clearTimeout(t);
+    hideTimers.delete(view);
+}
 
 const diffTooltip = StateField.define<readonly Tooltip[]>({
     create: () => [],
@@ -52,9 +85,15 @@ const diffTooltip = StateField.define<readonly Tooltip[]>({
                 above: true,
                 arrow: false,
                 strictSide: false,
-                create: () => ({
-                    dom: popup(hunk, tr.state.field(baseSource, false) ?? HEAD),
-                }),
+                create: (view) => {
+                    const dom = popup(
+                        hunk,
+                        tr.state.field(baseSource, false) ?? HEAD,
+                    );
+                    dom.addEventListener("mouseenter", () => keepPopup(view));
+                    dom.addEventListener("mouseleave", () => hideSoon(view));
+                    return { dom };
+                },
             },
         ];
     },
