@@ -221,3 +221,29 @@ describe("GitRepo.baseText", () => {
         expect(await repo.baseText("ig.md")).toBeUndefined();
     });
 });
+
+describe("GitRepo.textAt", () => {
+    it("is the commit's text, empty for a path the commit lacks", async () => {
+        const git = new StubGitExec()
+            .on("show h1:a.md", { stdout: "old\n" })
+            .on("show h1:", { code: 128 });
+        const repo = new GitRepo(git);
+
+        expect(await repo.textAt("h1", "a.md")).toBe("old\n");
+        expect(await repo.textAt("h1", "gone.md")).toBe("");
+        expect(git.cmds()).toContain("cat-file -e h1^{commit}");
+    });
+
+    it("throws for an unknown commit", async () => {
+        const git = new StubGitExec()
+            .on("show", {
+                code: 128,
+                stderr: "fatal: invalid object name 'x'.",
+            })
+            .on("cat-file", { code: 128 });
+
+        const have = new GitRepo(git).textAt("x", "a.md");
+
+        await expect(have).rejects.toThrow("invalid object name 'x'.");
+    });
+});

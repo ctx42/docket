@@ -220,6 +220,11 @@ export class GitController {
         return this.queue(() => this.need().baseText(path));
     }
 
+    /** textAt is a file's text at a commit (see core `GitRepo.textAt`). */
+    textAt(commit: string, path: string): Promise<string> {
+        return this.queue(() => this.need().textAt(commit, path));
+    }
+
     /**
      * operate runs a mutating git operation under the busy flag, reporting a
      * failure as a notice, then refreshes the change list.

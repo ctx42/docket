@@ -172,6 +172,20 @@ describe.skipIf(!hasGit)("GitRepo over NodeGitExec", () => {
         expect(log.map((e) => e.path)).toEqual(["B/p.md", "A/p.md"]);
     });
 
+    it("reads a file at a commit under the path it had there", async () => {
+        await ready({ "A/p.md": "1\n2\n3\n" });
+        await mkdir(join(root, "B"));
+        await rename(join(root, "A/p.md"), join(root, "B/p.md"));
+        await put("B/p.md", "1\n2\n3\n4\n");
+        commitAll("docs: move");
+        const [, init] = await repo.log({ path: "B/p.md", skip: 0, limit: 10 });
+
+        expect(init?.path).toBe("A/p.md");
+        expect(await repo.textAt(init?.hash ?? "", "A/p.md")).toBe("1\n2\n3\n");
+        expect(await repo.textAt(init?.hash ?? "", "B/p.md")).toBe("");
+        await expect(repo.textAt("0".repeat(40), "A/p.md")).rejects.toThrow();
+    });
+
     it("commits a new untracked page", async () => {
         await ready({ "a.md": "a\n" });
         await put("n.md", "n\n");

@@ -250,4 +250,18 @@ export class GitRepo {
         const ignored = await this.exec.run(["check-ignore", "-q", "--", path]);
         return ignored.code === 0 ? undefined : "";
     }
+
+    /**
+     * textAt is a file's text at `commit`, with the path it had there; `""` for
+     * a path that commit lacks (all of it is new against it).
+     */
+    async textAt(commit: string, path: string): Promise<string> {
+        const args = ["show", `${commit}:${path}`];
+        const out = await this.run(args);
+        if (out.code === 0) return out.stdout;
+        // Asked of the commit, not read from git's message: that is localized.
+        const known = await this.run(["cat-file", "-e", `${commit}^{commit}`]);
+        if (known.code === 0) return "";
+        throw new GitError(args, out);
+    }
 }
