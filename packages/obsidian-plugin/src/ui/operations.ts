@@ -263,6 +263,7 @@ export async function pushSelected(
         assetsDir: rt.dirs.assetsDir,
         mintLocalId: rt.mintLocalId,
         links,
+        linksPath: rt.dirs.linksPath,
         flavor: resolveFlavor(rt.config.flavor),
     });
     reporter.discovered(dests.length);

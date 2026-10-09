@@ -242,6 +242,7 @@ export async function runPush(
         assetsDir: d.dirs.assetsDir,
         mintLocalId: d.mintLocalId,
         links,
+        linksPath: d.dirs.linksPath,
         flavor: resolveFlavor(d.config.flavor),
         force,
         dropComments,

@@ -64,6 +64,7 @@ import {
     classifyCreates,
     ensureFolders,
     rollbackFolders,
+    rootSpaceKey,
 } from "./create.ts";
 import { mdFilesUnder } from "./fswalk.ts";
 import {
@@ -79,6 +80,7 @@ import {
     type LinkIndex,
     linkMapper,
     pageName,
+    pageURL,
 } from "./linkindex.ts";
 import { hasConflictMarkers } from "./merge.ts";
 
@@ -292,6 +294,12 @@ export interface PusherDeps {
     mintLocalId: MintLocalId;
     /** The link index for this run, or null to disable link rewriting. */
     links: LinkIndex | null;
+    /**
+     * Where {@link links} is persisted. A created page is added to the index
+     * and the index rewritten here, so links to it map before the next pull;
+     * omitted, the new entry lives only for this run.
+     */
+    linksPath?: string;
     /** The Markdown flavor driving ADF↔Markdown conversion. */
     flavor: Flavor;
     /** Re-derive every editable block from its Markdown even when unedited (push --force). Defaults to `false`. */
@@ -603,8 +611,16 @@ export class Pusher {
         }
         // The space and parent were resolved during planning, so use them, not the
         // possibly empty frontmatter, both to create the page and to stamp it back.
+        // The domain and space key a pull would stamp complete the identity, so
+        // the note carries the same absolute page URL as a pulled one.
         meta.spaceId = input.spaceId;
         meta.parentId = parent;
+        if (meta.domain === "") {
+            meta.domain = this.d.config.domain;
+        }
+        if (meta.spaceKey === "") {
+            meta.spaceKey = rootSpaceKey(this.d.config, dest);
+        }
         const name = pageName(this.d.config.syncRoot, dest);
         const links = linkMapper(
             this.d.links,
@@ -666,6 +682,7 @@ export class Pusher {
                 `page ${id} created but not tracked: ${message(err)}`,
             );
         }
+        const indexWarning = await this.indexCreated(dest, meta);
         await refreshAfterPush(
             this.d.fs,
             this.d.cacheDir,
@@ -679,7 +696,41 @@ export class Pusher {
             this.d.config.margin,
             this.d.flavor,
         );
-        return { version, reused, warning: unmappedWarning(links) };
+        return {
+            version,
+            reused,
+            warning: joinWarnings(unmappedWarning(links), indexWarning),
+        };
+    }
+
+    /**
+     * indexCreated adds the page just created from the note at `dest` to the
+     * link index, and persists the index when {@link PusherDeps.linksPath} is
+     * set, so a link to the new note maps to its page on the next push instead
+     * of reaching Confluence as a dead relative href. It returns a warning when
+     * the index could not be written; the page is created and tracked either way.
+     */
+    private async indexCreated(dest: string, meta: PushMeta): Promise<string> {
+        const links = this.d.links;
+        if (links === null) {
+            return "";
+        }
+        links.add({
+            id: meta.pageId,
+            dest: pageName(this.d.config.syncRoot, dest),
+            url: pageURL(meta.spaceKey, meta.pageId),
+            title: meta.title,
+            spaceKey: meta.spaceKey,
+        });
+        if (this.d.linksPath === undefined) {
+            return "";
+        }
+        try {
+            await links.write(this.d.fs, this.d.linksPath);
+        } catch (err) {
+            return `link index not updated: ${message(err)}`;
+        }
+        return "";
     }
 
     /**

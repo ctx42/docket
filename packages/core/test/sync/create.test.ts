@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
+import { buildConfig } from "../../src/config/config.ts";
 import type { Yaml } from "../../src/ports/yaml.ts";
 import {
     classifyCreates,
@@ -14,6 +15,7 @@ import {
     deSlugTitle,
     markIgnorePush,
     rootOf,
+    rootSpaceKey,
     underAnyRoot,
 } from "../../src/sync/create.ts";
 import { MemFS } from "../support/memfs.ts";
@@ -65,6 +67,26 @@ describe("underAnyRoot / rootOf", () => {
         expect(rootOf("/v/docs/sub/a.md", ["/v/docs", "/v/docs/sub"])).toBe(
             "/v/docs/sub",
         );
+    });
+});
+
+describe("rootSpaceKey", () => {
+    const config = buildConfig(
+        {
+            folders: { docs: "/wiki/spaces/DOC/folder/7" },
+            spaces: { team: "/wiki/spaces/TEAM/overview" },
+        },
+        { site: "ex", account: "a@ex.com", token: "t", syncRoot: "/v" },
+    );
+
+    it.each([
+        ["a folder root", "/v/docs/a.md", "DOC"],
+        ["a space root", "/v/team/x/a.md", "TEAM"],
+        ["no root", "/v/other/a.md", ""],
+    ])("reads the key of %s", (_, dest, want) => {
+        const have = rootSpaceKey(config, dest);
+
+        expect(have).toBe(want);
     });
 });
 

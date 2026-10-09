@@ -261,6 +261,7 @@ async function pushRows(d: ActionDeps, cs: Choice[]): Promise<ActionResult[]> {
             mintLocalId: d.mintLocalId,
             links: (await openLinkIndex(d.fs, d.linksPath, d.config.syncRoot))
                 .links,
+            linksPath: d.linksPath,
             flavor: d.flavor,
         });
         const outcome = await pusher.pushDests(dests, plan);

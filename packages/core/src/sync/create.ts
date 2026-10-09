@@ -13,10 +13,12 @@
 // push reports it rather than creating it in the wrong place. Pure over the
 // {@link FileSystem} + {@link Yaml} ports; the create execution is a later layer.
 
+import type { Config } from "../config/config.ts";
 import {
     type ConfluenceClient,
     FolderTitleTakenError,
 } from "../confluence/client.ts";
+import { spaceKeyOf } from "../confluence/sources.ts";
 import { FM, fmKeyPattern, MODE_IGNORE_PUSH } from "../models/frontmatter.ts";
 import type { FileSystem } from "../ports/fs.ts";
 import type { Yaml } from "../ports/yaml.ts";
@@ -506,6 +508,18 @@ export function rootOf(dest: string, roots: string[]): string {
         }
     }
     return best;
+}
+
+/**
+ * rootSpaceKey returns the space key of the folder or space root `dest` lies
+ * under, read from the root's configured source — the key a pull of that root
+ * stamps as `docket_space_key`. It is `""` when `dest` lies under no root or the
+ * source names no space.
+ */
+export function rootSpaceKey(config: Config, dest: string): string {
+    const sources = { ...config.folders, ...config.spaces };
+    const root = rootOf(dest, Object.keys(sources));
+    return root === "" ? "" : spaceKeyOf(sources[root] ?? "");
 }
 
 /** CreatedFolder records a folder created during one create so a later failure can undo it. */

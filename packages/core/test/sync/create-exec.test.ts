@@ -16,7 +16,8 @@ import { obsidianFlavor } from "../../src/flavor/flavor.ts";
 import { NoopReporter } from "../../src/ports/progress.ts";
 import type { Yaml } from "../../src/ports/yaml.ts";
 import type { CreateInput } from "../../src/sync/create.ts";
-import { Pusher } from "../../src/sync/push.ts";
+import { LinkIndex } from "../../src/sync/linkindex.ts";
+import { Pusher, type PusherDeps } from "../../src/sync/push.ts";
 import { QueueHttpClient } from "../support/http-queue.ts";
 import { MemFS } from "../support/memfs.ts";
 
@@ -31,18 +32,20 @@ const newPageMD =
     '---\ntitle: "New Page"\ndocket_space_id: "9"\ndocket_parent_id: "77"\n---\n\n' +
     "# Heading\n\nA paragraph.\n";
 
-const config = (): Config =>
-    buildConfig(
-        {},
-        {
-            site: "ex",
-            account: "a@ex.com",
-            token: "secret",
-            syncRoot: "/vault",
-        },
-    );
+const config = (raw: Record<string, unknown> = {}): Config =>
+    buildConfig(raw, {
+        site: "ex",
+        account: "a@ex.com",
+        token: "secret",
+        syncRoot: "/vault",
+    });
 
-function pusherFor(q: QueueHttpClient, fs: MemFS, cacheDir = CACHE): Pusher {
+function pusherFor(
+    q: QueueHttpClient,
+    fs: MemFS,
+    cacheDir = CACHE,
+    over: Partial<PusherDeps> = {},
+): Pusher {
     const cfg = config();
     return new Pusher({
         client: new ConfluenceClient(q, {
@@ -60,6 +63,7 @@ function pusherFor(q: QueueHttpClient, fs: MemFS, cacheDir = CACHE): Pusher {
         links: null,
         flavor: obsidianFlavor,
         force: false,
+        ...over,
     });
 }
 
@@ -330,6 +334,124 @@ describe("Pusher.pushCreate — page create and refresh", () => {
         expect(refreshed).toContain("docket_page_version: 1");
         expect(refreshed).toContain("docket_mode: pull");
         expect(await fs.exists(`${CACHE}/team/new.v1.json`)).toBe(true);
+    });
+
+    it("stamps the domain, root space key, and page URL a pull would", async () => {
+        const fs = new MemFS();
+        const dest = "/vault/team/new.md";
+        await fs.write(dest, newPageMD);
+        const q = new QueueHttpClient().rsp(
+            200,
+            '{"id":"555","version":{"number":1}}',
+        );
+        const cfg = config({ spaces: { team: "/wiki/spaces/TEAM/overview" } });
+
+        await pusherFor(q, fs, CACHE, { config: cfg }).pushCreate(
+            dest,
+            input({ dest, title: "New Page", parentId: "77" }),
+            new Map(),
+        );
+
+        const have = await fs.readText(dest);
+        expect(have).toContain('docket_space_key: "TEAM"\n');
+        expect(have).toContain('docket_domain: "ex.atlassian.net"\n');
+        expect(have).toContain(
+            'url: "https://ex.atlassian.net/wiki/spaces/TEAM/pages/555"\n',
+        );
+    });
+
+    it("adds the created page to the link index and persists it", async () => {
+        const fs = new MemFS();
+        const dest = "/vault/team/new.md";
+        await fs.write(dest, newPageMD);
+        const q = new QueueHttpClient().rsp(
+            200,
+            '{"id":"555","version":{"number":1}}',
+        );
+        const cfg = config({ spaces: { team: "/wiki/spaces/TEAM/overview" } });
+        const links = new LinkIndex("/vault");
+        const linksPath = `${CACHE}/links.json`;
+
+        const { warning } = await pusherFor(q, fs, CACHE, {
+            config: cfg,
+            links,
+            linksPath,
+        }).pushCreate(
+            dest,
+            input({ dest, title: "New Page", parentId: "77" }),
+            new Map(),
+        );
+
+        const want = {
+            id: "555",
+            dest: "team/new.md",
+            url: "/wiki/spaces/TEAM/pages/555",
+            title: "New Page",
+            spaceKey: "TEAM",
+        };
+        expect(warning).toBe("");
+        expect(links.byDest.get(dest)).toEqual(want);
+        expect(JSON.parse(await fs.readText(linksPath))).toEqual([
+            {
+                id: "555",
+                dest: "team/new.md",
+                url: "/wiki/spaces/TEAM/pages/555",
+                title: "New Page",
+                space_key: "TEAM",
+            },
+        ]);
+    });
+
+    it("warns, without failing, when the link index cannot be written", async () => {
+        const fs = new MemFS();
+        const dest = "/vault/team/new.md";
+        await fs.write(dest, newPageMD);
+        const q = new QueueHttpClient().rsp(
+            200,
+            '{"id":"555","version":{"number":1}}',
+        );
+        const links = new LinkIndex("/vault");
+        const linksPath = `${CACHE}/links.json`;
+        const write = fs.write.bind(fs);
+        fs.write = (path, data) =>
+            path === linksPath
+                ? Promise.reject(new Error("disk full"))
+                : write(path, data);
+
+        const { version, warning } = await pusherFor(q, fs, CACHE, {
+            links,
+            linksPath,
+        }).pushCreate(
+            dest,
+            input({ dest, title: "New Page", parentId: "77" }),
+            new Map(),
+        );
+
+        expect(version).toBe(1);
+        expect(warning).toBe("link index not updated: disk full");
+        expect(await fs.readText(dest)).toContain('docket_page_id: "555"');
+    });
+
+    it("keeps the new entry in memory without a links path", async () => {
+        const fs = new MemFS();
+        const dest = "/vault/team/new.md";
+        await fs.write(dest, newPageMD);
+        const q = new QueueHttpClient().rsp(
+            200,
+            '{"id":"555","version":{"number":1}}',
+        );
+        const links = new LinkIndex("/vault");
+
+        await pusherFor(q, fs, CACHE, { links }).pushCreate(
+            dest,
+            input({ dest, title: "New Page", parentId: "77" }),
+            new Map(),
+        );
+
+        expect(links.byID.get("555")?.url).toBe(
+            "/wiki/pages/viewpage.action?pageId=555",
+        );
+        expect(await fs.exists(`${CACHE}/links.json`)).toBe(false);
     });
 
     it("stamps the page id when the local refresh fails", async () => {
