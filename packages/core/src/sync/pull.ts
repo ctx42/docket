@@ -46,12 +46,7 @@ import type { Reporter } from "../ports/progress.ts";
 import { posixClean, posixDir, posixJoin } from "../util/path.ts";
 import { mapPool } from "../util/pool.ts";
 import { assetsFromDisk, downloadImages } from "./assets.ts";
-import {
-    countComments,
-    recordThreads,
-    toRenderComments,
-    writeRecord,
-} from "./comments.ts";
+import { recordThreads, toRenderComments, writeRecord } from "./comments.ts";
 import {
     collides,
     discoverFolder,
@@ -585,8 +580,8 @@ export class Puller {
      * comments are unreadable still pulls its body — but it is logged as a warning
      * rather than swallowed, so a misconfigured or rejected comment API is visible
      * in the pull output instead of silently rendering no comments. A successful
-     * fetch that finds none is logged too, so "the API returned nothing" is
-     * distinguishable from "the fetch failed".
+     * fetch that finds none is silent: most pages have no comments, and a line
+     * per page would bury the notes that actually changed.
      */
     private async fetchComments(
         pageId: string,
@@ -595,15 +590,7 @@ export class Puller {
             return undefined;
         }
         try {
-            const fetched = await this.d.client.fetchComments(pageId);
-            const total =
-                countComments(fetched.inline) + countComments(fetched.footer);
-            if (total === 0) {
-                this.d.reporter.log(
-                    `docket: page ${pageId}: no comments returned\n`,
-                );
-            }
-            return fetched;
+            return await this.d.client.fetchComments(pageId);
         } catch (err) {
             this.d.reporter.log(
                 `docket: page ${pageId}: fetching comments failed: ` +

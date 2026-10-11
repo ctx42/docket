@@ -59,15 +59,6 @@ function openInline(comments: PageComments): PageComment[] {
     );
 }
 
-/** countComments totals a comment list including every nested reply. */
-export function countComments(comments: PageComment[]): number {
-    let n = 0;
-    for (const c of comments) {
-        n += 1 + countComments(c.replies);
-    }
-    return n;
-}
-
 /** toThread maps one {@link PageComment} (and its replies) to a {@link CommentThread}. */
 function toThread(comment: PageComment): CommentThread {
     return {
