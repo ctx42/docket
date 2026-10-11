@@ -36,8 +36,30 @@ describe("RequestUrlHttpClient", () => {
         });
         expect(captured?.method).toBe("GET");
         expect(captured?.url).toBe("https://ex/a");
-        expect(captured?.headers).toEqual({ Authorization: "Basic z" });
+        expect(captured?.headers).toEqual({
+            Authorization: "Basic z",
+            "User-Agent": "docket",
+        });
         expect(captured?.throw).toBe(false);
+    });
+
+    it("sends a non-browser User-Agent unless the request sets one", async () => {
+        const sent: (Record<string, string> | undefined)[] = [];
+        const fake: RequestUrlFn = async (p) => {
+            sent.push(p.headers);
+            return response();
+        };
+        const client = new RequestUrlHttpClient(fake);
+
+        await client.do({ method: "POST", url: "u" });
+        await client.do({
+            method: "POST",
+            url: "u",
+            headers: { "user-agent": "custom" },
+        });
+
+        expect(sent[0]).toEqual({ "User-Agent": "docket" });
+        expect(sent[1]).toEqual({ "user-agent": "custom" });
     });
 
     it("lower-cases response header keys and decodes the body", async () => {

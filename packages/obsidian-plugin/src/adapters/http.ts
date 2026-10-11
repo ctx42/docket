@@ -8,9 +8,17 @@
 // runtime dependency and unit-tests with a fake. Retry/backoff/concurrency are
 // deliberately absent — the plugin's only caller today is a single-request
 // connection test; the wrapped client is a later concern.
+//
+// `requestUrl` otherwise sends Electron's browser User-Agent, and Atlassian's
+// XSRF guard rejects a browser-agent multipart POST (attachment upload) with
+// 403 "XSRF check failed" even when it carries `X-Atlassian-Token: no-check`.
+// A non-browser agent passes, as the CLI's does.
 
 import type { HttpClient, HttpRequest, HttpResponse } from "@docket/core";
 import type { RequestUrlParam, RequestUrlResponse } from "obsidian";
+
+/** USER_AGENT is the agent sent when the request does not name its own. */
+const USER_AGENT = "docket";
 
 /** RequestUrlFn is Obsidian's `requestUrl`, narrowed to what this adapter uses. */
 export type RequestUrlFn = (
@@ -21,7 +29,8 @@ export type RequestUrlFn = (
  * RequestUrlHttpClient implements the core's {@link HttpClient} port over an
  * injected `requestUrl`. It forwards method, url, headers, and body, forces
  * `throw: false` so a non-2xx status returns a response the core can inspect
- * (matching the CLI's fetch adapter), and normalises the reply into an
+ * (matching the CLI's fetch adapter), sends a non-browser `User-Agent` unless
+ * the request sets one, and normalises the reply into an
  * {@link HttpResponse} with lower-cased header keys and a `Uint8Array` body.
  */
 export class RequestUrlHttpClient implements HttpClient {
@@ -32,7 +41,7 @@ export class RequestUrlHttpClient implements HttpClient {
         const resp = await this.request({
             url: req.url,
             method: req.method,
-            ...(req.headers !== undefined && { headers: req.headers }),
+            headers: withUserAgent(req.headers),
             ...(bodyVal !== undefined && { body: bodyVal }),
             throw: false,
         });
@@ -42,6 +51,20 @@ export class RequestUrlHttpClient implements HttpClient {
             body: new Uint8Array(resp.arrayBuffer),
         };
     }
+}
+
+/**
+ * withUserAgent returns headers with {@link USER_AGENT} added, unless they
+ * already carry a `User-Agent` (in any case).
+ */
+function withUserAgent(
+    headers: Record<string, string> | undefined,
+): Record<string, string> {
+    const out = { ...headers };
+    if (!Object.keys(out).some((k) => k.toLowerCase() === "user-agent")) {
+        out["User-Agent"] = USER_AGENT;
+    }
+    return out;
 }
 
 /** toBody adapts the port's `Uint8Array | string` body to `requestUrl`'s type. */
