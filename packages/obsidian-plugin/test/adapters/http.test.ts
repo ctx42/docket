@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import {
     type RequestUrlFn,
     RequestUrlHttpClient,
+    type SleepFn,
 } from "../../src/adapters/http.ts";
 
 function response(
@@ -21,6 +22,31 @@ function response(
         ...overrides,
     };
 }
+
+/** flaky returns a fake that throws each of errs in turn, then succeeds. */
+function flaky(errs: unknown[]): { fake: RequestUrlFn; calls: () => number } {
+    let n = 0;
+    const fake: RequestUrlFn = async () => {
+        const err = errs[n++];
+        if (err !== undefined) {
+            throw err;
+        }
+        return response();
+    };
+    return { fake, calls: () => n };
+}
+
+/** recordSleep returns a no-wait sleep and the delays it was asked for. */
+function recordSleep(): { sleep: SleepFn; waits: number[] } {
+    const waits: number[] = [];
+    const sleep: SleepFn = async (ms) => {
+        waits.push(ms);
+    };
+    return { sleep, waits };
+}
+
+/** changed is the error Obsidian's `requestUrl` throws on a network change. */
+const changed = new Error("net::ERR_NETWORK_CHANGED");
 
 describe("RequestUrlHttpClient", () => {
     it("passes method, headers, and forces throw:false", async () => {
@@ -106,5 +132,74 @@ describe("RequestUrlHttpClient", () => {
 
         expect(bodies[0]).toBe("text");
         expect(new TextDecoder().decode(bodies[1] as ArrayBuffer)).toBe("ABC");
+    });
+
+    it("retries a non-POST request aborted by a network change", async () => {
+        const { fake, calls } = flaky([changed, changed]);
+        const { sleep, waits } = recordSleep();
+
+        const have = await new RequestUrlHttpClient(fake, sleep).do({
+            method: "PUT",
+            url: "u",
+            body: "b",
+        });
+
+        expect(have.status).toBe(200);
+        expect(calls()).toBe(3);
+        expect(waits).toEqual([250, 1000]);
+    });
+
+    it("gives up after the last retry and rethrows the abort", async () => {
+        const { fake, calls } = flaky([changed, changed, changed]);
+        const { sleep } = recordSleep();
+
+        const have = new RequestUrlHttpClient(fake, sleep).do({
+            method: "GET",
+            url: "u",
+        });
+
+        await expect(have).rejects.toBe(changed);
+        expect(calls()).toBe(3);
+    });
+
+    it("never retries a POST", async () => {
+        const { fake, calls } = flaky([changed]);
+        const { sleep, waits } = recordSleep();
+
+        const have = new RequestUrlHttpClient(fake, sleep).do({
+            method: "post",
+            url: "u",
+        });
+
+        await expect(have).rejects.toBe(changed);
+        expect(calls()).toBe(1);
+        expect(waits).toEqual([]);
+    });
+
+    it("does not retry any other error", async () => {
+        const want = new Error("net::ERR_NAME_NOT_RESOLVED");
+        const { fake, calls } = flaky([want]);
+        const { sleep } = recordSleep();
+
+        const have = new RequestUrlHttpClient(fake, sleep).do({
+            method: "GET",
+            url: "u",
+        });
+
+        await expect(have).rejects.toBe(want);
+        expect(calls()).toBe(1);
+    });
+
+    it("recognises a non-Error network-change rejection", async () => {
+        const { fake, calls } = flaky(["net::ERR_NETWORK_CHANGED"]);
+        const { sleep } = recordSleep();
+
+        const have = await new RequestUrlHttpClient(fake, sleep).do({
+            method: "DELETE",
+            url: "u",
+        });
+
+        expect(have.status).toBe(200);
+        expect(calls()).toBe(2);
     });
 });
