@@ -73,6 +73,41 @@ describe("escapeInline", () => {
             in: "a < b > c",
             want: "a < b > c",
         },
+        {
+            testN: "a placeholder tag is escaped",
+            in: "customer <customer name> (id: <customer id>)",
+            want: String.raw`customer \<customer name> (id: \<customer id>)`,
+        },
+        {
+            testN: "an underline opener is escaped",
+            in: "<u>x</u>",
+            want: String.raw`\<u>x\</u>`,
+        },
+        {
+            testN: "a closing tag is escaped",
+            in: "a </div> b",
+            want: String.raw`a \</div> b`,
+        },
+        {
+            testN: "a comment opener is escaped",
+            in: "<!-- x -->",
+            want: String.raw`\<!-- x -->`,
+        },
+        {
+            testN: "a processing instruction is escaped",
+            in: "<?xml?>",
+            want: String.raw`\<?xml?>`,
+        },
+        {
+            testN: "an unclosed tag opener is escaped",
+            in: "x <y",
+            want: String.raw`x \<y`,
+        },
+        {
+            testN: "an angle before a digit is left clean",
+            in: "n <5",
+            want: "n <5",
+        },
     ];
 
     for (const tc of tt) {

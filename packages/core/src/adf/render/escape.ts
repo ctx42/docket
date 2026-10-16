@@ -26,9 +26,9 @@ function containsAny(s: string, chars: string): boolean {
  * literally. The escaping is contextual and minimal: `*`, a backtick, and a
  * backslash itself are always escaped, while `~`, `[` and `<` are escaped only
  * where they would actually begin a construct — a `~~` run, a `[label](url)`
- * link, a `[[@…]]` directive or a `<url>` autolink. Ordinary punctuation (a
- * lone tilde, a non-link bracket, a stray `<`) is left untouched so the Markdown
- * stays clean.
+ * link, a `[[@…]]` directive, a `<url>` autolink or an HTML tag. Ordinary
+ * punctuation (a lone tilde, a non-link bracket, a stray `<`) is left untouched
+ * so the Markdown stays clean.
  *
  * With `inLink` set — the text is a link's label — both `[` and `]` are always
  * escaped, since an unescaped bracket would otherwise close the label or open a
@@ -72,37 +72,29 @@ function escapeAt(s: string, i: number, inLink: boolean): boolean {
         case "]":
             return inLink;
         case "<":
-            return (
-                startsAutolink(s.slice(i)) ||
-                startsUnderline(s.slice(i)) ||
-                startsColorSpan(s.slice(i))
-            );
+            return startsAutolink(s.slice(i)) || startsHTML(s.slice(i));
     }
     return false;
 }
 
 /**
- * startsUnderline reports whether s begins the `<u>` underline opener, so a
- * literal `<u>` in prose is escaped and stays text rather than opening an
- * underline span.
+ * startsHTML reports whether s begins something a Markdown renderer may read as
+ * raw HTML: a `<` followed by a letter (an open tag such as `<u>`, `<span …>`
+ * or a placeholder like `<customer name>`), `/` (a closing tag), `!` (a comment
+ * or declaration) or `?` (a processing instruction). Left raw, Obsidian treats
+ * a placeholder as an unclosed element and stops rendering the Markdown after
+ * it. The probe needs no closing `>`: a tag can end in a later text node, and
+ * an escaped `<` is harmless either way.
  */
-function startsUnderline(s: string): boolean {
-    return s.startsWith("<u>");
-}
-
-/**
- * startsColorSpan reports whether s begins a well-formed textColor opener
- * `<span style="color:COLOR">`, so a literal one in prose is escaped exactly
- * when it would otherwise parse.
- */
-function startsColorSpan(s: string): boolean {
-    const open = `<span style="color:`;
-    if (!s.startsWith(open)) {
-        return false;
-    }
-    const after = s.slice(open.length);
-    const end = after.indexOf(`">`);
-    return end > 0 && !containsAny(after.slice(0, end), `"<>`);
+function startsHTML(s: string): boolean {
+    const c = s.charAt(1);
+    return (
+        (c >= "a" && c <= "z") ||
+        (c >= "A" && c <= "Z") ||
+        c === "/" ||
+        c === "!" ||
+        c === "?"
+    );
 }
 
 /**
