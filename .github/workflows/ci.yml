@@ -13,6 +13,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  C42_CC_RUN_ID: github-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   check:
     name: typecheck · lint · test · build
