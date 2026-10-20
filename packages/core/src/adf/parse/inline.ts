@@ -65,11 +65,17 @@ class InlineParser {
             const rest = this.s.slice(this.pos);
 
             // A closing delimiter ends the run, unless it is really the start of
-            // a longer delimiter (a `**` seen while closing an em `*`).
+            // a longer delimiter (a `**` seen while closing an em `*`). A `***`
+            // still closes the em: the render only emits it as an em close
+            // followed by a strong delimiter, as in `***bold italic***`.
             if (
                 stop !== "" &&
                 rest.startsWith(stop) &&
-                !(stop === "*" && rest.startsWith("**"))
+                !(
+                    stop === "*" &&
+                    rest.startsWith("**") &&
+                    !rest.startsWith("***")
+                )
             ) {
                 this.pos += stop.length;
                 flush();

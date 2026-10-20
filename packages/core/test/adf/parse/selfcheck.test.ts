@@ -87,6 +87,24 @@ describe("inlineRoundTrips", () => {
         }
     });
 
+    it("a colored strong em run before the end round-trips", () => {
+        const nodes: Node[] = [
+            { type: "text", text: "EXP-5:", marks: [{ type: "strong" }] },
+            { type: "text", text: " text." },
+            {
+                type: "text",
+                text: "(TBD)",
+                marks: [
+                    { type: "textColor", attrs: { color: "#ff5630" } },
+                    { type: "strong" },
+                    { type: "em" },
+                ],
+            },
+            { type: "text", text: " tail" },
+        ];
+        expect(inlineRoundTrips(nodes, ctx, pc)).toBe(true);
+    });
+
     it("a link href with balanced parens round-trips", () => {
         const nodes: Node[] = [
             {
@@ -431,7 +449,8 @@ describe("parseInline robustness (fuzz seeds)", () => {
         it(`does not break the round-trip invariant on ${JSON.stringify(s)}`, () => {
             const nodes = parseInline(s, pc);
             // A run reported round-trippable must re-render to a run with the same
-            // signature — the invariant push relies on.
+            // signature — the invariant push relies on. The run is signed with
+            // its edge spaces hoisted, as the render emits it.
             if (inlineRoundTrips(nodes, ctx, pc)) {
                 const rendered = inlineString(
                     { type: "paragraph", content: nodes },
@@ -439,7 +458,10 @@ describe("parseInline robustness (fuzz seeds)", () => {
                 );
                 const reparsed = parseInline(rendered, pc);
                 expect(
-                    sigEqual(inlineSig(nodes, null), inlineSig(reparsed, null)),
+                    sigEqual(
+                        inlineSig(hoistEdgeSpaces(nodes), null),
+                        inlineSig(reparsed, null),
+                    ),
                 ).toBe(true);
             }
         });

@@ -39,6 +39,45 @@ describe("parseInline", () => {
                 want: [{ type: "text", text: "it", marks: em }],
             },
             {
+                testN: "strong em closes before trailing text",
+                in: "***x*** tail",
+                pc: {},
+                want: [
+                    {
+                        type: "text",
+                        text: "x",
+                        marks: [{ type: "em" }, { type: "strong" }],
+                    },
+                    { type: "text", text: " tail" },
+                ],
+            },
+            {
+                testN: "strong em inside a color span closes before the span",
+                in: '<span style="color:#f00">***x***</span> tail',
+                pc: {},
+                want: [
+                    {
+                        type: "text",
+                        text: "x",
+                        marks: [
+                            { type: "em" },
+                            { type: "strong" },
+                            { type: "textColor", attrs: { color: "#f00" } },
+                        ],
+                    },
+                    { type: "text", text: " tail" },
+                ],
+            },
+            {
+                testN: "em directly followed by strong",
+                in: "*a***b**",
+                pc: {},
+                want: [
+                    { type: "text", text: "a", marks: em },
+                    { type: "text", text: "b", marks: strong },
+                ],
+            },
+            {
                 testN: "code is literal",
                 in: "`a*b`",
                 pc: {},
