@@ -42,7 +42,12 @@ describe("imageExt", () => {
 
 describe("assetName", () => {
     it("builds {fileId}-{localId}{ext}", () => {
-        const ref: MediaRef = { localId: "L1", fileId: "F1", alt: "a.png" };
+        const ref: MediaRef = {
+            localId: "L1",
+            fileId: "F1",
+            alt: "a.png",
+            inline: false,
+        };
         expect(
             assetName(ref, {
                 fileId: "F1",
@@ -51,6 +56,38 @@ describe("assetName", () => {
                 downloadLink: "/d",
             }),
         ).toBe("F1-L1.png");
+    });
+
+    it("appends the title for an inline file link", () => {
+        const ref: MediaRef = {
+            localId: "L1",
+            fileId: "F1",
+            alt: "",
+            inline: true,
+        };
+        const att = {
+            fileId: "F1",
+            title: " GVZ: a|b#c^d[e]f/g.pdf ",
+            mediaType: "application/pdf",
+            downloadLink: "/d",
+        };
+        expect(assetName(ref, att)).toBe("F1-L1-GVZ_ a_b_c_d_e_f_g.pdf");
+    });
+
+    it("falls back to the plain form for a title-less inline file", () => {
+        const ref: MediaRef = {
+            localId: "L1",
+            fileId: "F1",
+            alt: "",
+            inline: true,
+        };
+        const att = {
+            fileId: "F1",
+            title: "",
+            mediaType: "image/png",
+            downloadLink: "/d",
+        };
+        expect(assetName(ref, att)).toBe("F1-L1.png");
     });
 });
 
@@ -94,7 +131,9 @@ describe("ensureAsset", () => {
 });
 
 describe("downloadImages", () => {
-    const refs: MediaRef[] = [{ localId: "L1", fileId: "F1", alt: "pic.png" }];
+    const refs: MediaRef[] = [
+        { localId: "L1", fileId: "F1", alt: "pic.png", inline: false },
+    ];
 
     it("resolves, downloads, and maps refs to relative paths", async () => {
         const stub = new StubHttpClient()
@@ -164,7 +203,9 @@ describe("downloadImages", () => {
 });
 
 describe("assetsFromDisk", () => {
-    const refs: MediaRef[] = [{ localId: "L1", fileId: "F1", alt: "pic.png" }];
+    const refs: MediaRef[] = [
+        { localId: "L1", fileId: "F1", alt: "pic.png", inline: false },
+    ];
 
     it("reconstructs the assets map from files already on disk", async () => {
         const fs = new MemFS();
@@ -192,6 +233,37 @@ describe("assetsFromDisk", () => {
         );
 
         expect(assets).toEqual({ L1: "../_docket-media/F1-L1" });
+    });
+
+    it("matches an inline file link's titled asset", async () => {
+        const fs = new MemFS();
+        await fs.write("/vault/_docket-media/F1-L1-Spec.pdf", "PDF");
+        const inline: MediaRef[] = [
+            { localId: "L1", fileId: "F1", alt: "", inline: true },
+        ];
+
+        const assets = await assetsFromDisk(
+            fs,
+            "/vault/_docket-media",
+            "/vault/notes/page.md",
+            inline,
+        );
+
+        expect(assets).toEqual({ L1: "../_docket-media/F1-L1-Spec.pdf" });
+    });
+
+    it("does not match a titled asset for block media", async () => {
+        const fs = new MemFS();
+        await fs.write("/vault/_docket-media/F1-L1-Spec.pdf", "PDF");
+
+        const assets = await assetsFromDisk(
+            fs,
+            "/vault/_docket-media",
+            "/vault/notes/page.md",
+            refs,
+        );
+
+        expect(assets).toBeNull();
     });
 
     it("returns an empty map when there are no refs", async () => {

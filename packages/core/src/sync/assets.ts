@@ -21,9 +21,10 @@ import { posixDir, posixExt, posixJoin, posixRel } from "../util/path.ts";
  * (the page body was served from the ADF cache, so its images were downloaded by
  * an earlier pull and are already on disk), skipping the attachment round-trip.
  *
- * It matches each ref to a file named `{fileId}-{localId}{ext}` — the name
- * {@link assetName} writes — by prefix, since the extension is derived from the
- * attachment's media type, which is not known here. It returns null (signalling
+ * It matches each ref to a file named `{fileId}-{localId}{ext}` — or, for an
+ * inline file link, `{fileId}-{localId}-{title}` — the name {@link assetName}
+ * writes, by prefix, since the extension and title come from the attachment
+ * metadata, which is not known here. It returns null (signalling
  * the caller to fall back to {@link downloadImages}) if ANY referenced image is
  * absent: a ref never resolved to an attachment, or a prior pull was interrupted
  * after the ADF was cached but before its images were downloaded. Returning the
@@ -49,7 +50,10 @@ export async function assetsFromDisk(
     for (const ref of refs) {
         const prefix = `${ref.fileId}-${ref.localId}`;
         const name = entries.find(
-            (e) => e === prefix || e.startsWith(`${prefix}.`),
+            (e) =>
+                e === prefix ||
+                e.startsWith(`${prefix}.`) ||
+                (ref.inline && e.startsWith(`${prefix}-`)),
         );
         if (name === undefined) {
             return null; // a referenced image is missing: fall back to a fetch
@@ -139,10 +143,29 @@ export async function ensureAsset(
 /**
  * assetName builds the on-disk file name for a media reference,
  * `{fileId}-{localId}{ext}`, with the extension taken from the attachment's media
- * type. The localId makes the name unique per media node.
+ * type. The localId makes the name unique per media node. An inline file link
+ * (`mediaInline`) is named `{fileId}-{localId}-{title}` instead, so the rendered
+ * link can show the attachment's title (see `renderMediaInline`); a title-less
+ * attachment falls back to the plain form.
  */
 export function assetName(ref: MediaRef, att: Attachment): string {
-    return `${ref.fileId}-${ref.localId}${imageExt(att.mediaType, att.title)}`;
+    const prefix = `${ref.fileId}-${ref.localId}`;
+    const title = safeTitle(att.title);
+    if (ref.inline && title !== "") {
+        return `${prefix}-${title}`;
+    }
+    return `${prefix}${imageExt(att.mediaType, att.title)}`;
+}
+
+/**
+ * safeTitle makes an attachment title safe as a file name and as an Obsidian
+ * wiki-link target and alias: a path separator, a character Windows forbids, a
+ * control character, or one that ends or splits a wiki link (`#`, `^`, `[`,
+ * `]`, `|`) becomes `_`. Surrounding whitespace is trimmed.
+ */
+function safeTitle(title: string): string {
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: control characters are stripped on purpose
+    return title.trim().replace(/[\x00-\x1f/\\:*?"<>|#^[\]]/g, "_");
 }
 
 /**

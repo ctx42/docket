@@ -98,6 +98,8 @@ export interface MediaRef {
     fileId: string;
     /** The media node's `attrs.alt`, the original file name. */
     alt: string;
+    /** Whether the node is an inline `mediaInline` file link, not a block `media`. */
+    inline: boolean;
 }
 
 /** Read a string attribute, or `""` when absent or not a string. */
@@ -135,15 +137,29 @@ export function mediaAssetKey(node: Node): string {
 }
 
 /**
+ * isFileMedia reports whether `node` references an uploaded file: a block `media`
+ * node whose `attrs.type` is `file`, or an inline `mediaInline` node whose
+ * `attrs.type` is `file` or absent — the ADF schema defaults it to `file`, and
+ * Confluence routinely omits it.
+ */
+export function isFileMedia(node: Node): boolean {
+    const typ = attrStr(node.attrs, "type");
+    switch (node.type) {
+        case "media":
+            return typ === "file";
+        case "mediaInline":
+            return typ === "file" || node.attrs?.["type"] === undefined;
+        default:
+            return false;
+    }
+}
+
+/**
  * collectFileMedia appends every uploaded-file media node at or below `node` to
- * `out`, in document order. Both a block `media` node and an inline
- * `mediaInline` reference count when their `attrs.type` is `file`.
+ * `out`, in document order (see {@link isFileMedia}).
  */
 function collectFileMedia(node: Node, out: Node[]): Node[] {
-    if (
-        (node.type === "media" || node.type === "mediaInline") &&
-        attrStr(node.attrs, "type") === "file"
-    ) {
+    if (isFileMedia(node)) {
         out.push(node);
     }
     for (const child of node.content ?? []) {
@@ -171,6 +187,7 @@ export function fileMedia(adf: ADF): MediaRef[] {
             localId: key,
             fileId: attrStr(node.attrs, "id"),
             alt: attrStr(node.attrs, "alt"),
+            inline: node.type === "mediaInline",
         });
     }
     return refs;

@@ -77,8 +77,8 @@ describe("fileMedia", () => {
         const have = fileMedia(adf);
 
         const want: MediaRef[] = [
-            { localId: "L1", fileId: "F1", alt: "a.jpg" },
-            { localId: "L2", fileId: "F2", alt: "b.png" },
+            { localId: "L1", fileId: "F1", alt: "a.jpg", inline: false },
+            { localId: "L2", fileId: "F2", alt: "b.png", inline: false },
         ];
         expect(have).toEqual(want);
     });
@@ -105,7 +105,9 @@ describe("fileMedia", () => {
 
         const have = fileMedia(adf);
 
-        expect(have).toEqual([{ localId: "F2", fileId: "F2", alt: "" }]);
+        expect(have).toEqual([
+            { localId: "F2", fileId: "F2", alt: "", inline: false },
+        ]);
     });
 
     it("collects an inline mediaInline file reference", () => {
@@ -136,7 +138,43 @@ describe("fileMedia", () => {
         const have = fileMedia(adf);
 
         expect(have).toEqual([
-            { localId: "L7", fileId: "F7", alt: "inline.png" },
+            { localId: "L7", fileId: "F7", alt: "inline.png", inline: true },
+        ]);
+    });
+
+    it("collects a mediaInline with no type as a file", () => {
+        // The ADF schema defaults a mediaInline's type to `file`, and Confluence
+        // omits it; a `link` or `image` mediaInline is not an uploaded file.
+        const data = `{
+           "adf": {
+              "type": "doc",
+              "content": [
+                 {
+                    "type": "paragraph",
+                    "content": [
+                       {
+                          "type": "mediaInline",
+                          "attrs": {
+                             "id": "F8",
+                             "collection": "contentId-1",
+                             "localId": "L8"
+                          }
+                       },
+                       {
+                          "type": "mediaInline",
+                          "attrs": { "type": "link", "id": "F9", "localId": "L9" }
+                       }
+                    ]
+                 }
+              ]
+           }
+        }`;
+        const adf = newADF(data);
+
+        const have = fileMedia(adf);
+
+        expect(have).toEqual([
+            { localId: "L8", fileId: "F8", alt: "", inline: true },
         ]);
     });
 
