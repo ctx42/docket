@@ -9,7 +9,12 @@
 // `` ```adf `` YAML fenced block.
 
 import { describe, expect, it } from "vitest";
-import { renderBlock, renderMedia } from "../../../src/adf/render/markdown.ts";
+import {
+    inlineMediaTargets,
+    renderBlock,
+    renderMedia,
+    renderMediaInline,
+} from "../../../src/adf/render/markdown.ts";
 import type { Mark, Node } from "../../../src/models/adf.ts";
 
 const ctx = {};
@@ -156,6 +161,81 @@ describe("renderMedia", () => {
     it("external media without a url renders an anchor block", () => {
         const nod: Node = { type: "media", attrs: { type: "external" } };
         expect(renderMedia(nod, {})).toBe("```adf\ntype: media\n```");
+    });
+});
+
+describe("renderMediaInline", () => {
+    const nod: Node = {
+        type: "mediaInline",
+        attrs: { id: "F1", collection: "contentId-7", localId: "L1" },
+    };
+
+    it("renders a wiki link titled from the asset name", () => {
+        const assets = { L1: "../_docket-media/F1-L1-Spec v2.pdf" };
+        expect(renderMediaInline(nod, assets)).toBe(
+            "[[F1-L1-Spec v2.pdf|Spec v2.pdf]]",
+        );
+    });
+
+    it("renders a bare wiki link for a title-less asset", () => {
+        const assets = { L1: "../_docket-media/F1-L1.pdf" };
+        expect(renderMediaInline(nod, assets)).toBe("[[F1-L1.pdf]]");
+    });
+
+    it("returns null without an asset", () => {
+        expect(renderMediaInline(nod, {})).toBeNull();
+    });
+
+    it("returns null for a non-file mediaInline", () => {
+        const link: Node = {
+            type: "mediaInline",
+            attrs: { type: "link", id: "F1", localId: "L1" },
+        };
+        expect(renderMediaInline(link, { L1: "F1-L1-a.pdf" })).toBeNull();
+    });
+
+    it("keeps the adf carrier in a paragraph without an asset", () => {
+        const para: Node = { type: "paragraph", content: [nod] };
+        expect(renderBlock(para, ctx)).toBe(
+            "`adf:*mediaInline:|collection=contentId-7;id=F1`",
+        );
+    });
+
+    it("keeps a wiki link with spaces whole across a wrap", () => {
+        const para: Node = {
+            type: "paragraph",
+            content: [{ type: "text", text: `${"word ".repeat(12)}` }, nod],
+        };
+        const assets = { L1: "../_docket-media/F1-L1-a b c d.pdf" };
+        const lines = renderBlock(para, { margin: 20, assets }).split("\n");
+        expect(
+            lines.some((ln) =>
+                ln.includes("[[F1-L1-a b c d.pdf|a b c d.pdf]]"),
+            ),
+        ).toBe(true);
+    });
+});
+
+describe("inlineMediaTargets", () => {
+    it("indexes resolved inline file links by link target", () => {
+        const linked: Node = {
+            type: "mediaInline",
+            attrs: { id: "F1", collection: "contentId-7", localId: "L1" },
+        };
+        const unresolved: Node = {
+            type: "mediaInline",
+            attrs: { id: "F2", collection: "contentId-7", localId: "L2" },
+        };
+        const doc: Node = {
+            type: "doc",
+            content: [{ type: "paragraph", content: [linked, unresolved] }],
+        };
+
+        const have = inlineMediaTargets(doc, {
+            L1: "../_docket-media/F1-L1-a.pdf",
+        });
+
+        expect(have).toEqual({ "F1-L1-a.pdf": linked });
     });
 });
 

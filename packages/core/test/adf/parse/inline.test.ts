@@ -291,3 +291,37 @@ describe("parseInline", () => {
         });
     }
 });
+
+describe("parseInline media links", () => {
+    const media: Node = {
+        type: "mediaInline",
+        attrs: { id: "F1", collection: "contentId-7", localId: "L1" },
+        marks: [{ type: "border", attrs: { size: 1, color: "#000" } }],
+    };
+    const pc: ParseCtx = { media: { "F1-L1-a b.pdf": media } };
+
+    it("parses a titled link back to a copy of the cached node", () => {
+        const have = parseInline("see [[F1-L1-a b.pdf|a b.pdf]] now", pc);
+
+        expect(have).toEqual([
+            { type: "text", text: "see " },
+            media,
+            { type: "text", text: " now" },
+        ]);
+        expect(have[1]).not.toBe(media);
+    });
+
+    it("parses a bare link and ignores an edited title", () => {
+        expect(parseInline("[[F1-L1-a b.pdf]]", pc)).toEqual([media]);
+        expect(parseInline("[[F1-L1-a b.pdf|other]]", pc)).toEqual([media]);
+    });
+
+    it("leaves an unknown wiki link as text", () => {
+        expect(parseInline("[[other.pdf|x]]", pc)).toEqual([
+            { type: "text", text: "[[other.pdf|x]]" },
+        ]);
+        expect(parseInline("[[F1-L1-a b.pdf]]", {})).toEqual([
+            { type: "text", text: "[[F1-L1-a b.pdf]]" },
+        ]);
+    });
+});

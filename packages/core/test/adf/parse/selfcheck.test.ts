@@ -255,6 +255,24 @@ describe("inlineRoundTrips", () => {
         expect(inlineRoundTrips(nodes, ctx, pc)).toBe(true);
     });
 
+    it("a resolved inline file link round-trips through its wiki link", () => {
+        const media: Node = {
+            type: "mediaInline",
+            attrs: { id: "F1", collection: "contentId-7", localId: "L1" },
+        };
+        const nodes: Node[] = [{ type: "text", text: "see " }, media];
+        const linked: MdCtx = {
+            assets: { L1: "../_docket-media/F1-L1-a.pdf" },
+        };
+
+        expect(
+            inlineRoundTrips(nodes, linked, {
+                media: { "F1-L1-a.pdf": media },
+            }),
+        ).toBe(true);
+        expect(inlineRoundTrips(nodes, linked, {})).toBe(false);
+    });
+
     it("literal markup characters round-trip via escaping", () => {
         const corpus: Node[][] = [
             [{ type: "text", text: "2 * 3 = 6" }],

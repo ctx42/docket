@@ -9,21 +9,29 @@
 //
 // Only the directive carrier differs from the reference: a directive is an
 // `adf:` inline code span (backtick-terminated) rather than `[[…]]`, so a bare
-// `[[wiki link]]` or `[[TOC]]` is inert text here. The escaping is unchanged; a
-// literal backtick is always escaped in text, which keeps prose from forming an
-// `adf:` span by accident.
+// `[[wiki link]]` or `[[TOC]]` is inert text here — unless its target is the
+// asset of one of the page's inline file links (see {@link ParseCtx.media}). The
+// escaping is unchanged; a literal backtick is always escaped in text, which
+// keeps prose from forming an `adf:` span by accident.
 
 import type { Mark, Node } from "../../models/adf.ts";
 import { type Links, remoteLink } from "../links.ts";
 
 /**
  * ParseCtx carries the page-level state a parse needs: the mentions map read
- * from the frontmatter (keyed by display name) and the link resolver. Its empty
- * value (`{}`) is a valid context.
+ * from the frontmatter (keyed by display name), the link resolver, and the
+ * page's inline file links. Its empty value (`{}`) is a valid context.
  */
 export interface ParseCtx {
     mentions?: Record<string, string>;
     links?: Links | null;
+    /**
+     * The cached `mediaInline` nodes, keyed by the wiki-link target their
+     * resolved asset renders to. A `[[target|title]]` whose target is a key
+     * parses back to a copy of that node, so its `id`, `collection` and
+     * `localId` survive the push.
+     */
+    media?: Record<string, Node>;
 }
 
 /** The `adf:` directive-span opener: an inline code span whose body starts `adf:`. */
@@ -131,6 +139,12 @@ class InlineParser {
                 flush();
                 nodes.push(...this.parseMark("*", "em"));
             } else if (c === "[") {
+                const media = this.parseMediaLink();
+                if (media !== null) {
+                    flush();
+                    nodes.push(media);
+                    continue;
+                }
                 const ns = this.parseLink();
                 if (ns !== null) {
                     flush();
@@ -212,6 +226,26 @@ class InlineParser {
         const nodes = applyLink(parseInline(parts.label, this.pc), href);
         this.pos = parts.end;
         return nodes;
+    }
+
+    /**
+     * parseMediaLink parses a `[[target|title]]` wiki link whose target is one of
+     * the page's inline file links ({@link ParseCtx.media}) back into a copy of
+     * its cached `mediaInline` node, or returns null (cursor untouched) for any
+     * other input. The title is display-only and ignored, as for an image embed.
+     */
+    private parseMediaLink(): Node | null {
+        const end = wikiLinkEnd(this.s, this.pos);
+        if (end === null) {
+            return null;
+        }
+        const inner = this.s.slice(this.pos + "[[".length, end - "]]".length);
+        const node = this.pc.media?.[inner.split("|")[0] ?? ""];
+        if (node === undefined) {
+            return null;
+        }
+        this.pos = end;
+        return JSON.parse(JSON.stringify(node)) as Node;
     }
 
     /**
@@ -518,6 +552,23 @@ function emojiNode(a: Record<string, unknown>): Node {
     return Object.keys(a).length > 0
         ? { type: "emoji", attrs: a }
         : { type: "emoji" };
+}
+
+/**
+ * wikiLinkEnd, given s[start], returns the index just past the `]]` closing a
+ * `[[…]]` wiki link opened there, or null when none opens there or it does not
+ * close on the same line. Shared with the render, which keeps a wiki link whole
+ * across a soft-wrap.
+ */
+export function wikiLinkEnd(s: string, start: number): number | null {
+    if (!s.startsWith("[[", start)) {
+        return null;
+    }
+    const close = s.indexOf("]]", start + "[[".length);
+    if (close < 0 || s.slice(start, close).includes("\n")) {
+        return null;
+    }
+    return close + "]]".length;
 }
 
 /**

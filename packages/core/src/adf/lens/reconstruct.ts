@@ -42,6 +42,7 @@ import { ambiguousMentions } from "../render/frontmatter.ts";
 import {
     basename,
     indentMarkerLen,
+    inlineMediaTargets,
     inlineSegments,
     inlineString,
     listItemBody,
@@ -131,8 +132,12 @@ export function putLinks(
     force = false,
     bodyLine = 1,
 ): ADF {
-    const pc: ParseCtx = { mentions: mentions ?? {}, links };
     const base = assets ?? {};
+    const pc: ParseCtx = {
+        mentions: mentions ?? {},
+        links,
+        media: inlineMediaTargets(adf.doc, base),
+    };
     const [baseBlocks, origins] = baselineBlocks(adf, base, links);
     const userBlocks = splitMergedLists(
         segmentBody(normalizeLegacyRules(body)),

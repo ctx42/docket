@@ -11,13 +11,14 @@
 import {
     attrInt,
     attrStr,
+    isFileMedia,
     type Mark,
     mediaAssetKey,
     type Node,
 } from "../../models/adf.ts";
 import { wrapTokens } from "../../textwrap/textwrap.ts";
 import { type Links, localLink } from "../links.ts";
-import { codeFenceEnd, scanLink } from "../parse/inline.ts";
+import { codeFenceEnd, scanLink, wikiLinkEnd } from "../parse/inline.ts";
 import {
     allStringAttrs,
     placeholder,
@@ -134,7 +135,8 @@ export function renderText(nod: Node, ctx: MdCtx): string {
 
 /**
  * renderInline renders a single inline node to Markdown. A text node carries its
- * marks (see {@link renderText}); a mention, inlineCard, or directive node
+ * marks (see {@link renderText}); a resolved inline file link renders as a wiki
+ * link (see {@link renderMediaInline}); a mention, inlineCard, or directive node
  * (status/date/emoji, or any other all-string-attr node) renders through its
  * `adf:` carrier; an inline node that cannot round-trip keeps a read-only
  * placeholder.
@@ -143,6 +145,13 @@ export function renderInline(nod: Node, ctx: MdCtx): string {
     switch (nod.type) {
         case "text":
             return renderText(nod, ctx);
+        case "mediaInline": {
+            const link = renderMediaInline(nod, ctx.assets ?? {});
+            if (link !== null) {
+                return link;
+            }
+            break;
+        }
         case "inlineCard":
             return renderInlineCard(nod, ctx);
         case "mention":
@@ -151,12 +160,62 @@ export function renderInline(nod: Node, ctx: MdCtx): string {
         case "date":
         case "emoji":
             return renderDirective(nod);
-        default:
-            if (allStringAttrs(nod)) {
-                return renderDirective(nod);
-            }
-            return placeholder(nod);
     }
+    if (allStringAttrs(nod)) {
+        return renderDirective(nod);
+    }
+    return placeholder(nod);
+}
+
+/**
+ * renderMediaInline renders an inline file link (`mediaInline`) whose attachment
+ * was downloaded as an Obsidian wiki link to the asset, `[[asset|title]]`, the
+ * title recovered from the asset name (see `assetName`); an asset with no title
+ * in its name renders as `[[asset]]`. It returns null for a node with no
+ * downloaded asset, which keeps its `adf:` carrier. The parser maps the target
+ * back to the cached node (see {@link inlineMediaTargets}).
+ */
+export function renderMediaInline(
+    nod: Node,
+    assets: Record<string, string>,
+): string | null {
+    if (!isFileMedia(nod)) {
+        return null;
+    }
+    const key = mediaAssetKey(nod);
+    const file = assets[key];
+    if (file === undefined) {
+        return null;
+    }
+    const name = basename(file);
+    const prefix = `${attrStr(nod.attrs, "id")}-${key}-`;
+    if (!name.startsWith(prefix) || name.length === prefix.length) {
+        return `[[${name}]]`;
+    }
+    return `[[${name}|${name.slice(prefix.length)}]]`;
+}
+
+/**
+ * inlineMediaTargets indexes every inline file link at or below `nod` that
+ * renders as a wiki link (see {@link renderMediaInline}) by its link target, so
+ * the parser can turn `[[target|title]]` back into the cached node with every
+ * attribute intact.
+ */
+export function inlineMediaTargets(
+    nod: Node,
+    assets: Record<string, string>,
+    out: Record<string, Node> = {},
+): Record<string, Node> {
+    if (nod.type === "mediaInline" && isFileMedia(nod)) {
+        const file = assets[mediaAssetKey(nod)];
+        if (file !== undefined) {
+            out[basename(file)] = nod;
+        }
+    }
+    for (const child of nod.content ?? []) {
+        inlineMediaTargets(child, assets, out);
+    }
+    return out;
 }
 
 /**
@@ -1089,7 +1148,8 @@ function wrapSegments(segments: string[], width: number): string {
 /**
  * splitTokens splits s into space-separated tokens, keeping whole the spans a
  * space inside must not break at: a Markdown link `[label](url)` (found by
- * {@link scanLink}, so its label or destination may hold spaces), an inline code
+ * {@link scanLink}, so its label or destination may hold spaces), a wiki link
+ * `[[target|title]]` (found by {@link wikiLinkEnd}), an inline code
  * span or `adf:` directive (found by {@link codeFenceEnd}), and a literal `{…}`
  * group. A `[` that does not open a link is an ordinary character, so an
  * unbalanced bracket no longer wedges the splitter and disables every later wrap
@@ -1122,6 +1182,12 @@ function splitTokens(s: string): string[] {
             }
         }
         if (brace === 0 && c === "[") {
+            const wk = wikiLinkEnd(s, i);
+            if (wk !== null) {
+                cur += s.slice(i, wk);
+                i = wk;
+                continue;
+            }
             const lk = scanLink(s, i);
             if (lk !== null) {
                 cur += s.slice(i, lk.end);

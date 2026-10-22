@@ -914,6 +914,57 @@ describe("put mediaGroup", () => {
     });
 });
 
+describe("put mediaInline", () => {
+    const data = `{ "adf": { "type": "doc", "content": [
+       { "type": "paragraph", "attrs": { "localId": "p" }, "content": [
+          { "type": "text", "text": "see " },
+          { "type": "mediaInline", "attrs": {
+            "id": "F1", "collection": "contentId-7", "localId": "L1" } },
+          { "type": "text", "text": " here" } ] } ] } }`;
+    const assets = { L1: "../_docket-media/F1-L1-Spec v2.pdf" };
+    const media = (adf: ADF): Node | undefined =>
+        adf.doc.content?.[0]?.content?.[1];
+
+    it("renders the attachment as a titled wiki link", () => {
+        const base = newADF(data);
+
+        const have = renderBody(base, assets);
+
+        expect(have).toBe("see [[F1-L1-Spec v2.pdf|Spec v2.pdf]] here");
+    });
+
+    it("an unchanged link round-trips (GetPut)", () => {
+        const base = newADF(data);
+        const body = renderBody(base, assets);
+
+        const have = put(base, body, null, assets, null);
+
+        expect(json(have)).toBe(json(base));
+    });
+
+    it("editing the paragraph keeps the id, collection and localId", () => {
+        const base = newADF(data);
+        const body = renderBody(base, assets).replace("see", "read");
+
+        const have = put(base, body, null, assets, null);
+
+        expect(media(have)).toEqual(media(base));
+        expect(texts(have).join("")).toContain("read ");
+    });
+
+    it("moving the link within the paragraph keeps its attributes", () => {
+        const base = newADF(data);
+        const body = renderBody(base, assets).replace(
+            "see [[F1-L1-Spec v2.pdf|Spec v2.pdf]] here",
+            "[[F1-L1-Spec v2.pdf|Spec v2.pdf]] see here",
+        );
+
+        const have = put(base, body, null, assets, null);
+
+        expect(have.doc.content?.[0]?.content?.[0]).toEqual(media(base));
+    });
+});
+
 describe("put captioned mediaSingle", () => {
     const data = `{ "adf": { "type": "doc", "content": [
        { "type": "mediaSingle", "attrs": { "layout": "center" }, "content": [
