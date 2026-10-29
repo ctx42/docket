@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: MIT
 
 // The settings tab's MCP server section: this device's switch for the doc
-// server, the shared config path, and the URL read from that config. DOM
+// server, the shared config path, and the URL read from that config — reread
+// whenever a server start settles, since a start may write the config. DOM
 // glue; the config read is ../mcp/config.ts.
 
 import { NodeDocFs } from "@docket/docserver-node";
 import { Setting, type TextComponent } from "obsidian";
 import { readMcpConfig } from "../mcp/config.ts";
+import { rereadsConfig } from "../mcp/status.ts";
 import { type Debounced, debounce } from "./debounce.ts";
 import { type SettingsCtx, vaultBasePath } from "./fields.ts";
 import { VaultPathSuggest } from "./suggest.ts";
@@ -18,6 +20,8 @@ export class McpSection {
     private reads = 0;
     /** refreshSoon rereads the server config once typing pauses. */
     private readonly refreshSoon: Debounced<[]>;
+    /** unwatch stops following the server's state; set while drawn. */
+    private unwatch: (() => void) | null = null;
 
     constructor(
         private readonly ctx: SettingsCtx,
@@ -79,11 +83,19 @@ export class McpSection {
             this.url = { setting: urlSetting, text: t };
         });
         void this.refresh();
+        this.unwatch?.();
+        let prev = plugin.mcp.state;
+        this.unwatch = plugin.mcp.subscribe((next) => {
+            if (rereadsConfig(prev, next)) void this.refresh();
+            prev = next;
+        });
     }
 
-    /** cancel drops a pending config reread. */
+    /** cancel drops a pending config reread and stops following the server. */
     cancel(): void {
         this.refreshSoon.cancel();
+        this.unwatch?.();
+        this.unwatch = null;
     }
 
     /**

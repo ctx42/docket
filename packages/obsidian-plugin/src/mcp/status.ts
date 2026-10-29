@@ -126,3 +126,15 @@ export function restartsOnConfig(c: ConfigChange): boolean {
     if (c.running) return true;
     return c.enabled && (c.state.kind === "error" || c.served === undefined);
 }
+
+/**
+ * rereadsConfig reports whether the settings' URL must reread the config
+ * after the server went from `prev` to `next`: a start that settled, which
+ * may have written a starter config or a new port.
+ */
+export function rereadsConfig(prev: McpState, next: McpState): boolean {
+    return (
+        prev.kind !== next.kind &&
+        (next.kind === "listening" || next.kind === "error")
+    );
+}

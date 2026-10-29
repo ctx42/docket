@@ -4,7 +4,8 @@
 // The plugin's doc server: an McpHost running `docket mcp`'s server over the
 // vault, started once the workspace layout is ready when this device has it
 // switched on, stopped on unload and on switch-off, restarted when the
-// config path changes. Vault create/modify/delete/rename events drive the
+// config path changes. A vault without its default config gets a starter one
+// (starter.ts). Vault create/modify/delete/rename events drive the
 // server's rebuild loops in place of `fs.watch`. A run that fails (a config
 // error, a port in use) shows a Notice and leaves the error state for the
 // status display; it never throws into Obsidian. Every log line, and a
@@ -13,6 +14,7 @@
 // glue; the state machine and event filtering are in host.ts and
 // vault-notifier.ts.
 
+import { syncFolder } from "@docket/core";
 import { FsNotifier, NodeDocFs, run } from "@docket/docserver-node";
 import {
     FileSystemAdapter,
@@ -26,6 +28,7 @@ import { configDiskPath, configPath, readMcpConfig } from "./config.ts";
 import { McpHost, type McpState, type RunRequest } from "./host.ts";
 import { McpLog } from "./log.ts";
 import { type Assigned, assignPort, NODE_PORT_DEPS } from "./port.ts";
+import { ensureConfig } from "./starter.ts";
 import { listeningUrl, restartsOnConfig } from "./status.ts";
 import { type VaultEventKind, VaultWatchers } from "./vault-notifier.ts";
 
@@ -33,7 +36,7 @@ import { type VaultEventKind, VaultWatchers } from "./vault-notifier.ts";
 export interface McpPlugin extends Plugin {
     /** mcpEnabled is this device's switch. */
     mcpEnabled: boolean;
-    settings: { mcpConfigPath: string };
+    settings: { mcpConfigPath: string; syncRoot: string };
 }
 
 /** McpController runs the plugin's doc server; see the module comment. */
@@ -158,7 +161,8 @@ export class McpController {
     }
 
     /**
-     * run serves the configured project until the request aborts, on the
+     * run serves the configured project until the request aborts — first
+     * writing a starter config when the default one is missing — on the
      * port {@link assignPort} settles: the note's own when free, else a
      * free one written back to the note and its `.mcp.json`.
      */
@@ -168,7 +172,22 @@ export class McpController {
         if (base === "") {
             throw new Error("the vault has no folder on disk to serve from");
         }
-        const config = configDiskPath(base, this.plugin.settings.mcpConfigPath);
+        const { mcpConfigPath, syncRoot } = this.plugin.settings;
+        const config = configDiskPath(base, mcpConfigPath);
+        if (
+            await ensureConfig(
+                NODE_PORT_DEPS,
+                config,
+                mcpConfigPath,
+                syncFolder(syncRoot),
+            )
+        ) {
+            req.stderr.write(`created ${config}\n`);
+            new Notice(
+                "docket: created project-config.md for the MCP server; it " +
+                    "serves the sync folder.",
+            );
+        }
         const assigned = await assignPort(NODE_PORT_DEPS, config);
         if (assigned?.written) this.moved(assigned, req);
         if (req.signal.aborted) return;

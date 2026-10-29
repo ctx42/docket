@@ -13,6 +13,7 @@ import {
     listenPort,
     type McpCommand,
     panelLine,
+    rereadsConfig,
     restartsOnConfig,
     shown,
 } from "../../src/mcp/status.ts";
@@ -176,5 +177,19 @@ describe("restartsOnConfig", () => {
 
         // --- Then ---
         expect(have).toBe(want);
+    });
+});
+
+describe("rereadsConfig", () => {
+    it("rereads once a start settles, when it may have written the config", () => {
+        expect(rereadsConfig(STARTING, LISTENING)).toBe(true);
+        expect(rereadsConfig(STARTING, FAILED)).toBe(true);
+        expect(rereadsConfig(STOPPED, LISTENING)).toBe(true);
+    });
+
+    it("skips a change that writes nothing", () => {
+        expect(rereadsConfig(STOPPED, STARTING)).toBe(false);
+        expect(rereadsConfig(LISTENING, STOPPED)).toBe(false);
+        expect(rereadsConfig(LISTENING, LISTENING)).toBe(false);
     });
 });
