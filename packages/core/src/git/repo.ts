@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The vault's git repository, driven through the {@link GitExec} port. Local
-// operations only: there is no push, pull, fetch, remote, branch, or credential
-// handling here, and no sync code path calls into this module — pull and push
-// leave their file changes for the user to commit.
+// A vault's git repository, driven through the {@link GitExec} port. Beyond
+// local operations it pulls (rebasing, with an autostash) and pushes the
+// current branch against its upstream; there is no remote, branch, or
+// credential handling here, and no sync code path calls into this module —
+// docket's pull and push leave their file changes for the user to commit.
 //
 // A commit takes whole working-tree files and leaves the rest of the index
 // alone. `git commit --only` would do that for tracked paths, but it refuses an
@@ -68,6 +69,31 @@ export type RepoState =
     | { kind: "no-git"; path: string }
     /** git ran but failed for another reason (e.g. an unsafe directory). */
     | { kind: "error"; message: string };
+
+/** PullResult is how a {@link GitRepo.pull} that did not fail ended. */
+export type PullResult =
+    | { kind: "pulled" }
+    /**
+     * The rebase conflicted and was aborted: HEAD and the working tree are as
+     * before. `message` is git's; `files` conflicted.
+     */
+    | { kind: "conflict"; message: string; files: string[] }
+    /**
+     * The pull landed, but re-applying the local changes conflicted: they stay
+     * in the stash, and `files` hold conflict markers.
+     */
+    | { kind: "stash-conflict"; files: string[] };
+
+/** AheadBehind counts the commits on each side of the upstream. */
+export interface AheadBehind {
+    /** Local commits the upstream lacks. */
+    ahead: number;
+    /** Upstream commits the local branch lacks. */
+    behind: number;
+}
+
+/** REMOTE_ENV makes git fail rather than wait for a terminal prompt. */
+const REMOTE_ENV = { GIT_TERMINAL_PROMPT: "0" };
 
 /** LogQuery selects a page of history: newest first, optionally one file's. */
 export interface LogQuery {
@@ -259,6 +285,73 @@ export class GitRepo {
         await this.ok(["reset", "-q", ...fromFile], {
             input: [...adds, ...removes].join("\0"),
         });
+    }
+
+    /**
+     * pull runs `git pull --rebase --autostash`. A rebase that conflicts is
+     * aborted ({@link PullResult}); any other failure throws {@link GitError}
+     * with git's message.
+     */
+    async pull(): Promise<PullResult> {
+        const args = ["pull", "--rebase", "--autostash"];
+        const out = await this.run(args, { env: REMOTE_ENV });
+        // A stopped rebase always exits non-zero and leaves REBASE_HEAD.
+        const rebasing =
+            out.code !== 0 &&
+            (await this.run(["rev-parse", "-q", "--verify", "REBASE_HEAD"]))
+                .code === 0;
+        if (rebasing) {
+            const files = await this.unmerged();
+            await this.ok(["rebase", "--abort"]);
+            return {
+                kind: "conflict",
+                message: new GitError(args, out).message,
+                files,
+            };
+        }
+        if (out.code !== 0) throw new GitError(args, out);
+        const files = await this.unmerged();
+        return files.length > 0
+            ? { kind: "stash-conflict", files }
+            : { kind: "pulled" };
+    }
+
+    /** push runs `git push`; a rejected push throws {@link GitError}. */
+    async push(): Promise<void> {
+        await this.ok(["push"], { env: REMOTE_ENV });
+    }
+
+    /**
+     * aheadBehind counts the commits between HEAD and its upstream as last
+     * fetched, or null without an upstream (or a first commit).
+     */
+    async aheadBehind(): Promise<AheadBehind | null> {
+        const out = await this.run([
+            "rev-list",
+            "--left-right",
+            "--count",
+            "HEAD...@{upstream}",
+        ]);
+        if (out.code !== 0) return null;
+        const [ahead = 0, behind = 0] = out.stdout
+            .trim()
+            .split(/\s+/)
+            .map(Number);
+        return { ahead, behind };
+    }
+
+    /** unmerged lists the files with unresolved conflicts, as vault paths. */
+    private async unmerged(): Promise<string[]> {
+        const out = await this.ok([
+            "diff",
+            "--name-only",
+            "-z",
+            "--diff-filter=U",
+        ]);
+        return out
+            .split("\0")
+            .filter((p) => p !== "")
+            .map((p) => this.vault(p));
     }
 
     /**

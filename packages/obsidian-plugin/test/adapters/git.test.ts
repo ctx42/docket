@@ -277,3 +277,145 @@ describe("NodeGitExec", () => {
         );
     });
 });
+
+describe.skipIf(!hasGit)("GitRepo pull and push against a bare remote", () => {
+    let base = "";
+    let local = "";
+    let other = "";
+    let repo: GitRepo;
+    const env = {
+        ...process.env,
+        GIT_AUTHOR_NAME: "t",
+        GIT_AUTHOR_EMAIL: "t@example.com",
+        GIT_COMMITTER_NAME: "t",
+        GIT_COMMITTER_EMAIL: "t@example.com",
+    };
+    const git = (cwd: string, ...args: string[]): string =>
+        execFileSync("git", ["-c", "commit.gpgsign=false", ...args], {
+            cwd,
+            encoding: "utf8",
+            env,
+            stdio: ["ignore", "pipe", "pipe"],
+        });
+    const head = (cwd: string): string => git(cwd, "rev-parse", "HEAD").trim();
+    /** change commits `text` into `path` in clone `cwd`, pushing with `push`. */
+    const change = async (
+        cwd: string,
+        path: string,
+        text: string,
+        push = false,
+    ): Promise<void> => {
+        await writeFile(join(cwd, path), text);
+        git(cwd, "add", "-A");
+        git(cwd, "commit", "-qm", `${path}: ${text.trim()}`);
+        if (push) git(cwd, "push", "-q");
+    };
+
+    beforeEach(async () => {
+        base = await mkdtemp(join(tmpdir(), "docket-remote-"));
+        git(base, "init", "-q", "--bare", "-b", "main", "remote.git");
+        git(base, "clone", "-q", "remote.git", "local");
+        local = join(base, "local");
+        // The rebase GitRepo runs commits as this clone's configured identity.
+        git(local, "config", "user.name", "t");
+        git(local, "config", "user.email", "t@example.com");
+        git(local, "config", "commit.gpgsign", "false");
+        git(local, "checkout", "-q", "-b", "main");
+        await change(local, "a.md", "base\n");
+        await change(local, "b.md", "base\n");
+        git(local, "push", "-q", "-u", "origin", "main");
+        git(base, "clone", "-q", "remote.git", "other");
+        other = join(base, "other");
+        repo = new GitRepo(
+            new NodeGitExec(() => "", local),
+            new NodeFileSystem(),
+        );
+    });
+    afterEach(async () => {
+        await rm(base, { recursive: true, force: true });
+    });
+
+    it("pulls cleanly, keeping local edits", async () => {
+        await change(other, "a.md", "remote\n", true);
+        await writeFile(join(local, "b.md"), "local edit\n");
+
+        const have = await repo.pull();
+
+        expect(have).toEqual({ kind: "pulled" });
+        expect(await readFile(join(local, "a.md"), "utf8")).toBe("remote\n");
+        expect(await readFile(join(local, "b.md"), "utf8")).toBe(
+            "local edit\n",
+        );
+        expect(head(local)).toBe(head(other));
+    });
+
+    it("aborts a rebase conflict, leaving HEAD and the working tree as before", async () => {
+        await change(other, "a.md", "remote\n", true);
+        await change(local, "a.md", "local\n");
+        await writeFile(join(local, "b.md"), "dirty\n");
+        await writeFile(join(local, "new.md"), "untracked\n");
+        const before = head(local);
+        const status = git(local, "status", "--porcelain");
+
+        const have = await repo.pull();
+
+        expect(have.kind).toBe("conflict");
+        if (have.kind !== "conflict") return;
+        expect(have.files).toEqual(["a.md"]);
+        expect(have.message).not.toBe("");
+        expect(head(local)).toBe(before);
+        expect(git(local, "status", "--porcelain")).toBe(status);
+        expect(await readFile(join(local, "a.md"), "utf8")).toBe("local\n");
+        expect(await readFile(join(local, "b.md"), "utf8")).toBe("dirty\n");
+        expect(git(local, "stash", "list")).toBe("");
+    });
+
+    it("keeps the pull and the stash when re-applying local edits conflicts", async () => {
+        await change(other, "a.md", "remote\n", true);
+        await writeFile(join(local, "a.md"), "local edit\n");
+
+        const have = await repo.pull();
+
+        expect(have).toEqual({ kind: "stash-conflict", files: ["a.md"] });
+        expect(head(local)).toBe(head(other));
+        expect(git(local, "stash", "list")).toContain("autostash");
+    });
+
+    it("pushes, and counts ahead and behind as rev-list does", async () => {
+        await change(local, "a.md", "one\n");
+        await change(local, "a.md", "two\n");
+        await change(other, "b.md", "remote\n", true);
+        git(local, "fetch", "-q");
+        const want = git(
+            local,
+            "rev-list",
+            "--left-right",
+            "--count",
+            "HEAD...@{upstream}",
+        )
+            .trim()
+            .split(/\s+/)
+            .map(Number);
+
+        expect(await repo.aheadBehind()).toEqual({
+            ahead: want[0],
+            behind: want[1],
+        });
+        expect(want).toEqual([2, 1]);
+
+        await expect(repo.push()).rejects.toThrow(/rejected|fetch first/);
+        expect(await repo.pull()).toEqual({ kind: "pulled" });
+        await repo.push();
+
+        expect(await repo.aheadBehind()).toEqual({ ahead: 0, behind: 0 });
+        expect(git(other, "ls-remote", "origin", "main").split("\t")[0]).toBe(
+            head(local),
+        );
+    });
+
+    it("has no counts without an upstream", async () => {
+        git(local, "checkout", "-q", "-b", "solo");
+
+        expect(await repo.aheadBehind()).toBeNull();
+    });
+});

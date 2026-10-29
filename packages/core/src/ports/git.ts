@@ -3,8 +3,7 @@
 
 // The system `git` binary as a port. The core builds every git command line
 // (see `git/repo.ts`); a host adapter only spawns the binary in the repository
-// directory and hands back what it printed. Local operations only — nothing in
-// the core ever asks for push, pull, fetch, or remote.
+// directory and hands back what it printed.
 
 /** GitOutput is one finished git invocation. */
 export interface GitOutput {

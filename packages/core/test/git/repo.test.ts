@@ -382,3 +382,106 @@ describe("GitRepo with a prefix", () => {
         );
     });
 });
+
+describe("GitRepo.pull", () => {
+    it("rebases onto the upstream with an autostash and no prompts", async () => {
+        const git = new StubGitExec();
+
+        expect(await new GitRepo(git).pull()).toEqual({ kind: "pulled" });
+        expect(git.calls[0]?.cmd).toBe("pull --rebase --autostash");
+        expect(git.calls[0]?.options?.env).toEqual({
+            GIT_TERMINAL_PROMPT: "0",
+        });
+    });
+
+    it("aborts a rebase that conflicts and names the files", async () => {
+        const git = new StubGitExec()
+            .on("pull", {
+                code: 1,
+                stdout: "CONFLICT (content): Merge conflict in a.md\n",
+                stderr: "error: could not apply c39074a... l2\n",
+            })
+            .on("rev-parse -q --verify REBASE_HEAD", { stdout: "c39\n" })
+            .on("diff --name-only -z --diff-filter=U", { stdout: "a.md\0" });
+
+        const have = await new GitRepo(git).pull();
+
+        expect(have).toEqual({
+            kind: "conflict",
+            message: "could not apply c39074a... l2",
+            files: ["a.md"],
+        });
+        expect(git.cmds()).toContain("rebase --abort");
+    });
+
+    it("keeps the pull when the autostash conflicts", async () => {
+        const git = new StubGitExec()
+            .on("rev-parse -q --verify REBASE_HEAD", { code: 1 })
+            .on("diff --name-only -z --diff-filter=U", { stdout: "a.md\0" });
+
+        const have = await new GitRepo(git, undefined, "v").pull();
+
+        expect(have).toEqual({ kind: "stash-conflict", files: ["v/a.md"] });
+        expect(git.cmds()).not.toContain("rebase --abort");
+    });
+
+    it("throws git's message for any other failure", async () => {
+        const git = new StubGitExec()
+            .on("pull", {
+                code: 1,
+                stderr: "fatal: no tracking information for the current branch\n",
+            })
+            .on("rev-parse -q --verify REBASE_HEAD", { code: 1 });
+
+        await expect(new GitRepo(git).pull()).rejects.toThrow(
+            "no tracking information for the current branch",
+        );
+    });
+});
+
+describe("GitRepo.push", () => {
+    it("pushes without prompts", async () => {
+        const git = new StubGitExec();
+
+        await new GitRepo(git).push();
+
+        expect(git.cmds()).toEqual(["push"]);
+        expect(git.calls[0]?.options?.env).toEqual({
+            GIT_TERMINAL_PROMPT: "0",
+        });
+    });
+
+    it("throws git's message on a rejected push", async () => {
+        const git = new StubGitExec().on("push", {
+            code: 1,
+            stderr: "error: failed to push some refs to 'origin'\n",
+        });
+
+        await expect(new GitRepo(git).push()).rejects.toThrow(
+            "failed to push some refs to 'origin'",
+        );
+    });
+});
+
+describe("GitRepo.aheadBehind", () => {
+    it("counts the commits on each side of the upstream", async () => {
+        const git = new StubGitExec().on("rev-list", { stdout: "2\t3\n" });
+
+        expect(await new GitRepo(git).aheadBehind()).toEqual({
+            ahead: 2,
+            behind: 3,
+        });
+        expect(git.cmds()).toEqual([
+            "rev-list --left-right --count HEAD...@{upstream}",
+        ]);
+    });
+
+    it("is null without an upstream", async () => {
+        const git = new StubGitExec().on("rev-list", {
+            code: 128,
+            stderr: "fatal: no upstream configured for branch 'main'\n",
+        });
+
+        expect(await new GitRepo(git).aheadBehind()).toBeNull();
+    });
+});
