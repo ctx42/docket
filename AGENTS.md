@@ -119,6 +119,17 @@ locations: `_assets/` (shared images), `.adf_cache/` (cached `.vN.json` ADF +
 - **Live tests** (`*.live.test.ts`) hit a real Confluence Site. They are
   excluded from the default suite and run **only** via the CLI package's
   `test:live` script, manually and sequentially — never automatically.
+- **Live test asserts** — assert that nodes and marks survive with stable ids,
+  never the seeded values: Confluence adds attrs to a status, rounds dates to
+  UTC midnight, and rewrites mention text from the account id. Cover the
+  re-pull (merge) path too, not only a pull into a fresh directory.
+- **New config keys** — forward each one through every surface: CLI
+  `config-load.ts`, core `config/settings.ts` (the plugin's `data.json`), the
+  plugin's settings tab, and `settings/portable.ts` (`.docket.yaml`
+  import/export). A key missing from one surface is silently off there.
+- **Obsidian 1.12** — the plugin declares `minAppVersion` 1.12.0 but compiles
+  against 1.13 types. Never use 1.13-only APIs such as the declarative settings
+  API (`getSettingDefinitions`); they break plugin enable on 1.12.
 - **Never `git checkout` a file to undo an edit** — it wipes uncommitted work.
 - Plans, specs, and process files go in the gitignored `./tmp/`; `./docs/` is
   only for in-depth project documentation.
