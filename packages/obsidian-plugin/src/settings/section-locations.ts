@@ -7,7 +7,7 @@
 // portable.ts.
 
 import { homedir } from "node:os";
-import { posixDir } from "@docket/core";
+import { posixDir, syncFolder } from "@docket/core";
 import { Notice, parseYaml, Setting, setIcon, stringifyYaml } from "obsidian";
 import { confirmModal } from "../ui/confirm.ts";
 import { confirmOverwrite, promptVaultPath } from "./dialogs.ts";
@@ -34,8 +34,7 @@ import {
     resolvePortablePath,
     toPortableConfig,
 } from "./portable.ts";
-import { VaultPathSuggest } from "./suggest.ts";
-import { errorMessage } from "./tab-model.ts";
+import { errorMessage, syncFolderDesc } from "./tab-model.ts";
 import { readPath, statPath, writePath } from "./vault-io.ts";
 
 /** KIND_ICON is each location kind's icon in the list. */
@@ -69,25 +68,14 @@ export class LocationsSection {
                     .onClick(() => void this.edit(null)),
             );
 
+        // Read-only: moving the synced pages is a manual job (syncFolderDesc).
         new Setting(el)
             .setName("Sync folder")
-            .setDesc(
-                "The vault folder every location below is relative to. Empty syncs into the whole vault.",
-            )
+            .setDesc(syncFolderDesc(s.syncRoot))
             .addText((t) => {
-                t.setPlaceholder("(vault root)")
-                    .setValue(s.syncRoot)
-                    .onChange((v) =>
-                        this.ctx.commitScalar(() => {
-                            s.syncRoot = v.trim();
-                        }),
-                    );
-                new VaultPathSuggest(
-                    this.ctx.app,
-                    t.inputEl,
-                    "folders",
-                    () => "",
-                );
+                t.setPlaceholder("(not set)")
+                    .setValue(syncFolder(s.syncRoot))
+                    .setDisabled(true);
             });
 
         this.listEl = el.createDiv({ cls: "docket-locations" });

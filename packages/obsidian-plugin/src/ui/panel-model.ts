@@ -7,23 +7,34 @@
 // its note, and whether a log follows its newest line. It is obsidian-free, so
 // it unit-tests; the panel modules (view.ts, sync-*.ts, mcp-tab.ts) draw it.
 
-import type { RemoteBody } from "@docket/core";
+import { type RemoteBody, syncFolder } from "@docket/core";
 import type { docketSettings } from "../settings/model.ts";
 import type { NoteAction } from "./note-actions.ts";
 import type { ChangeGroupId } from "./review.ts";
+
+/**
+ * SetupAction is what a setup step's button does: open the settings, create
+ * the sync folder, add a location, or nothing (the step has no button).
+ */
+export type SetupAction = "settings" | "folder" | "location" | "none";
 
 /** SetupStep is the first-run step the Sync tab shows instead of its sections. */
 export interface SetupStep {
     icon: string;
     text: string;
+    /** The button's text; `""` with no button. */
     cta: string;
-    /** Whether the button adds a location rather than opening the settings. */
-    addLocation: boolean;
+    action: SetupAction;
 }
 
+/** SYNC_FOLDER_SUGGESTION is the sync folder name the setup step suggests. */
+export const SYNC_FOLDER_SUGGESTION = "confluence";
+
 /**
- * setupStep returns the first-run step still open — connect, then add a
- * location — or null once the vault is connected and has a location.
+ * setupStep returns the first-run step still open — connect, choose the sync
+ * folder, then add a location — or null once all three are done. A vault that
+ * already syncs pages without a sync folder gets no folder choice: docket
+ * never moves files, so the pages must be moved by hand.
  */
 export function setupStep(s: docketSettings, token: string): SetupStep | null {
     if (s.site === "" || s.account === "" || token === "") {
@@ -31,19 +42,35 @@ export function setupStep(s: docketSettings, token: string): SetupStep | null {
             icon: "plug",
             text: "Connect docket to your Confluence site to start syncing pages.",
             cta: "Connect to Confluence",
-            addLocation: false,
+            action: "settings",
         };
     }
     const count =
         Object.keys(s.pages).length +
         Object.keys(s.folders).length +
         Object.keys(s.spaces).length;
+    if (syncFolder(s.syncRoot) === "") {
+        if (count > 0) {
+            return {
+                icon: "alert-triangle",
+                text: 'This vault syncs pages but has no sync folder, so docket does not pull or push. Move the synced pages by hand into one top-level folder, set "syncRoot" in the plugin\'s data.json to it, and reload the plugin.',
+                cta: "",
+                action: "none",
+            };
+        }
+        return {
+            icon: "folder-plus",
+            text: "Choose the top-level folder docket syncs Confluence pages into. Docket keeps it in its own git repository, apart from your notes.",
+            cta: "Create folder",
+            action: "folder",
+        };
+    }
     if (count === 0) {
         return {
             icon: "file-plus",
             text: "Choose the Confluence pages, folders, or spaces to sync into this vault.",
             cta: "Add a location",
-            addLocation: true,
+            action: "location",
         };
     }
     return null;

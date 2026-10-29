@@ -44,14 +44,16 @@ class FakePlugin {
         },
     };
 
-    readonly git = {
-        textAt: (hash: string, path: string): Promise<string> => {
-            this.reads++;
-            const text = this.texts.get(`${hash}:${path}`);
-            return text === undefined
-                ? Promise.reject(new Error("bad revision"))
-                : Promise.resolve(text);
-        },
+    readonly repos = {
+        forPath: () => ({
+            textAt: (hash: string, path: string): Promise<string> => {
+                this.reads++;
+                const text = this.texts.get(`${hash}:${path}`);
+                return text === undefined
+                    ? Promise.reject(new Error("bad revision"))
+                    : Promise.resolve(text);
+            },
+        }),
     };
 
     registerEvent(): void {}

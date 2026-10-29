@@ -6,8 +6,12 @@
 // check (sync-changes.ts) and the last run (sync-run.ts). DOM shell; the logic
 // is note-state.ts, review.ts, summary.ts and panel-model.ts.
 
-import { hasConflictMarkers, posixClean } from "@docket/core";
-import { Menu, setIcon, type TFile } from "obsidian";
+import {
+    hasConflictMarkers,
+    posixClean,
+    syncFolderProblem,
+} from "@docket/core";
+import { Menu, Notice, setIcon, type TFile } from "obsidian";
 import type docketPlugin from "../main.ts";
 import { confluenceTitles, editLocation } from "../settings/location-modal.ts";
 import { putLocation } from "../settings/locations.ts";
@@ -15,7 +19,13 @@ import { addNoteItems, frontmatter, runNoteAction } from "./menus.ts";
 import { type NoteAction, noteLink } from "./note-actions.ts";
 import { type NoteStateKind, noteState } from "./note-state.ts";
 import { toDest } from "./operations.ts";
-import { cardButtons, cardDetail, setupStep } from "./panel-model.ts";
+import {
+    cardButtons,
+    cardDetail,
+    type SetupStep,
+    SYNC_FOLDER_SUGGESTION,
+    setupStep,
+} from "./panel-model.ts";
 import { ChangesList } from "./sync-changes.ts";
 import { RunLog } from "./sync-run.ts";
 
@@ -56,6 +66,10 @@ export class SyncTab {
     showIgnored = false;
     private readonly changes: ChangesList;
     private readonly runLog: RunLog;
+    /** The sync folder name typed into the setup step, kept across renders. */
+    private folderDraft = SYNC_FOLDER_SUGGESTION;
+    /** Whether the setup step is creating the folder and repositories. */
+    private creating = false;
     /** Conflict-marker checks per note path, keyed by the mtime they read. */
     private readonly conflicts = new Map<
         string,
@@ -128,8 +142,9 @@ export class SyncTab {
     }
 
     /**
-     * renderSetup draws the first-run state — connect, then add a location —
-     * and reports whether it did, in which case no other sync section is drawn.
+     * renderSetup draws the first-run state — connect, choose the sync folder,
+     * then add a location — and reports whether it did, in which case no other
+     * sync section is drawn.
      */
     private renderSetup(root: HTMLElement): boolean {
         const step = setupStep(this.plugin.settings, this.plugin.token);
@@ -137,14 +152,73 @@ export class SyncTab {
         const empty = root.createDiv({ cls: "docket-empty" });
         setIcon(empty.createDiv({ cls: "docket-empty-icon" }), step.icon);
         empty.createDiv({ cls: "docket-empty-text", text: step.text });
+        if (step.action === "folder") {
+            this.renderFolderStep(empty, step);
+            return true;
+        }
+        if (step.action === "none") return true;
         const btn = empty.createEl("button", {
             cls: "mod-cta",
             text: step.cta,
         });
-        btn.onclick = step.addLocation
-            ? () => void this.addLocation()
-            : () => this.plugin.openSettings();
+        btn.onclick =
+            step.action === "location"
+                ? () => void this.addLocation()
+                : () => this.plugin.openSettings();
         return true;
+    }
+
+    /**
+     * renderFolderStep draws the sync folder's name box, what is wrong with
+     * the name, and the button creating the folder and its repositories.
+     */
+    private renderFolderStep(parent: HTMLElement, step: SetupStep): void {
+        const input = parent.createEl("input", {
+            type: "text",
+            cls: "docket-setup-folder",
+            attr: { "aria-label": "Sync folder", spellcheck: "false" },
+        });
+        input.value = this.folderDraft;
+        const problem = parent.createDiv({ cls: "docket-setup-problem" });
+        const btn = parent.createEl("button", {
+            cls: "mod-cta",
+            text: step.cta,
+        });
+        const check = (): void => {
+            const why = syncFolderProblem(input.value);
+            problem.setText(why);
+            btn.disabled = this.creating || why !== "";
+        };
+        input.oninput = () => {
+            this.folderDraft = input.value;
+            check();
+        };
+        input.onkeydown = (e) => {
+            if (e.key === "Enter" && !btn.disabled) btn.click();
+        };
+        btn.onclick = () => void this.createFolder(input.value.trim());
+        check();
+    }
+
+    /**
+     * createFolder saves `name` as the sync folder, then creates it and, when
+     * git is found, the vault and sync repositories (see `GitRepos.setupSync`).
+     */
+    private async createFolder(name: string): Promise<void> {
+        if (this.creating || syncFolderProblem(name) !== "") return;
+        this.creating = true;
+        this.host.rerender();
+        try {
+            this.plugin.settings = { ...this.plugin.settings, syncRoot: name };
+            await this.plugin.persistSettings();
+            await this.plugin.repos.setupSync();
+        } catch (err) {
+            new Notice(
+                `docket: creating the sync folder failed: ${err instanceof Error ? err.message : String(err)}`,
+            );
+        }
+        this.creating = false;
+        this.host.rerender();
     }
 
     /** addLocation opens the add-location dialog and saves what it returns. */

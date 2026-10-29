@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT
 
 // This device's commit-message history: the messages it committed, most recent
-// first, offered again in the Git tab. Pure, so it carries no Obsidian import;
+// first, kept per repository and offered again in that repository's Git tab. Pure, so it carries no Obsidian import;
 // settings/store.ts persists it.
+
+/** RepoId names one of the vault's two repositories (see repos.ts). */
+export type RepoId = "vault" | "sync";
 
 /** HISTORY_CAP is how many messages a device keeps unless told otherwise. */
 export const HISTORY_CAP = 20;

@@ -97,7 +97,9 @@ export class BarBaseFeature {
         const hit = this.cached;
         if (hit?.hash === c.hash && hit.path === c.path) return hit.text;
         try {
-            const text = await this.plugin.git.textAt(c.hash, c.path);
+            const text = await this.plugin.repos
+                .forPath(c.path)
+                .textAt(c.hash, c.path);
             this.cached = { hash: c.hash, path: c.path, text };
             return text;
         } catch {

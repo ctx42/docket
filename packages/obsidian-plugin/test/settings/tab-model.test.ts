@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
     connectedAs,
     errorMessage,
+    syncFolderDesc,
     validation,
     wholeNumber,
 } from "../../src/settings/tab-model.ts";
@@ -60,6 +61,20 @@ describe("connectedAs", () => {
         );
         expect(connectedAs({ displayName: "", accountId: "u1" })).toBe(
             "Connected as u1",
+        );
+    });
+});
+
+describe("syncFolderDesc", () => {
+    it("names the manual steps to change a set sync folder", () => {
+        expect(syncFolderDesc("confluence")).toBe(
+            'The vault folder every location below is relative to, kept in its own git repository. It cannot be changed here. To change it: disable the docket plugin, edit "syncRoot" in its data.json, and move the folder by hand.',
+        );
+    });
+
+    it("points an unset one to the setup step", () => {
+        expect(syncFolderDesc("")).toBe(
+            "Not set yet. Choose it in the docket panel's Sync tab.",
         );
     });
 });

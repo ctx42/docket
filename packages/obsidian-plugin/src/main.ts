@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { hostname } from "node:os";
-import { PACKAGE_NAME, posixJoin } from "@docket/core";
+import { PACKAGE_NAME, posixJoin, syncFolder } from "@docket/core";
 import {
     addIcon,
     FileSystemAdapter,
@@ -16,9 +16,14 @@ import {
 } from "obsidian";
 
 import { loadDeviceToken, writePointer, writeToken } from "./device-state.ts";
-import { GitController } from "./git/controller.ts";
-import { capHistory, HISTORY_CAP, recordMessage } from "./git/history.ts";
+import {
+    capHistory,
+    HISTORY_CAP,
+    type RepoId,
+    recordMessage,
+} from "./git/history.ts";
 import { addIgnoreItem } from "./git/ignore-menu.ts";
+import { openRepos } from "./git/open-repos.ts";
 import { SignsFeature } from "./git/signs/feature.ts";
 import { ICON_ID, ICON_SVG } from "./icon.ts";
 import { McpController } from "./mcp/controller.ts";
@@ -102,23 +107,23 @@ export default class docketPlugin extends Plugin {
     gitPath = "";
     /** Whether this device shows the editor change bars (see setDiffSigns). */
     diffSigns = true;
-    /** This device's committed messages, most recent first. */
-    commitHistory: string[] = [];
+    /** This device's committed messages per repository, most recent first. */
+    commitHistory: Record<RepoId, string[]> = { vault: [], sync: [] };
     /** How many commit messages this device keeps (see setHistoryCap). */
     historyCap = HISTORY_CAP;
     /** Whether this device runs the MCP doc server (see setMcpEnabled). */
     mcpEnabled = false;
     /** The MCP doc server this device runs. */
     readonly mcp = new McpController(this);
-    /** The vault repository: change list, commits, history. */
-    readonly git = new GitController(
-        this.app,
-        () => this.gitPath,
-        (m) => this.recordCommitMessage(m),
-    );
+    /** The vault and sync repositories: change lists, commits, history. */
+    readonly repos = openRepos(this.app, {
+        gitPath: () => this.gitPath,
+        syncFolder: () => syncFolder(this.settings.syncRoot),
+        record: (repo, m) => this.recordCommitMessage(repo, m),
+    });
     /** What the change bars compare against: HEAD, Confluence, or a commit. */
     readonly barBase = new BarBaseFeature(this);
-    private readonly signs = new SignsFeature(this, this.git, (path, doc) =>
+    private readonly signs = new SignsFeature(this, this.repos, (path, doc) =>
         this.barBase.base(path, doc),
     );
 
@@ -131,10 +136,13 @@ export default class docketPlugin extends Plugin {
         this.gitPath = loadGitPath(this);
         this.diffSigns = loadDiffSigns(this);
         this.historyCap = loadHistoryCap(this);
-        this.commitHistory = capHistory(
-            loadCommitHistory(this),
-            this.historyCap,
-        );
+        this.commitHistory = {
+            vault: capHistory(
+                loadCommitHistory(this, "vault"),
+                this.historyCap,
+            ),
+            sync: capHistory(loadCommitHistory(this, "sync"), this.historyCap),
+        };
         this.mcpEnabled = loadMcpEnabled(this);
 
         this.addSettingTab(new docketSettingTab(this.app, this));
@@ -176,7 +184,7 @@ export default class docketPlugin extends Plugin {
 
     override onunload(): void {
         this.mcp.unload();
-        this.git.dispose();
+        this.repos.dispose();
         document.body.removeClass(HIDE_PROPS_CLASS);
         console.log("docket: unloaded");
     }
@@ -254,22 +262,22 @@ export default class docketPlugin extends Plugin {
 
     /**
      * setGitPath changes this device's git binary path; the next git command
-     * uses it, and the repository state is re-read now.
+     * uses it, and both repositories' states are re-read now.
      */
     setGitPath(path: string): void {
         this.gitPath = path.trim();
         saveGitPath(this, this.gitPath);
-        void this.git.refresh();
+        void this.repos.refresh();
     }
 
-    /** recordCommitMessage puts a committed message first in the history. */
-    recordCommitMessage(message: string): void {
-        this.commitHistory = recordMessage(
-            this.commitHistory,
+    /** recordCommitMessage puts a message first in `repo`'s history. */
+    recordCommitMessage(repo: RepoId, message: string): void {
+        this.commitHistory[repo] = recordMessage(
+            this.commitHistory[repo],
             message,
             this.historyCap,
         );
-        saveCommitHistory(this, this.commitHistory);
+        saveCommitHistory(this, repo, this.commitHistory[repo]);
     }
 
     /**
@@ -279,8 +287,13 @@ export default class docketPlugin extends Plugin {
     setHistoryCap(cap: number): void {
         this.historyCap = cap;
         saveHistoryCap(this, cap);
-        this.commitHistory = capHistory(this.commitHistory, cap);
-        saveCommitHistory(this, this.commitHistory);
+        for (const repo of ["vault", "sync"] as const) {
+            this.commitHistory[repo] = capHistory(
+                this.commitHistory[repo],
+                cap,
+            );
+            saveCommitHistory(this, repo, this.commitHistory[repo]);
+        }
     }
 
     /** setMcpEnabled switches the MCP doc server on or off on this device. */
@@ -303,26 +316,33 @@ export default class docketPlugin extends Plugin {
     }
 
     /**
-     * watchGit wires the change list's refresh triggers: vault events (once the
-     * vault has loaded, debounced by the controller) and a sync run finishing —
-     * pull and push never commit, so their file changes simply show up.
+     * watchGit wires the change lists' refresh triggers: vault events (once the
+     * vault has loaded, debounced by the controller owning the path) and a sync
+     * run finishing, which refreshes the sync repository — pull and push never
+     * commit, so their file changes simply show up there.
      */
     private watchGit(): void {
         this.app.workspace.onLayoutReady(() => {
             const vault = this.app.vault;
-            const changed = () => this.git.changed();
+            const changed = (file: TAbstractFile) =>
+                this.repos.forPath(file.path).changed();
             this.registerEvent(vault.on("modify", changed));
             this.registerEvent(vault.on("create", changed));
             this.registerEvent(vault.on("delete", changed));
-            this.registerEvent(vault.on("rename", changed));
-            void this.git.refresh();
+            this.registerEvent(
+                vault.on("rename", (file, old) => {
+                    changed(file);
+                    this.repos.forPath(old).changed();
+                }),
+            );
+            void this.repos.refresh();
         });
         let busy = this.controller.busy;
         this.register(
             this.controller.subscribe(() => {
                 const was = busy;
                 busy = this.controller.busy;
-                if (was && !busy) void this.git.refresh();
+                if (was && !busy) void this.repos.sync.refresh();
             }),
         );
     }

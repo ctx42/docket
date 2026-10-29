@@ -6,6 +6,7 @@
 // connection test's result line. It is obsidian-free, so it unit-tests; the
 // section modules draw it.
 
+import { syncFolder } from "@docket/core";
 import { errorDest } from "./locations.ts";
 import { buildPluginConfig, type docketSettings } from "./model.ts";
 
@@ -39,6 +40,22 @@ export function validation(s: docketSettings, token: string): Validation {
         return { message, dest: errorDest(message) };
     }
     return { message: "", dest: "" };
+}
+
+/**
+ * syncFolderDesc describes the read-only Sync folder field: how to change a
+ * set folder by hand, or where to choose an unset one.
+ */
+export function syncFolderDesc(syncRoot: string): string {
+    if (syncFolder(syncRoot) === "") {
+        return "Not set yet. Choose it in the docket panel's Sync tab.";
+    }
+    return (
+        "The vault folder every location below is relative to, kept in its " +
+        "own git repository. It cannot be changed here. To change it: " +
+        'disable the docket plugin, edit "syncRoot" in its data.json, and ' +
+        "move the folder by hand."
+    );
 }
 
 /** connectedAs is the connection test's success line for the signed-in user. */

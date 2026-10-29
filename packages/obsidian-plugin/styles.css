@@ -227,6 +227,18 @@
     height: var(--icon-xl);
     color: var(--text-faint);
 }
+.docket-setup-folder {
+    width: 100%;
+    max-width: 16em;
+    text-align: center;
+}
+.docket-setup-problem {
+    color: var(--text-error);
+    font-size: var(--font-ui-smaller);
+}
+.docket-setup-problem:empty {
+    display: none;
+}
 
 /* This-note card. */
 .docket-card {
@@ -671,7 +683,8 @@ div.docket-review-row .docket-review-main {
     pointer-events: none;
 }
 
-/* Git tab: one commit form over a flat change list. */
+/* Git tab: a Vault | Confluence switch (styled as the History toggle) and one
+   commit form over a flat change list. */
 .docket-git-guard {
     align-items: center;
 }

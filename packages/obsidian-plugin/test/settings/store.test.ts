@@ -125,19 +125,19 @@ describe("commit message history", () => {
     it("reads none and the default cap on a fresh device", () => {
         const plugin = fakePlugin();
 
-        expect(loadCommitHistory(plugin)).toEqual([]);
+        expect(loadCommitHistory(plugin, "vault")).toEqual([]);
         expect(loadHistoryCap(plugin)).toBe(20);
     });
 
     it("round-trips the messages and the cap", () => {
         const plugin = fakePlugin();
 
-        saveCommitHistory(plugin, ["b", "a"]);
+        saveCommitHistory(plugin, "vault", ["b", "a"]);
         saveHistoryCap(plugin, 5);
 
-        expect(loadCommitHistory(plugin)).toEqual(["b", "a"]);
+        expect(loadCommitHistory(plugin, "vault")).toEqual(["b", "a"]);
         expect(loadHistoryCap(plugin)).toBe(5);
-        saveCommitHistory(plugin, []);
+        saveCommitHistory(plugin, "vault", []);
         saveHistoryCap(plugin, 20);
         expect(plugin.app.loadLocalStorage(COMMIT_HISTORY_KEY)).toBeNull();
         expect(plugin.app.loadLocalStorage(HISTORY_CAP_KEY)).toBeNull();
@@ -148,10 +148,23 @@ describe("commit message history", () => {
         plugin.app.saveLocalStorage(COMMIT_HISTORY_KEY, ["a", 1, null, "b"]);
         plugin.app.saveLocalStorage(HISTORY_CAP_KEY, "101");
 
-        expect(loadCommitHistory(plugin)).toEqual(["a", "b"]);
+        expect(loadCommitHistory(plugin, "vault")).toEqual(["a", "b"]);
         expect(loadHistoryCap(plugin)).toBe(20);
         plugin.app.saveLocalStorage(COMMIT_HISTORY_KEY, "a");
-        expect(loadCommitHistory(plugin)).toEqual([]);
+        expect(loadCommitHistory(plugin, "vault")).toEqual([]);
+    });
+
+    it("keeps each repository's messages apart", () => {
+        const plugin = fakePlugin();
+
+        saveCommitHistory(plugin, "vault", ["kb: a"]);
+        saveCommitHistory(plugin, "sync", ["docs: b"]);
+
+        expect(loadCommitHistory(plugin, "vault")).toEqual(["kb: a"]);
+        expect(loadCommitHistory(plugin, "sync")).toEqual(["docs: b"]);
+        expect(plugin.app.loadLocalStorage(COMMIT_HISTORY_KEY)).toEqual([
+            "kb: a",
+        ]);
     });
 });
 

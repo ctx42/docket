@@ -43,8 +43,8 @@ const TABS: [PanelTab, string, string][] = [
 
 export class docketView extends ItemView {
     private unsubscribe: (() => void) | null = null;
-    private unsubscribeGit: (() => void) | null = null;
-    private unsubscribeCommit: (() => void) | null = null;
+    /** Unsubscribers from both repositories' changes and commits. */
+    private unsubscribeGit: (() => void)[] = [];
     private unsubscribeMcp: (() => void) | null = null;
     private unsubscribeMcpLog: (() => void) | null = null;
     private tab: PanelTab = "sync";
@@ -97,7 +97,8 @@ export class docketView extends ItemView {
     showTab(tab: PanelTab): void {
         if (tab === this.tab || !this.tabShown(tab)) return;
         this.tab = tab;
-        if (tab === "git" || tab === "history") void this.plugin.git.refresh();
+        if (tab === "git" || tab === "history")
+            void this.plugin.repos.refresh();
         if (tab === "history") this.historyTab.invalidate();
         this.app.workspace.requestSaveLayout();
         this.render();
@@ -118,14 +119,16 @@ export class docketView extends ItemView {
         this.contentEl.addClass("docket-panel");
 
         this.unsubscribe = c.subscribe(() => this.schedule());
-        this.unsubscribeGit = this.plugin.git.subscribe(() => this.schedule());
+        this.unsubscribeGit = this.plugin.repos
+            .all()
+            .flatMap((git) => [
+                git.subscribe(() => this.schedule()),
+                git.onCommitted(() => this.historyTab.invalidate()),
+            ]);
         this.unsubscribeMcp = this.plugin.mcp.subscribe(() => this.schedule());
         this.unsubscribeMcpLog = this.plugin.mcp.log.subscribe(() => {
             if (this.tab === "mcp") this.schedule();
         });
-        this.unsubscribeCommit = this.plugin.git.onCommitted(() =>
-            this.historyTab.invalidate(),
-        );
         const ws = this.app.workspace;
         // Clicking into the panel activates its own leaf; the active note is
         // unchanged then, so only another leaf needs a render.
@@ -174,10 +177,8 @@ export class docketView extends ItemView {
     override async onClose(): Promise<void> {
         this.unsubscribe?.();
         this.unsubscribe = null;
-        this.unsubscribeGit?.();
-        this.unsubscribeGit = null;
-        this.unsubscribeCommit?.();
-        this.unsubscribeCommit = null;
+        for (const fn of this.unsubscribeGit) fn();
+        this.unsubscribeGit = [];
         this.unsubscribeMcp?.();
         this.unsubscribeMcp = null;
         this.unsubscribeMcpLog?.();

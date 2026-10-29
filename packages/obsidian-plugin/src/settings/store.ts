@@ -14,7 +14,7 @@ import {
     SETTINGS_SCHEMA_VERSION,
 } from "@docket/core";
 import type { Plugin } from "obsidian";
-import { HISTORY_CAP, parseHistoryCap } from "../git/history.ts";
+import { HISTORY_CAP, parseHistoryCap, type RepoId } from "../git/history.ts";
 
 /** TOKEN_KEY is the per-vault localStorage key the API token is stored under. */
 export const TOKEN_KEY = "docket-token";
@@ -121,23 +121,40 @@ export function saveMcpEnabled(plugin: Plugin, on: boolean): void {
     plugin.app.saveLocalStorage(MCP_ENABLED_KEY, on ? "1" : null);
 }
 
-/** COMMIT_HISTORY_KEY is the localStorage key of this device's commit messages. */
+/**
+ * COMMIT_HISTORY_KEY is the localStorage key of this device's vault-repository
+ * commit messages; the sync repository's key adds {@link SYNC_HISTORY_SUFFIX}.
+ */
 export const COMMIT_HISTORY_KEY = "docket-commit-history";
 
+/** SYNC_HISTORY_SUFFIX ends the sync repository's commit-message key. */
+const SYNC_HISTORY_SUFFIX = "-sync";
+
+/** historyKey is the localStorage key of a repository's commit messages. */
+function historyKey(repo: RepoId): string {
+    return repo === "vault"
+        ? COMMIT_HISTORY_KEY
+        : COMMIT_HISTORY_KEY + SYNC_HISTORY_SUFFIX;
+}
+
 /**
- * loadCommitHistory reads this device's committed messages, most recent first;
- * anything other than a list of strings reads as none.
+ * loadCommitHistory reads this device's messages committed to `repo`, most
+ * recent first; anything other than a list of strings reads as none.
  */
-export function loadCommitHistory(plugin: Plugin): string[] {
-    const value: unknown = plugin.app.loadLocalStorage(COMMIT_HISTORY_KEY);
+export function loadCommitHistory(plugin: Plugin, repo: RepoId): string[] {
+    const value: unknown = plugin.app.loadLocalStorage(historyKey(repo));
     if (!Array.isArray(value)) return [];
     return value.filter((m): m is string => typeof m === "string");
 }
 
-/** saveCommitHistory records this device's commit messages; none clears it. */
-export function saveCommitHistory(plugin: Plugin, list: string[]): void {
+/** saveCommitHistory records this device's messages for `repo`; none clears it. */
+export function saveCommitHistory(
+    plugin: Plugin,
+    repo: RepoId,
+    list: string[],
+): void {
     plugin.app.saveLocalStorage(
-        COMMIT_HISTORY_KEY,
+        historyKey(repo),
         list.length === 0 ? null : list,
     );
 }

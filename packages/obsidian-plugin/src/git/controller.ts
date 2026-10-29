@@ -1,40 +1,71 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The plugin's git controller: it owns the vault repository's state, the change
-// list, and every git operation, so the Git and History tabs, the context menu,
-// and the editor change bars share one view of the repository. `git status` is
-// the change list's only source; vault events, the panel opening, a finished
-// sync run, and a finished git operation merely trigger a refresh. Operations
-// run one at a time, so a refresh never races a commit for the index lock.
-// Obsidian glue; the logic lives in core's `git/` modules.
+// The plugin's git controller: it owns one repository's state, its change list,
+// and every git operation on it, so the Git and History tabs, the context menu,
+// and the editor change bars share one view of the repository. The repository
+// is rooted in a vault folder — the vault root, or the sync folder (see
+// repos.ts) — and the controller speaks vault paths only. `git status` is the
+// change list's only source; vault events, the panel opening, a finished sync
+// run, and a finished git operation merely trigger a refresh. Operations run
+// one at a time, so a refresh never races a commit for the index lock. The
+// Obsidian side is injected (see {@link ControllerDeps}); the logic lives in
+// core's `git/` modules.
 
 import {
+    DEFAULT_IGNORES,
     defaultIgnoreBlock,
     type GitChange,
-    GitRepo,
+    type GitRepo,
     type LogEntry,
     type LogQuery,
     type RepoState,
 } from "@docket/core";
-import { type App, FileSystemAdapter, Notice } from "obsidian";
-import { NodeFileSystem } from "../adapters/fs-node.ts";
-import { NodeGitExec } from "../adapters/git.ts";
 
 /** REFRESH_DEBOUNCE_MS coalesces a burst of vault events into one status. */
 export const REFRESH_DEBOUNCE_MS = 1000;
 
-/** GITIGNORE is the vault-root ignore file docket keeps its block in. */
+/** GITIGNORE is the repository-root ignore file docket keeps its block in. */
 export const GITIGNORE = ".gitignore";
 
 /** RepoView is the controller's state, or `unavailable` without a disk vault. */
 export type RepoView =
     | RepoState
+    /** No folder is set, or the set one does not exist. */
+    | { kind: "no-folder" }
     | { kind: "unavailable" }
     | { kind: "unknown" };
 
+/** VaultFiles is the vault file access a controller needs, by vault path. */
+export interface VaultFiles {
+    /** isFolder reports whether a folder exists at `path`. */
+    isFolder(path: string): Promise<boolean>;
+    /** read returns a file's text, or null when it does not exist. */
+    read(path: string): Promise<string | null>;
+    write(path: string, text: string): Promise<void>;
+}
+
+/** ControllerDeps is what a {@link GitController} is built from. */
+export interface ControllerDeps {
+    /**
+     * root returns the repository folder's vault path, `""` for the vault
+     * root, or null when no folder is set; read on every refresh.
+     */
+    root: () => string | null;
+    /** open returns the repository rooted at a vault folder; absent without a disk vault. */
+    open?: (root: string) => GitRepo;
+    files: VaultFiles;
+    /** notify shows a failure to the user. */
+    notify: (text: string) => void;
+    /** record keeps each successfully committed message. */
+    record: (message: string) => void;
+    /** The entries a newly written ignore block starts with. */
+    ignores?: readonly string[];
+}
+
 export class GitController {
-    private readonly repo: GitRepo | null;
+    /** The repository last opened, and the root it was opened at. */
+    private opened: { root: string; repo: GitRepo } | null = null;
     private repoState: RepoView = { kind: "unknown" };
     private changeList: GitChange[] = [];
     private refreshError = "";
@@ -46,24 +77,18 @@ export class GitController {
     private chain: Promise<unknown> = Promise.resolve();
     private timer: number | null = null;
 
-    /**
-     * `gitPath` returns this device's git path setting, read on every call;
-     * `record` keeps each successfully committed message.
-     */
-    constructor(
-        private readonly app: App,
-        gitPath: () => string,
-        private readonly record: (message: string) => void,
-    ) {
-        const adapter = app.vault.adapter;
-        this.repo =
-            adapter instanceof FileSystemAdapter
-                ? new GitRepo(
-                      new NodeGitExec(gitPath, adapter.getBasePath()),
-                      new NodeFileSystem(),
-                  )
-                : null;
-        if (this.repo === null) this.repoState = { kind: "unavailable" };
+    constructor(private readonly deps: ControllerDeps) {
+        if (deps.open === undefined) this.repoState = { kind: "unavailable" };
+    }
+
+    /** ignores are the entries a newly written ignore block starts with. */
+    get ignores(): readonly string[] {
+        return this.deps.ignores ?? DEFAULT_IGNORES;
+    }
+
+    /** root is the repository folder's vault path, or null when none is set. */
+    get root(): string | null {
+        return this.deps.root();
     }
 
     /**
@@ -146,12 +171,19 @@ export class GitController {
 
     /** load is {@link refresh}'s body, run inside the queue. */
     private async load(): Promise<void> {
-        const repo = this.repo;
-        if (repo === null) return;
+        if (this.deps.open === undefined) return;
         try {
+            const repo = await this.current();
+            if (repo === null) {
+                this.repoState = { kind: "no-folder" };
+                this.changeList = [];
+                this.refreshError = "";
+                this.emit();
+                return;
+            }
             this.repoState = await repo.state();
-            this.changeList =
-                this.repoState.kind === "ready" ? await repo.status() : [];
+            const ready = this.repoState.kind === "ready";
+            this.changeList = ready ? await repo.status() : [];
             this.refreshError = "";
         } catch (err) {
             this.refreshError = message(err);
@@ -163,7 +195,9 @@ export class GitController {
     async initialize(): Promise<void> {
         await this.operate(async (repo) => {
             await repo.init();
-            await this.writeIgnore(defaultIgnoreBlock(await this.readIgnore()));
+            await this.writeIgnore(
+                defaultIgnoreBlock(await this.readIgnore(), this.ignores),
+            );
         });
     }
 
@@ -182,7 +216,7 @@ export class GitController {
                 return;
             }
             this.lastCommitError = "";
-            this.record(msg);
+            this.deps.record(msg);
             made = true;
         });
         if (made) for (const fn of this.committed) fn();
@@ -215,8 +249,7 @@ export class GitController {
 
     /** baseText is the text a note's change bars compare against. */
     baseText(path: string): Promise<string | undefined> {
-        if (this.repo === null || !this.ready)
-            return Promise.resolve(undefined);
+        if (!this.ready) return Promise.resolve(undefined);
         return this.queue(() => this.need().baseText(path));
     }
 
@@ -231,7 +264,7 @@ export class GitController {
      */
     private async operate(op: (repo: GitRepo) => Promise<void>): Promise<void> {
         if (this.busyFlag) {
-            new Notice("docket: wait for the git operation to finish");
+            this.deps.notify("docket: wait for the git operation to finish");
             return;
         }
         this.busyFlag = true;
@@ -239,7 +272,7 @@ export class GitController {
         try {
             await this.queue(() => op(this.need()));
         } catch (err) {
-            new Notice(`docket: ${message(err)}`);
+            this.deps.notify(`docket: ${message(err)}`);
         }
         this.busyFlag = false;
         await this.refresh();
@@ -252,19 +285,49 @@ export class GitController {
         return run;
     }
 
-    /** need returns the repository, throwing for a vault without a disk path. */
+    /**
+     * current returns the repository at the folder's present root, or null
+     * when no folder is set or it does not exist: git cannot run there.
+     */
+    private async current(): Promise<GitRepo | null> {
+        const root = this.deps.root();
+        if (root === null) return null;
+        if (root !== "" && !(await this.deps.files.isFolder(root))) {
+            return null;
+        }
+        return this.repoAt(root);
+    }
+
+    /** repoAt returns the repository rooted at `root`, reopened on a change. */
+    private repoAt(root: string): GitRepo {
+        const open = this.deps.open;
+        if (open === undefined) throw new Error("git needs a vault on disk");
+        if (this.opened?.root !== root) {
+            this.opened = { root, repo: open(root) };
+        }
+        return this.opened.repo;
+    }
+
+    /** need returns the repository, throwing when git cannot run in it. */
     private need(): GitRepo {
-        if (this.repo === null) throw new Error("git needs a vault on disk");
-        return this.repo;
+        const root = this.deps.root();
+        if (root === null)
+            throw new Error("no folder is set for this repository");
+        return this.repoAt(root);
+    }
+
+    /** ignoreFile is the vault path of the repository's `.gitignore`. */
+    private ignoreFile(): string {
+        const root = this.deps.root() ?? "";
+        return root === "" ? GITIGNORE : `${root}/${GITIGNORE}`;
     }
 
     private async readIgnore(): Promise<string> {
-        const a = this.app.vault.adapter;
-        return (await a.exists(GITIGNORE)) ? a.read(GITIGNORE) : "";
+        return (await this.deps.files.read(this.ignoreFile())) ?? "";
     }
 
     private async writeIgnore(text: string): Promise<void> {
-        await this.app.vault.adapter.write(GITIGNORE, text);
+        await this.deps.files.write(this.ignoreFile(), text);
     }
 
     private emit(): void {

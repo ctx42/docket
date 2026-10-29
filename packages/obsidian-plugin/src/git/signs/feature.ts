@@ -7,16 +7,18 @@
 //
 // The change bars' Obsidian side: it registers the editor extensions (toggled
 // by a per-device setting, without a reload) and feeds every open editor its
-// note's HEAD text — or, for a note in Confluence mode or with a commit picked
+// note's HEAD text in the repository owning the note — or, for a note in Confluence mode or with a commit picked
 // in History, the base the {@link BaseOverride} supplies. Where obsidian-git keeps a pub-sub of editors
 // per path, a view plugin here records each live editor, and a refresh reads
 // each one's current path. Refreshes run on opening a note, a rename, a docket
-// commit, and every 10 s for the active note (a commit made outside docket).
+// commit or a state change in the note's repository, and every 10 s for the
+// active note (a commit made outside docket).
 
 import type { Extension } from "@codemirror/state";
 import { type EditorView, ViewPlugin } from "@codemirror/view";
 import { editorInfoField, type Plugin } from "obsidian";
 import type { GitController } from "../controller.ts";
+import type { GitRepos } from "../repos.ts";
 import { type BaseSource, HEAD, sameSource } from "./base.ts";
 import { gutterExtensions } from "./gutter.ts";
 import {
@@ -57,7 +59,7 @@ export class SignsFeature {
 
     constructor(
         private readonly plugin: Plugin,
-        private readonly git: GitController,
+        private readonly repos: GitRepos,
         private readonly override: BaseOverride = () => Promise.resolve(null),
     ) {}
 
@@ -69,15 +71,17 @@ export class SignsFeature {
         p.registerEvent(ws.on("file-open", () => this.refreshAll()));
         p.registerEvent(ws.on("active-leaf-change", () => this.refreshAll()));
         p.registerEvent(p.app.vault.on("rename", () => this.refreshAll()));
-        p.register(this.git.onCommitted(() => this.refreshAll()));
-        let kind = this.git.state.kind;
-        p.register(
-            this.git.watch(() => {
-                if (this.git.state.kind === kind) return;
-                kind = this.git.state.kind;
-                this.refreshAll();
-            }),
-        );
+        for (const git of this.repos.all()) {
+            p.register(git.onCommitted(() => this.refreshIn(git)));
+            let kind = git.state.kind;
+            p.register(
+                git.watch(() => {
+                    if (git.state.kind === kind) return;
+                    kind = git.state.kind;
+                    this.refreshIn(git);
+                }),
+            );
+        }
         p.registerInterval(
             window.setInterval(() => this.refreshActive(), INTERVAL_MS),
         );
@@ -112,6 +116,17 @@ export class SignsFeature {
         for (const view of this.editors) void this.refresh(view);
     }
 
+    /** refreshIn re-reads the HEAD text of every open note `git` owns. */
+    private refreshIn(git: GitController): void {
+        if (!this.enabled) return;
+        for (const view of this.editors) {
+            const path = pathOf(view);
+            if (path !== undefined && this.repos.forPath(path) === git) {
+                void this.refresh(view);
+            }
+        }
+    }
+
     /** refreshActive re-reads the HEAD text of the active editor's note. */
     private refreshActive(): void {
         if (!this.enabled) return;
@@ -135,7 +150,7 @@ export class SignsFeature {
             base = over.text;
         } else {
             try {
-                base = await this.git.baseText(path);
+                base = await this.repos.forPath(path).baseText(path);
             } catch {
                 base = undefined;
             }

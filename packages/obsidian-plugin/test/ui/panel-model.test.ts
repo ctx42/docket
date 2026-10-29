@@ -12,6 +12,7 @@ import {
     followsEnd,
     logLink,
     progressPercent,
+    SYNC_FOLDER_SUGGESTION,
     setupStep,
 } from "../../src/ui/panel-model.ts";
 
@@ -21,27 +22,51 @@ describe("setupStep", () => {
         site: "ex",
         account: "a@ex.com",
     };
+    const withFolder = { ...connected, syncRoot: "confluence" };
 
     it("asks to connect while the site, account or token is missing", () => {
         expect(setupStep(DEFAULT_SETTINGS, "t")?.cta).toBe(
             "Connect to Confluence",
         );
-        expect(setupStep(connected, "")?.addLocation).toBe(false);
+        expect(setupStep(connected, "")?.action).toBe("settings");
     });
 
-    it("asks for a location once connected", () => {
+    it("asks for the sync folder once connected", () => {
         const have = setupStep(connected, "t");
+
+        expect(have).toEqual({
+            icon: "folder-plus",
+            text: "Choose the top-level folder docket syncs Confluence pages into. Docket keeps it in its own git repository, apart from your notes.",
+            cta: "Create folder",
+            action: "folder",
+        });
+        expect(SYNC_FOLDER_SUGGESTION).toBe("confluence");
+    });
+
+    it("refuses to guess a sync folder for a vault that already syncs pages", () => {
+        const s = { ...connected, pages: { "a.md": "/wiki/x/1" } };
+
+        expect(setupStep(s, "t")).toEqual({
+            icon: "alert-triangle",
+            text: 'This vault syncs pages but has no sync folder, so docket does not pull or push. Move the synced pages by hand into one top-level folder, set "syncRoot" in the plugin\'s data.json to it, and reload the plugin.',
+            cta: "",
+            action: "none",
+        });
+    });
+
+    it("asks for a location once the sync folder is set", () => {
+        const have = setupStep(withFolder, "t");
 
         expect(have).toEqual({
             icon: "file-plus",
             text: "Choose the Confluence pages, folders, or spaces to sync into this vault.",
             cta: "Add a location",
-            addLocation: true,
+            action: "location",
         });
     });
 
     it("is done once a location exists", () => {
-        const s = { ...connected, spaces: { team: "/wiki/spaces/T" } };
+        const s = { ...withFolder, spaces: { team: "/wiki/spaces/T" } };
 
         expect(setupStep(s, "t")).toBeNull();
     });
