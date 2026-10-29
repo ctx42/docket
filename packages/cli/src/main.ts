@@ -16,6 +16,7 @@ import process from "node:process";
 import type { Readable, Writable } from "node:stream";
 import { type ParseArgsOptionsConfig, parseArgs } from "node:util";
 import {
+    assertSyncFolder,
     type Clock,
     type Config,
     ConfluenceClient,
@@ -230,6 +231,7 @@ async function runConfigCommand(
         const vault = await findVault(ctx.fs, cwd);
         if (vault !== null) {
             const vc = await loadVaultMode(ctx, flags, cwd, vault);
+            if (writesPages(cmd, flags)) assertSyncFolder(vc.syncFolder);
             config = vc.config;
             dirs = runtimeDirs(config, vc.cacheDir);
         } else {
@@ -327,7 +329,7 @@ async function loadVaultMode(
     flags: ConfigFlags,
     cwd: string,
     vault: string,
-): Promise<{ config: Config; cacheDir: string }> {
+): Promise<{ config: Config; cacheDir: string; syncFolder: string }> {
     const conflict = (what: string): Error =>
         new Error(
             `${what} cannot be used inside an Obsidian vault (${vault}); the ` +
@@ -358,7 +360,31 @@ async function loadVaultMode(
     ctx.streams.stderr.write(
         `config: vault ${vault} (docket plugin, schema v${vc.schemaVersion})\n`,
     );
-    return { config: vc.config, cacheDir: vc.cacheDir };
+    return {
+        config: vc.config,
+        cacheDir: vc.cacheDir,
+        syncFolder: vc.syncFolder,
+    };
+}
+
+/**
+ * writesPages reports whether a command writes, moves, or deletes synced
+ * pages or their files — what a vault without a sync folder refuses. Status
+ * and a report-only gc still run.
+ */
+function writesPages(cmd: ConfigCommand, flags: ConfigFlags): boolean {
+    switch (cmd) {
+        case "pull":
+        case "push":
+        case "clean":
+            return true;
+        case "gc":
+            return flags.prune;
+        case "test":
+        case "publish":
+        case "status":
+            return false;
+    }
 }
 
 /** runCommand dispatches to the selected command's orchestration. */

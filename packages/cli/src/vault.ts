@@ -20,6 +20,7 @@ import {
     posixDir,
     posixJoin,
     SettingsVersionError,
+    syncFolder,
     TOKEN_FILE,
 } from "@docket/core";
 
@@ -44,6 +45,8 @@ export interface VaultConfig {
     schemaVersion: number;
     /** The plugin's out-of-vault cache home for this vault on this device. */
     cacheDir: string;
+    /** The sync folder's vault path, `""` when none is set (see core `syncFolder`). */
+    syncFolder: string;
     config: Config;
 }
 
@@ -109,6 +112,7 @@ export async function loadVaultConfig(
         vault,
         schemaVersion: settings.schemaVersion,
         cacheDir,
+        syncFolder: syncFolder(settings.syncRoot),
         config: buildPluginConfig({ ...settings, syncRoot }, token),
     };
 }

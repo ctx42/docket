@@ -9,6 +9,7 @@
 import {
     type Clock,
     formatPointer,
+    NO_SYNC_FOLDER,
     pointerPath,
     type Streams,
 } from "@docket/core";
@@ -224,6 +225,37 @@ describe("vault mode", () => {
         expect(have.code).toBe(EXIT_OK);
         expect(have.out).toBe("docket: everything up to date\n");
         expect(have.err).toBe("config: vault /v (docket plugin, schema v1)\n");
+    });
+
+    describe("without a sync folder", () => {
+        const noFolder = (): Promise<MemFS> =>
+            vaultFS({
+                data: {
+                    schemaVersion: 1,
+                    site: "ex",
+                    account: "me@ex.com",
+                    syncRoot: "",
+                    pages: {},
+                },
+            });
+
+        for (const argv of [["pull"], ["push"], ["clean"], ["gc", "--prune"]]) {
+            it(`refuses ${argv.join(" ")}`, async () => {
+                const have = await run(argv, await noFolder(), { cwd: VAULT });
+
+                expect(have.code).toBe(EXIT_ERR);
+                expect(have.err).toContain(`docket: ${NO_SYNC_FOLDER}`);
+            });
+        }
+
+        for (const argv of [["status"], ["gc"]]) {
+            it(`still runs ${argv.join(" ")}`, async () => {
+                const have = await run(argv, await noFolder(), { cwd: VAULT });
+
+                expect(have.err).not.toContain(NO_SYNC_FOLDER);
+                expect(have.code).toBe(EXIT_OK);
+            });
+        }
     });
 
     it("never creates an in-vault ADF cache", async () => {

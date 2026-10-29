@@ -386,8 +386,8 @@ Obsidian can be pushed from the terminal and the other way round.
 - **One source of config** — inside a vault, `--config`, `--env`, `--sync-root`,
   and a `.docket.yaml` in the working directory are errors. `DOCKET_*`
   variables and a default `.env` are ignored, with a warning naming them. The
-  sync root is the plugin's sync-root subfolder (or the vault), whichever
-  folder you run from.
+  sync root is the plugin's sync folder, whichever folder you run from.
+  Without one, `pull`, `push`, `clean`, and `gc --prune` refuse to run.
 - **Cache and token** — the plugin keeps its ADF cache, link index, and API
   token outside the vault, in the per-user cache directory, and records where in
   a per-device file under `.obsidian/plugins/ctx42-docket/devices/`. If that file is
