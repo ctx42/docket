@@ -13,6 +13,7 @@
 // core's `git/` modules.
 
 import {
+    type AheadBehind,
     DEFAULT_IGNORES,
     defaultIgnoreBlock,
     type GitChange,
@@ -35,6 +36,16 @@ export type RepoView =
     | { kind: "no-folder" }
     | { kind: "unavailable" }
     | { kind: "unknown" };
+
+/**
+ * RemoteOutcome is how the last pull or push went wrong: it failed with git's
+ * message, its rebase conflicted and was aborted, or re-applying the local
+ * changes after it conflicted (they stay in the stash).
+ */
+export type RemoteOutcome =
+    | { kind: "failed"; message: string }
+    | { kind: "conflict"; message: string; files: string[] }
+    | { kind: "stash-conflict"; files: string[] };
 
 /** VaultFiles is the vault file access a controller needs, by vault path. */
 export interface VaultFiles {
@@ -71,6 +82,8 @@ export class GitController {
     private refreshError = "";
     private busyFlag = false;
     private lastCommitError = "";
+    private lastRemote: RemoteOutcome | null = null;
+    private aheadBehind: AheadBehind | null = null;
     private readonly listeners = new Set<() => void>();
     private readonly watchers = new Set<() => void>();
     private readonly committed = new Set<() => void>();
@@ -135,7 +148,7 @@ export class GitController {
         return this.refreshError;
     }
 
-    /** busy reports whether a commit, ignore, or initialize is in flight. */
+    /** busy reports whether a git operation (commit, pull, push, ignore, initialize) is in flight. */
     get busy(): boolean {
         return this.busyFlag;
     }
@@ -143,6 +156,16 @@ export class GitController {
     /** commitError is the error the last commit failed with, or `""`. */
     get commitError(): string {
         return this.lastCommitError;
+    }
+
+    /** remote is how the last pull or push went wrong, or null. */
+    get remote(): RemoteOutcome | null {
+        return this.lastRemote;
+    }
+
+    /** counts are the commits ahead of and behind the upstream, or null. */
+    get counts(): AheadBehind | null {
+        return this.aheadBehind;
     }
 
     /**
@@ -177,6 +200,7 @@ export class GitController {
             if (repo === null) {
                 this.repoState = { kind: "no-folder" };
                 this.changeList = [];
+                this.aheadBehind = null;
                 this.refreshError = "";
                 this.emit();
                 return;
@@ -184,6 +208,7 @@ export class GitController {
             this.repoState = await repo.state();
             const ready = this.repoState.kind === "ready";
             this.changeList = ready ? await repo.status() : [];
+            this.aheadBehind = ready ? await repo.aheadBehind() : null;
             this.refreshError = "";
         } catch (err) {
             this.refreshError = message(err);
@@ -221,6 +246,33 @@ export class GitController {
         });
         if (made) for (const fn of this.committed) fn();
         return made;
+    }
+
+    /**
+     * pull rebases the branch onto its upstream, keeping local changes (see
+     * core `GitRepo.pull`), and records how it went in {@link remote}.
+     */
+    async pull(): Promise<void> {
+        await this.operate(async (repo) => {
+            try {
+                const r = await repo.pull();
+                this.lastRemote = r.kind === "pulled" ? null : r;
+            } catch (err) {
+                this.lastRemote = { kind: "failed", message: message(err) };
+            }
+        });
+    }
+
+    /** push pushes the branch to its upstream, recording a failure in {@link remote}. */
+    async push(): Promise<void> {
+        await this.operate(async (repo) => {
+            try {
+                await repo.push();
+                this.lastRemote = null;
+            } catch (err) {
+                this.lastRemote = { kind: "failed", message: message(err) };
+            }
+        });
     }
 
     /** trackedUnder lists the tracked files at or under a vault path. */

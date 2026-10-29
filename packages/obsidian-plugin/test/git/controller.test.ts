@@ -104,3 +104,68 @@ describe("GitController.refresh", () => {
         expect(c.state).toEqual({ kind: "unavailable" });
     });
 });
+
+describe("GitController remote operations", () => {
+    const ready = (): StubGitExec =>
+        new StubGitExec()
+            .on("rev-parse --show-prefix", { stdout: "\n" })
+            .on("rev-parse -q --verify REBASE_HEAD", { code: 1 })
+            .on("rev-list", { stdout: "1\t2\n" });
+
+    it("reads the ahead and behind counts on refresh", async () => {
+        const c = controller("", ready());
+
+        await c.refresh();
+
+        expect(c.counts).toEqual({ ahead: 1, behind: 2 });
+    });
+
+    it("records a pull's conflict and clears it after a clean pull", async () => {
+        const git = ready()
+            .on("pull", { code: 1, stderr: "error: could not apply x\n" })
+            .on("rev-parse -q --verify REBASE_HEAD", { stdout: "x\n" })
+            .on("diff --name-only -z --diff-filter=U", { stdout: "a.md\0" });
+        const c = controller("", git);
+
+        await c.pull();
+
+        expect(c.remote).toEqual({
+            kind: "conflict",
+            message: "could not apply x",
+            files: ["a.md"],
+        });
+
+        git.on("pull", { code: 0 }).on("rev-parse -q --verify REBASE_HEAD", {
+            code: 1,
+        });
+        git.on("diff --name-only -z --diff-filter=U", { stdout: "" });
+        await c.pull();
+
+        expect(c.remote).toBeNull();
+    });
+
+    it("records a failed push with git's message", async () => {
+        const git = ready().on("push", {
+            code: 1,
+            stderr: "error: failed to push some refs\n",
+        });
+        const c = controller("", git);
+
+        await c.push();
+
+        expect(c.remote).toEqual({
+            kind: "failed",
+            message: "failed to push some refs",
+        });
+    });
+
+    it("never commits", async () => {
+        const git = ready();
+        const c = controller("", git);
+
+        await c.pull();
+        await c.push();
+
+        expect(git.cmds().some((cmd) => cmd.startsWith("commit"))).toBe(false);
+    });
+});

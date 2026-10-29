@@ -4,10 +4,10 @@
 // The panel's Git tab: a Vault | Confluence switch between the vault's two
 // repositories (repos.ts), each with its own state message, change list,
 // unticked files, message draft, and commit form over a flat change list with
-// per-file checkboxes. The Vault side adds the obsidian-git guard banner.
-// Nothing commits on its own, and the tab never runs git itself — the
-// controllers do. DOM shell; the logic is core's `git/` modules, repos.ts,
-// history.ts, and guard.ts.
+// per-file checkboxes. The Vault side adds Pull and Push with the ahead and
+// behind counts, and the obsidian-git guard banner. Nothing commits on its
+// own, and the tab never runs git itself — the controllers do. DOM shell; the
+// logic is core's `git/` modules, repos.ts, history.ts, and guard.ts.
 
 import { type GitChange, KIND_TEXT, posixBase, posixDir } from "@docket/core";
 import { Notice, setIcon, TFile } from "obsidian";
@@ -130,6 +130,7 @@ export class GitTab {
         }
         if (this.repo === "vault") {
             this.renderGuard(root);
+            this.renderRemote(root);
         }
         this.renderChanges(root);
     }
@@ -153,6 +154,58 @@ export class GitTab {
                 this.repo = id;
                 this.rerender();
             };
+        }
+    }
+
+    /**
+     * renderRemote draws Pull and Push with the ahead and behind counts, and
+     * how the last of them went wrong.
+     */
+    private renderRemote(root: HTMLElement): void {
+        const git = this.git;
+        const row = root.createDiv({ cls: "docket-git-remote" });
+        const counts = git.counts;
+        const pull = row.createEl("button", {
+            text: counts === null ? "Pull" : `Pull (${counts.behind})`,
+            attr: { "aria-label": "Pull: git pull --rebase --autostash" },
+        });
+        pull.disabled = git.busy;
+        pull.onclick = () => void git.pull();
+        const push = row.createEl("button", {
+            text: counts === null ? "Push" : `Push (${counts.ahead})`,
+            attr: { "aria-label": "Push: git push" },
+        });
+        push.disabled = git.busy;
+        push.onclick = () => void git.push();
+        if (counts === null) {
+            row.createSpan({
+                cls: "docket-muted docket-git-count",
+                text: "No upstream branch",
+            });
+        }
+        const r = git.remote;
+        if (r === null) return;
+        const files = "files" in r ? r.files : [];
+        let text: string;
+        switch (r.kind) {
+            case "failed":
+                text = r.message;
+                break;
+            case "conflict":
+                text = `Pull stopped: its rebase conflicts, so nothing changed.\n${r.message}`;
+                break;
+            case "stash-conflict":
+                text =
+                    "Pulled, but your uncommitted changes conflict with it. " +
+                    "They are safe in the git stash; these files hold " +
+                    "conflict markers:";
+                break;
+        }
+        const box = root.createDiv({ cls: "docket-error docket-git-error" });
+        box.createDiv({ text });
+        if (files.length > 0) {
+            const list = box.createEl("ul");
+            for (const f of files) list.createEl("li", { text: f });
         }
     }
 

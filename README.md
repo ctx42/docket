@@ -254,6 +254,65 @@ pulled, so you commit only what you mean to. Progress and a per-note result log
 stream live in the panel. The same actions are available as commands (search
 "docket" in the palette) for hotkey binding.
 
+### Git and History tabs
+
+The plugin keeps the vault in **two git repositories**, so your own notes and
+the pages docket syncs never share a history:
+
+| Repository     | Root            | Holds                                      |
+|----------------|-----------------|--------------------------------------------|
+| **Vault**      | the vault       | your own notes; it ignores the sync folder |
+| **Confluence** | the sync folder | the pages docket pulls and pushes          |
+
+**First-run setup.** After you connect to Confluence, the Sync tab asks for the
+**sync folder**: one top-level folder (a name without `/`, `confluence` by
+default) that docket pulls pages into. When git is found, creating it also:
+
+- runs `git init` in the vault root, unless the vault is already a repository
+  (an existing one is used as it is);
+- runs `git init` in the sync folder and writes docket's ignore block there;
+- adds the sync folder to docket's block in the vault's `.gitignore`.
+
+A new vault block ignores everything in `.obsidian/` except docket's
+`data.json`, which holds the sync settings every device shares.
+
+Docket creates repositories only here and with the **Initialize repository**
+button on the Git tab, never on its own when the plugin loads. Once set, the
+sync folder cannot be changed in the settings. To change it, disable the
+plugin, edit `syncRoot` in its `data.json`, and move the folder by hand.
+
+**Git tab.** It has a **Vault** and a **Confluence** sub-tab. Each one shows its
+repository's state, its changed files (kind, name, folder), a message box with
+your recent messages for that repository, and a **Commit** button for the
+ticked files. Docket never commits on its own: a pull or a push only changes
+files, and you commit them when you choose. The Vault sub-tab also has **Pull**
+and **Push** buttons, with how many commits are behind and ahead of the
+upstream branch:
+
+- **Pull** runs `git pull --rebase --autostash`. If the rebase conflicts,
+  docket aborts it, so nothing changes, and shows git's message and the files
+  that conflict. If your uncommitted changes conflict with the pulled commits,
+  the pull stays, your changes stay safe in the git stash, and docket names the
+  files that now hold conflict markers.
+- **Push** runs `git push` and shows git's message if it fails.
+
+The Confluence repository is local only: it has no Pull or Push.
+
+**History tab.** Switch between **Note** (the open note's commits, from the
+repository that holds it, across renames), **Vault**, and **Confluence** (all
+commits of that repository). In Note mode, click a commit to compare the
+note's change bars with it.
+
+**Without git.** If docket cannot find git, setup creates only the sync folder,
+and pulling and pushing pages work as usual. Set the git path in the settings
+to use the Git tab later.
+
+**Without a sync folder.** Docket does not pull or push, in the plugin or the
+CLI, when no sync folder is set; `docket status` and `docket gc` (without
+`--prune`) still run. Docket never moves files to make one: for a vault that
+already holds synced pages, move them into one top-level folder by hand and
+set `syncRoot` in the plugin's `data.json`.
+
 ## CLI commands
 
 ```text

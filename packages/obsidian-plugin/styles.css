@@ -683,8 +683,17 @@ div.docket-review-row .docket-review-main {
     pointer-events: none;
 }
 
-/* Git tab: a Vault | Confluence switch (styled as the History toggle) and one
-   commit form over a flat change list. */
+/* Git tab: a Vault | Confluence switch (styled as the History toggle), Pull and
+   Push for the vault, and one commit form over a flat change list. */
+.docket-git-remote {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+}
+.docket-git-error ul {
+    margin: var(--size-4-1) 0 0;
+    padding-left: var(--size-4-5);
+}
 .docket-git-guard {
     align-items: center;
 }
