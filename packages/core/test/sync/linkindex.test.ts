@@ -20,7 +20,7 @@ import { MemFS } from "../support/memfs.ts";
 
 describe("pageURL", () => {
     it("builds a space page URL", () => {
-        expect(pageURL("RZ", "123")).toBe("/wiki/spaces/RZ/pages/123");
+        expect(pageURL("DOCS", "123")).toBe("/wiki/spaces/DOCS/pages/123");
     });
     it("falls back to an id-addressable URL without a space", () => {
         expect(pageURL("", "123")).toBe(
@@ -56,13 +56,13 @@ describe("buildLinkIndex", () => {
     it("canonicalizes a configured page's edit URL to its view URL", () => {
         const idx = buildLinkIndex(
             "/wd",
-            { "/wd/a.md": "/wiki/spaces/IFP/pages/edit-v2/2014412813" },
+            { "/wd/a.md": "/wiki/spaces/ENG/pages/edit-v2/1000000777" },
             [],
         );
-        expect(idx.byID.get("2014412813")?.url).toBe(
-            "/wiki/spaces/IFP/pages/2014412813",
+        expect(idx.byID.get("1000000777")?.url).toBe(
+            "/wiki/spaces/ENG/pages/1000000777",
         );
-        expect(idx.byID.get("2014412813")?.spaceKey).toBe("IFP");
+        expect(idx.byID.get("1000000777")?.spaceKey).toBe("ENG");
     });
 
     it("skips a configured page whose source is not a page", () => {

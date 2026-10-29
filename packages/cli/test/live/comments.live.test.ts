@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Live comment round-trips against the real Site (RZTST). A Confluence inline
+// Live comment round-trips against a real Site. A Confluence inline
 // comment is an `annotation` mark on the body that Confluence owns and uses as
 // the comment's anchor; these seed a page, attach a real inline/footer comment
 // via the v2 API, then drive the CLI: a pull must render the `[^cf-…]` anchor and

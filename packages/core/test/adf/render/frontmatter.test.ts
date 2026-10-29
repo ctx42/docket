@@ -36,12 +36,12 @@ describe("frontmatter", () => {
     it("renders the space key after the space id when set", () => {
         const data = `{
            "name": "docs/my-page.md", "title": "My Page",
-           "space_id": "42", "space_key": "RZTST",
+           "space_id": "42", "space_key": "TEST",
            "adf": { "type": "doc", "content": [] }
         }`;
         expect(render(data)).toBe(
             '---\ndocket_mode: pull\nid: ""\ntitle: "My Page"\ndocket_page_path: "docs/my-page.md"\n' +
-                'docket_page_id: ""\ndocket_page_version: 0\ndocket_space_id: "42"\ndocket_space_key: "RZTST"\n---\n',
+                'docket_page_id: ""\ndocket_page_version: 0\ndocket_space_id: "42"\ndocket_space_key: "TEST"\n---\n',
         );
     });
 
@@ -68,13 +68,13 @@ describe("frontmatter", () => {
     it("renders parent_id before space_key when both are set", () => {
         const data = `{
            "name": "docs/my-page.md", "title": "My Page",
-           "space_id": "42", "parent_id": "77", "space_key": "RZTST",
+           "space_id": "42", "parent_id": "77", "space_key": "TEST",
            "adf": { "type": "doc", "content": [] }
         }`;
         expect(render(data)).toBe(
             '---\ndocket_mode: pull\nid: ""\ntitle: "My Page"\ndocket_page_path: "docs/my-page.md"\n' +
                 'docket_page_id: ""\ndocket_page_version: 0\ndocket_space_id: "42"\n' +
-                'docket_parent_id: "77"\ndocket_space_key: "RZTST"\n---\n',
+                'docket_parent_id: "77"\ndocket_space_key: "TEST"\n---\n',
         );
     });
 
@@ -109,11 +109,11 @@ describe("frontmatter", () => {
 
     it("renders the page id as id right after the marker", () => {
         const data = `{
-           "name": "docs/my-page.md", "id": "2228027393", "title": "My Page",
+           "name": "docs/my-page.md", "id": "2000000888", "title": "My Page",
            "adf": { "type": "doc", "content": [] }
         }`;
         expect(render(data)).toContain(
-            '---\ndocket_mode: pull\nid: "2228027393"\ntitle: "My Page"\n',
+            '---\ndocket_mode: pull\nid: "2000000888"\ntitle: "My Page"\n',
         );
     });
 
