@@ -23,6 +23,7 @@ import {
     splitHostPort,
     trackRequests,
 } from "../src/run.ts";
+import { rawGet } from "./support/raw-http.ts";
 
 const closers: (() => Promise<void> | void)[] = [];
 
@@ -374,23 +375,10 @@ describe("router", () => {
         const { port } = srv.address() as AddressInfo;
 
         // --- When ---
-        const have = await new Promise<string>((resolve, reject) => {
-            const req = httpRequest(
-                { host: "127.0.0.1", port, path: target },
-                (res) => {
-                    let body = "";
-                    res.on("data", (b: Buffer) => {
-                        body += b.toString();
-                    });
-                    res.on("end", () => resolve(body));
-                },
-            );
-            req.on("error", reject);
-            req.end();
-        });
+        const have = await rawGet(port, target);
 
         // --- Then ---
-        expect(have).toBe(want);
+        expect(have.body).toBe(want);
     });
 });
 

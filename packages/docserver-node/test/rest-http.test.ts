@@ -12,9 +12,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { NodeDocFs } from "../src/fs.ts";
 import { restRoute } from "../src/http.ts";
+import { rawGet } from "./support/raw-http.ts";
 
 let dir: string;
 let srv: Server;
+let port: number;
 let base: string;
 
 beforeEach(async () => {
@@ -33,7 +35,8 @@ beforeEach(async () => {
         void route(req, res);
     });
     await new Promise<void>((resolve) => srv.listen(0, "127.0.0.1", resolve));
-    base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
+    port = (srv.address() as AddressInfo).port;
+    base = `http://127.0.0.1:${port}`;
 });
 
 afterEach(async () => {
@@ -77,9 +80,7 @@ describe("restRoute", () => {
 
     it("redirects an unclean path", async () => {
         // --- When ---
-        const have = await fetch(`${base}//docs?x=1`, {
-            redirect: "manual",
-        });
+        const have = await rawGet(port, "//docs?x=1");
 
         // --- Then ---
         expect(have.status).toBe(307);
