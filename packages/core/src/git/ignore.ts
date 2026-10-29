@@ -9,10 +9,20 @@
 export const IGNORE_BEGIN = "# docket:begin";
 export const IGNORE_END = "# docket:end";
 
-/** DEFAULT_IGNORES are the entries a newly written block starts with. */
+/**
+ * DEFAULT_IGNORES are the entries a newly written vault block starts with:
+ * all of `.obsidian` but docket's `data.json` — the sync settings every device
+ * shares; the rest is per device or per user — then the trash and the cache.
+ * git re-includes a file only when no folder above it is ignored, hence the
+ * `/*` and `!` pairs.
+ */
 export const DEFAULT_IGNORES: readonly string[] = [
-    ".obsidian/workspace*.json",
-    ".obsidian/cache",
+    "/.obsidian/*",
+    "!/.obsidian/plugins/",
+    "/.obsidian/plugins/*",
+    "!/.obsidian/plugins/ctx42-docket/",
+    "/.obsidian/plugins/ctx42-docket/*",
+    "!/.obsidian/plugins/ctx42-docket/data.json",
     ".trash/",
     ".adf_cache/",
 ];

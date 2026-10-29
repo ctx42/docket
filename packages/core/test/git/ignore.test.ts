@@ -31,7 +31,9 @@ describe("defaultIgnoreBlock", () => {
 
         expect(ignoreEntries(have)).toEqual([...DEFAULT_IGNORES]);
         expect(have).toBe(
-            "# docket:begin\n.obsidian/workspace*.json\n.obsidian/cache\n.trash/\n.adf_cache/\n# docket:end\n",
+            "# docket:begin\n/.obsidian/*\n!/.obsidian/plugins/\n/.obsidian/plugins/*\n" +
+                "!/.obsidian/plugins/ctx42-docket/\n/.obsidian/plugins/ctx42-docket/*\n" +
+                "!/.obsidian/plugins/ctx42-docket/data.json\n.trash/\n.adf_cache/\n# docket:end\n",
         );
     });
 
