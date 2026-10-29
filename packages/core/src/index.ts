@@ -30,6 +30,7 @@ export * from "./cache/cache.ts";
 export * from "./config/config.ts";
 export * from "./config/device.ts";
 export * from "./config/settings.ts";
+export * from "./config/sync-root.ts";
 export * from "./confluence/browse.ts";
 export * from "./confluence/client.ts";
 export * from "./confluence/sources.ts";
