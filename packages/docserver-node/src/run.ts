@@ -383,6 +383,7 @@ async function listenOn(
     const srv = createServer((req, res) => {
         void handler(req, res);
     });
+    trackRequests(srv);
     srv.headersTimeout = READ_HEADER_TIMEOUT_MS;
     srv.requestTimeout = 0;
     await new Promise<void>((resolve, reject) => {
@@ -470,9 +471,37 @@ export function serve(
 /** IDLE_POLL_MS is how often shutdown closes connections gone idle. */
 const IDLE_POLL_MS = 25;
 
+/** tracked holds the in-flight requests of each server trackRequests saw. */
+const tracked = new WeakMap<
+    ReturnType<typeof createServer>,
+    Set<ServerResponse>
+>();
+
+/**
+ * trackRequests records the in-flight requests of srv from now on, each by
+ * its response, and returns the live set; a server tracked twice returns
+ * the same set. Under Bun, closeAllConnections leaves a connection open
+ * while its request runs, and its server-side socket never reports closing,
+ * so shutdown destroys the socket of each tracked request itself.
+ */
+export function trackRequests(
+    srv: ReturnType<typeof createServer>,
+): Set<ServerResponse> {
+    const known = tracked.get(srv);
+    if (known !== undefined) return known;
+    const live = new Set<ServerResponse>();
+    tracked.set(srv, live);
+    srv.on("request", (_req: IncomingMessage, res: ServerResponse) => {
+        live.add(res);
+        res.once("close", () => live.delete(res));
+    });
+    return live;
+}
+
 /**
  * shutdown stops srv accepting, waits for in-flight requests, and closes
- * the connections still open after timeoutMs. Like Go's Server.Shutdown it
+ * the connections still open after timeoutMs, those of the requests
+ * {@link trackRequests} recorded included. Like Go's Server.Shutdown it
  * keeps closing connections as they go idle, so one that finishes its
  * request after the stop does not linger until its keep-alive timeout.
  */
@@ -481,7 +510,10 @@ export function shutdown(
     timeoutMs: number,
 ): Promise<void> {
     return new Promise<void>((resolve) => {
-        const timer = setTimeout(() => srv.closeAllConnections(), timeoutMs);
+        const timer = setTimeout(() => {
+            srv.closeAllConnections();
+            for (const res of tracked.get(srv) ?? []) res.socket?.destroy();
+        }, timeoutMs);
         const poll = setInterval(
             () => srv.closeIdleConnections(),
             IDLE_POLL_MS,

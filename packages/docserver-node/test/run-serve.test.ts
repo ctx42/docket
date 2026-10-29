@@ -21,6 +21,7 @@ import {
     serveHTTP,
     shutdown,
     splitHostPort,
+    trackRequests,
 } from "../src/run.ts";
 
 const closers: (() => Promise<void> | void)[] = [];
@@ -123,6 +124,38 @@ describe("serveHTTP", () => {
         const have = await body;
         expect(have).toBe("done");
         await expect(served).resolves.toBeUndefined();
+    });
+
+    it("closes a stuck connection after the timeout", async () => {
+        // --- Given ---
+        const started = deferred();
+        const release = deferred();
+        closers.push(() => release.resolve());
+        const handler: Route = async () => {
+            started.resolve();
+            await release.promise;
+        };
+        const stderr = new Lines();
+        const ctl = new AbortController();
+        closers.push(() => ctl.abort());
+        const served = serveHTTP(
+            "127.0.0.1:0",
+            handler,
+            stderr.log,
+            ctl.signal,
+            50,
+        );
+        const base = `http://${await waitListening(stderr)}`;
+        const body = request(`${base}/`);
+        body.catch(() => {});
+        await started.promise;
+
+        // --- When ---
+        ctl.abort();
+
+        // --- Then ---
+        await expect(served).resolves.toBeUndefined();
+        await expect(body).rejects.toThrow();
     });
 
     // go: Test_serveHTTP_error_listen
@@ -245,6 +278,7 @@ describe("shutdown", () => {
             started.resolve();
             await release.promise;
         });
+        trackRequests(srv);
         await new Promise<void>((resolve) =>
             srv.listen(0, "127.0.0.1", resolve),
         );
@@ -261,6 +295,53 @@ describe("shutdown", () => {
         await expect(have).resolves.toBeUndefined();
         await expect(body).rejects.toThrow();
         expect(srv.listening).toBe(false);
+    });
+});
+
+describe("trackRequests", () => {
+    it("holds an in-flight request and drops it once answered", async () => {
+        // --- Given ---
+        const started = deferred();
+        const release = deferred();
+        closers.push(() => release.resolve());
+        const srv: Server = createServer(async (_req, res) => {
+            started.resolve();
+            await release.promise;
+            res.end("done");
+        });
+        const have = trackRequests(srv);
+        await new Promise<void>((resolve) =>
+            srv.listen(0, "127.0.0.1", resolve),
+        );
+        closers.push(() => {
+            srv.closeAllConnections();
+            srv.close();
+        });
+        const { port } = srv.address() as AddressInfo;
+        const body = request(`http://127.0.0.1:${port}/`);
+
+        // --- When ---
+        await started.promise;
+
+        // --- Then ---
+        expect(have.size).toBe(1);
+        release.resolve();
+        expect(await body).toBe("done");
+        await waitFor(() => (have.size === 0 ? true : undefined), "close");
+    });
+
+    it("returns the same set for a server tracked twice", () => {
+        // --- Given ---
+        const srv: Server = createServer(() => {});
+        const before = srv.listenerCount("request");
+        const want = trackRequests(srv);
+
+        // --- When ---
+        const have = trackRequests(srv);
+
+        // --- Then ---
+        expect(have).toBe(want);
+        expect(srv.listenerCount("request")).toBe(before + 1);
     });
 });
 
