@@ -13,6 +13,10 @@
 // internally, by hand: build a temporary index from HEAD, apply the group's
 // paths to it, commit from it, then bring the real index's entries for those
 // paths up to the new HEAD.
+//
+// A repository may be rooted in a vault folder rather than the vault root. Its
+// `prefix` is that folder; GitRepo adds it to every path it returns and strips
+// it from every path it takes, so callers work with vault paths only.
 
 import type { FileSystem } from "../ports/fs.ts";
 import type { GitExec, GitOutput, GitRunOptions } from "../ports/git.ts";
@@ -47,12 +51,18 @@ export class GitError extends Error {
     }
 }
 
-/** RepoState is whether the vault can be used as a repository, and why not. */
+/**
+ * RepoState is whether the repository's folder can be used as a repository,
+ * and why not.
+ */
 export type RepoState =
     | { kind: "ready" }
-    /** The vault is not inside any repository. */
+    /**
+     * The folder is not inside any repository, or (for a vault folder) only
+     * inside the vault's own.
+     */
     | { kind: "no-repo" }
-    /** The vault lies inside a repository rooted above it. */
+    /** The folder lies inside a repository rooted above the vault. */
     | { kind: "nested" }
     /** The git binary is not at the configured path. */
     | { kind: "no-git"; path: string }
@@ -72,14 +82,43 @@ const TEMP_INDEX = "docket-index";
 
 /** GitRepo runs the repository operations docket needs. */
 export class GitRepo {
+    /** The repository root's vault path with a trailing `/`; `""` at the root. */
+    private readonly prefix: string;
+
     /**
      * `fs` removes commit's temporary index afterwards; without it the file is
-     * left in the git directory and overwritten by the next commit.
+     * left in the git directory and overwritten by the next commit. `prefix` is
+     * the vault folder the repository is rooted in, `""` for the vault root;
+     * `exec` must run git there.
      */
     constructor(
         private readonly exec: GitExec,
         private readonly fs?: FileSystem,
-    ) {}
+        prefix = "",
+    ) {
+        const p = prefix.replace(/^\/+|\/+$/g, "");
+        this.prefix = p === "" ? "" : `${p}/`;
+    }
+
+    /** vault turns a repository path into a vault path. */
+    private vault(path: string): string {
+        return this.prefix + path;
+    }
+
+    /**
+     * local turns a vault path into a repository path: `.` for the root
+     * folder. It throws for a path outside the repository's folder.
+     */
+    private local(path: string): string {
+        if (this.prefix === "") return path;
+        if (`${path}/` === this.prefix) return ".";
+        if (!path.startsWith(this.prefix)) {
+            throw new Error(
+                `path "${path}" is outside the repository at ${this.prefix}`,
+            );
+        }
+        return path.slice(this.prefix.length);
+    }
 
     /** run runs git with output-stable options; paths are never wildcards. */
     private run(args: string[], options?: GitRunOptions): Promise<GitOutput> {
@@ -96,7 +135,7 @@ export class GitRepo {
         return out.stdout;
     }
 
-    /** state reports whether the vault root is a usable repository root. */
+    /** state reports whether the folder is a usable repository root. */
     async state(): Promise<RepoState> {
         let out: GitOutput;
         try {
@@ -116,12 +155,13 @@ export class GitRepo {
                 message: new GitError(["rev-parse"], out).message,
             };
         }
-        return out.stdout.trim() === ""
-            ? { kind: "ready" }
-            : { kind: "nested" };
+        const at = out.stdout.trim();
+        if (at === "") return { kind: "ready" };
+        // A vault folder inside the vault's repository has none of its own.
+        return at === this.prefix ? { kind: "no-repo" } : { kind: "nested" };
     }
 
-    /** init creates a repository in the vault root, without a first commit. */
+    /** init creates a repository in the folder, without a first commit. */
     async init(): Promise<void> {
         await this.ok(["init", "-q"]);
     }
@@ -148,18 +188,26 @@ export class GitRepo {
                 if (p !== undefined && h !== "") ids.set(p, h.trim());
             });
         }
-        return pairMoves(entries, ids);
+        return pairMoves(entries, ids).map((c) => ({
+            ...c,
+            path: this.vault(c.path),
+            from: c.from === "" ? "" : this.vault(c.from),
+        }));
     }
 
     /** trackedUnder lists the tracked files at or under `path`. */
     async trackedUnder(path: string): Promise<string[]> {
-        const out = await this.ok(["ls-files", "-z", "--", path]);
-        return out.split("\0").filter((p) => p !== "");
+        const local = this.local(path);
+        const out = await this.ok(["ls-files", "-z", "--", local]);
+        return out
+            .split("\0")
+            .filter((p) => p !== "")
+            .map((p) => this.vault(p));
     }
 
     /** untrack drops `path` (recursively) from the index, keeping the files. */
     async untrack(path: string): Promise<void> {
-        await this.ok(["rm", "-r", "-q", "--cached", "--", path]);
+        await this.ok(["rm", "-r", "-q", "--cached", "--", this.local(path)]);
     }
 
     /**
@@ -179,8 +227,11 @@ export class GitRepo {
             0;
         const adds = changes
             .filter((c) => !c.untracking)
-            .flatMap((c) => (c.from === "" ? [c.path] : [c.from, c.path]));
-        const removes = changes.filter((c) => c.untracking).map((c) => c.path);
+            .flatMap((c) => (c.from === "" ? [c.path] : [c.from, c.path]))
+            .map((p) => this.local(p));
+        const removes = changes
+            .filter((c) => c.untracking)
+            .map((c) => this.local(c.path));
         const fromFile = ["--pathspec-from-file=-", "--pathspec-file-nul"];
         try {
             await this.ok(
@@ -223,7 +274,7 @@ export class GitRepo {
             `--skip=${q.skip}`,
         ];
         if (q.path !== undefined) {
-            args.push("--name-only", "--follow", "--", q.path);
+            args.push("--name-only", "--follow", "--", this.local(q.path));
         }
         const out = await this.run(args);
         if (out.code !== 0) {
@@ -235,7 +286,9 @@ export class GitRepo {
             }
             throw new GitError(args, out);
         }
-        return parseLog(out.stdout);
+        return parseLog(out.stdout).map((e) =>
+            e.path === undefined ? e : { ...e, path: this.vault(e.path) },
+        );
     }
 
     /**
@@ -243,7 +296,8 @@ export class GitRepo {
      * `""` for a file HEAD lacks (all of it is new); undefined for an ignored
      * file, which has no history to compare with.
      */
-    async baseText(path: string): Promise<string | undefined> {
+    async baseText(vaultPath: string): Promise<string | undefined> {
+        const path = this.local(vaultPath);
         const out = await this.run(["show", `HEAD:${path}`]);
         if (out.code === 0) return out.stdout;
         // check-ignore takes paths, not pathspecs, and refuses literal magic.
@@ -255,7 +309,8 @@ export class GitRepo {
      * textAt is a file's text at `commit`, with the path it had there; `""` for
      * a path that commit lacks (all of it is new against it).
      */
-    async textAt(commit: string, path: string): Promise<string> {
+    async textAt(commit: string, vaultPath: string): Promise<string> {
+        const path = this.local(vaultPath);
         const args = ["show", `${commit}:${path}`];
         const out = await this.run(args);
         if (out.code === 0) return out.stdout;

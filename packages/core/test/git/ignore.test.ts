@@ -9,6 +9,7 @@ import {
     defaultIgnoreBlock,
     ignoreEntries,
     ignorePattern,
+    SYNC_IGNORES,
 } from "../../src/git/ignore.ts";
 
 const BLOCK = "# docket:begin\n/a.md\n# docket:end\n";
@@ -39,6 +40,22 @@ describe("defaultIgnoreBlock", () => {
 
     it("keeps an existing block", () => {
         expect(defaultIgnoreBlock(BLOCK)).toBe(BLOCK);
+    });
+});
+
+describe("defaultIgnoreBlock with other defaults", () => {
+    it("writes the sync folder's defaults", () => {
+        const have = defaultIgnoreBlock("", SYNC_IGNORES);
+
+        expect(ignoreEntries(have)).toEqual([...SYNC_IGNORES]);
+    });
+});
+
+describe("addIgnoreEntry with other defaults", () => {
+    it("starts a missing block from the given defaults", () => {
+        const have = addIgnoreEntry("", "/m/", SYNC_IGNORES);
+
+        expect(ignoreEntries(have)).toEqual([...SYNC_IGNORES, "/m/"]);
     });
 });
 

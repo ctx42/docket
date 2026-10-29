@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 // docket's ignore list: the lines between `# docket:begin` and `# docket:end` in
-// the vault-root `.gitignore`. Pure text in, text out — the host reads and
+// a repository-root `.gitignore` (the vault's or the sync folder's). Pure text
+// in, text out — the host reads and
 // writes the file. Every line outside the block is kept byte for byte.
 
 /** IGNORE_BEGIN and IGNORE_END delimit docket's block in `.gitignore`. */
@@ -26,6 +27,9 @@ export const DEFAULT_IGNORES: readonly string[] = [
     ".trash/",
     ".adf_cache/",
 ];
+
+/** SYNC_IGNORES are the entries a newly written sync-folder block starts with. */
+export const SYNC_IGNORES: readonly string[] = [".adf_cache/"];
 
 /** blockRange locates the block's begin and end line indexes, or null. */
 function blockRange(lines: string[]): [number, number] | null {
@@ -68,29 +72,36 @@ export function withIgnoreEntries(text: string, entries: string[]): string {
 
 /**
  * addIgnoreEntry returns `text` with `entry` added to its block — a missing
- * block is first created with {@link DEFAULT_IGNORES} — or `text` unchanged when
- * the block already holds the entry.
+ * block is first created with `defaults` — or `text` unchanged when the block
+ * already holds the entry.
  */
-export function addIgnoreEntry(text: string, entry: string): string {
+export function addIgnoreEntry(
+    text: string,
+    entry: string,
+    defaults: readonly string[] = DEFAULT_IGNORES,
+): string {
     const cur = ignoreEntries(text);
     if (cur?.includes(entry)) return text;
-    const base = cur ?? [...DEFAULT_IGNORES];
+    const base = cur ?? [...defaults];
     return withIgnoreEntries(
         text,
         base.includes(entry) ? base : [...base, entry],
     );
 }
 
-/** defaultIgnoreBlock returns `text` with a block of the default entries. */
-export function defaultIgnoreBlock(text: string): string {
+/** defaultIgnoreBlock returns `text` with a block of `defaults` when it has none. */
+export function defaultIgnoreBlock(
+    text: string,
+    defaults: readonly string[] = DEFAULT_IGNORES,
+): string {
     return ignoreEntries(text) === null
-        ? withIgnoreEntries(text, [...DEFAULT_IGNORES])
+        ? withIgnoreEntries(text, [...defaults])
         : text;
 }
 
 /**
- * ignorePattern turns a vault-relative path into a `.gitignore` pattern that
- * matches exactly it: anchored to the vault root, folder patterns ending in
+ * ignorePattern turns a repository-relative path into a `.gitignore` pattern
+ * that matches exactly it: anchored to the repository root, folder patterns ending in
  * `/`, and wildcard and trailing-space characters escaped.
  */
 export function ignorePattern(path: string, folder: boolean): string {

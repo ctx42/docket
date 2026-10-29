@@ -247,3 +247,138 @@ describe("GitRepo.textAt", () => {
         await expect(have).rejects.toThrow("invalid object name 'x'.");
     });
 });
+
+describe("GitRepo with a prefix", () => {
+    /** sub is a repository rooted at the vault's `confluence/` folder. */
+    const sub = (git: StubGitExec): GitRepo =>
+        new GitRepo(git, undefined, "confluence");
+
+    it("is no-repo when the enclosing repository is the vault's", async () => {
+        const git = new StubGitExec().on("rev-parse --show-prefix", {
+            stdout: "confluence/\n",
+        });
+
+        expect(await sub(git).state()).toEqual({ kind: "no-repo" });
+    });
+
+    it("is nested below a repository rooted above the vault", async () => {
+        const git = new StubGitExec().on("rev-parse --show-prefix", {
+            stdout: "vault/confluence/\n",
+        });
+
+        expect(await sub(git).state()).toEqual({ kind: "nested" });
+    });
+
+    it("returns status paths as vault paths", async () => {
+        const h = "a".repeat(40);
+        const git = new StubGitExec()
+            .on("--no-optional-locks status", {
+                stdout: `1 .D N... 100644 100644 000000 ${h} ${h} A/p.md\0? B/q.md\0? c.md\0`,
+            })
+            .on("hash-object", { stdout: `${h}\n\n` });
+
+        const have = await sub(git).status();
+
+        expect(have.map((c) => [c.path, c.from])).toEqual([
+            ["confluence/B/q.md", "confluence/A/p.md"],
+            ["confluence/c.md", ""],
+        ]);
+    });
+
+    it("commits vault paths as repository paths", async () => {
+        const git = new StubGitExec().on("rev-parse --absolute-git-dir", {
+            stdout: "/v/confluence/.git\n",
+        });
+
+        await sub(git).commit(
+            [
+                {
+                    path: "confluence/B/p.md",
+                    from: "confluence/A/p.md",
+                    kind: "R",
+                    staged: false,
+                    untracking: false,
+                },
+                {
+                    path: "confluence/ig.md",
+                    from: "",
+                    kind: "D",
+                    staged: true,
+                    untracking: true,
+                },
+            ],
+            "docs: x",
+        );
+
+        expect(git.calls[3]?.options?.input).toBe("A/p.md\0B/p.md");
+        expect(git.calls[4]?.options?.input).toBe("ig.md");
+        expect(git.calls[6]?.options?.input).toBe("A/p.md\0B/p.md\0ig.md");
+    });
+
+    it("lists and untracks tracked files by vault path", async () => {
+        const git = new StubGitExec().on("ls-files", {
+            stdout: "m/a.png\0m/b.png\0",
+        });
+        const repo = sub(git);
+
+        const have = await repo.trackedUnder("confluence/m");
+        await repo.untrack("confluence/m");
+
+        expect(have).toEqual(["confluence/m/a.png", "confluence/m/b.png"]);
+        expect(git.cmds()).toEqual([
+            "ls-files -z -- m",
+            "rm -r -q --cached -- m",
+        ]);
+    });
+
+    it("takes the repository root as its own folder", async () => {
+        const git = new StubGitExec();
+
+        await sub(git).trackedUnder("confluence");
+
+        expect(git.cmds()).toEqual(["ls-files -z -- ."]);
+    });
+
+    it("follows a vault path's history and returns vault paths", async () => {
+        const git = new StubGitExec().on("log", {
+            stdout: "h2\x1f2\x1fmove\0\nB/p.md\0h1\x1f1\x1fadd\0\nA/p.md\0",
+        });
+
+        const have = await sub(git).log({
+            path: "confluence/B/p.md",
+            skip: 0,
+            limit: 10,
+        });
+
+        expect(git.calls[0]?.args.at(-1)).toBe("B/p.md");
+        expect(have.map((e) => e.path)).toEqual([
+            "confluence/B/p.md",
+            "confluence/A/p.md",
+        ]);
+    });
+
+    it("reads a vault path's texts at repository paths", async () => {
+        const git = new StubGitExec()
+            .on("show HEAD:a.md", { stdout: "hi\n" })
+            .on("show h1:a.md", { stdout: "old\n" })
+            .on("show HEAD:", { code: 128 })
+            .on("check-ignore -q -- ig.md", { code: 0 })
+            .on("check-ignore", { code: 1 });
+        const repo = sub(git);
+
+        expect(await repo.baseText("confluence/a.md")).toBe("hi\n");
+        expect(await repo.baseText("confluence/ig.md")).toBeUndefined();
+        expect(await repo.textAt("h1", "confluence/a.md")).toBe("old\n");
+    });
+
+    it("refuses a path outside its folder", async () => {
+        const repo = sub(new StubGitExec());
+
+        await expect(repo.baseText("kb/a.md")).rejects.toThrow(
+            'path "kb/a.md" is outside the repository at confluence/',
+        );
+        await expect(repo.trackedUnder("confluence-x/a.md")).rejects.toThrow(
+            "outside the repository",
+        );
+    });
+});
