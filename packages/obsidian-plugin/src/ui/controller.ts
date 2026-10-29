@@ -38,6 +38,7 @@ import {
 } from "./operations.ts";
 import { reviewPush } from "./push-modal.ts";
 import { ACTION_DONE, reviewModel } from "./review.ts";
+import { runRefusal } from "./run-guard.ts";
 import { PanelReporter, type RunState } from "./run-state.ts";
 import { needsAttention, needsSettings, runSummary } from "./summary.ts";
 
@@ -101,6 +102,7 @@ export class SyncController {
 
     /** pull pulls the target, merging remote changes into local edits. */
     async pull(target: PullTarget): Promise<void> {
+        if (this.refuseRun()) return;
         await this.execute("pulling", async (rt, reporter) => {
             if (target.kind === "notes") {
                 const out = await pullNotes(rt, reporter, target.dests);
@@ -127,6 +129,7 @@ export class SyncController {
     /** discard rewrites each note from Confluence, after the user confirms. */
     async discard(dests: string[]): Promise<void> {
         if (this.refuseBusy() || dests.length === 0) return;
+        if (this.refuseRun()) return;
         const root = this.plugin.settings.syncRoot;
         const yes = await confirmModal(
             this.app,
@@ -151,7 +154,7 @@ export class SyncController {
      * does not, so a run started meanwhile makes the commit refuse.
      */
     async push(target: Target): Promise<void> {
-        if (this.refuseBusy()) return;
+        if (this.refuseBusy() || this.refuseRun()) return;
         await this.saveEditors();
         const rt = this.runtime();
         if (rt === null) return;
@@ -261,7 +264,7 @@ export class SyncController {
 
     /** apply runs the chosen status-row actions, confirming discards first. */
     async apply(choices: Choice[]): Promise<void> {
-        if (this.refuseBusy()) return;
+        if (this.refuseBusy() || this.refuseRun()) return;
         const chosen = choices.filter((c) => c.action !== "skip");
         if (chosen.length === 0) return;
         const lose = overwrites(chosen).map((r) => r.name);
@@ -409,6 +412,14 @@ export class SyncController {
     private refuseBusy(): boolean {
         if (!this.busyFlag) return false;
         new Notice(`docket: wait for the ${this.busyWhat} to finish`);
+        return true;
+    }
+
+    /** refuseRun blocks a run that writes synced pages without a sync folder. */
+    private refuseRun(): boolean {
+        const why = runRefusal(this.plugin.settings);
+        if (why === "") return false;
+        new Notice(why);
         return true;
     }
 
