@@ -33,27 +33,207 @@
     margin-top: 0.15em;
 }
 
-/* Settings: synced locations, one setting row each, a kind icon by the path. */
-.docket-location .setting-item-name {
-    display: flex;
-    align-items: center;
-    gap: var(--size-4-2);
-    overflow-wrap: anywhere;
-}
-.docket-location .setting-item-description {
-    overflow-wrap: anywhere;
-    user-select: text;
-}
+/* Settings: the kind icon by a Confluence picker row's title. */
 .docket-location-icon {
     display: inline-flex;
     flex: 0 0 auto;
     color: var(--text-muted);
 }
-.docket-location.is-invalid {
-    box-shadow: inset 3px 0 0 var(--color-red);
-    padding-left: var(--size-4-3);
+
+/* Settings: a heading's scope label ("exported", "this device"). */
+.docket-scope {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2-1);
+    margin-left: var(--size-4-2);
+    color: var(--text-faint);
+    font-size: var(--font-ui-smaller);
+    font-weight: var(--font-normal);
+    vertical-align: middle;
 }
-.docket-locations-empty {
+.docket-scope-icon {
+    display: inline-flex;
+}
+.docket-scope-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Settings: a source card — kind icon, name and badge, a summary line, and a
+   body with the connection fields, the tree tools, and the tree. */
+.docket-card {
+    margin-top: var(--size-4-3);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-l);
+    background: var(--background-secondary);
+}
+.docket-card-head {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-3);
+    padding: var(--size-4-3);
+}
+.docket-kind-icon {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-m);
+    background: var(--background-modifier-hover);
+    color: var(--text-muted);
+}
+.docket-kind-icon.is-confluence {
+    background: rgba(var(--color-blue-rgb), 0.15);
+    color: var(--color-blue);
+}
+.docket-card-title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.docket-card-name {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    font-weight: var(--font-semibold);
+}
+.docket-card-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--size-2-2);
+    margin-top: var(--size-2-1);
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+}
+.docket-card-link {
+    color: var(--text-muted);
+}
+.docket-dot {
+    color: var(--text-faint);
+}
+.docket-card-body {
+    padding: var(--size-4-2) var(--size-4-3) var(--size-4-3);
+    border-top: 1px solid var(--background-modifier-border);
+}
+.docket-card-conn {
+    margin-bottom: var(--size-4-3);
+    padding-bottom: var(--size-4-2);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+.docket-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px var(--size-4-2);
+    border-radius: var(--radius-l);
+    background: var(--background-modifier-hover);
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    font-weight: var(--font-medium);
+}
+.docket-badge.is-blue {
+    background: rgba(var(--color-blue-rgb), 0.15);
+    color: var(--color-blue);
+}
+
+/* Settings: the location tree — a header, folder rows that fold, and one row
+   per location: vault path, kind icon and title, space key, hover actions. */
+.docket-tree-tools {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding-bottom: var(--size-4-2);
+}
+.docket-tree-filter {
+    min-width: 260px;
+}
+.docket-tree-spacer {
+    flex: 1 1 auto;
+}
+.docket-tree-row {
+    display: grid;
+    grid-template-columns: minmax(0, 15em) minmax(0, 1fr) minmax(0, 7em) auto;
+    align-items: center;
+    gap: var(--size-4-2);
+    min-height: 32px;
+    padding: 0 var(--size-4-1);
+    border-radius: var(--radius-s);
+}
+.docket-tree-row:hover:not(.is-header) {
+    background: var(--background-modifier-hover);
+}
+.docket-tree-row.is-header {
+    min-height: 24px;
+    color: var(--text-faint);
+    font-size: var(--font-ui-smaller);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+}
+.docket-tree-row.is-group {
+    cursor: pointer;
+}
+.docket-tree-path {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    color: var(--text-muted);
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-smaller);
+    white-space: nowrap;
+}
+.docket-tree-path.is-nested {
+    padding-left: 1.4em;
+}
+.docket-tree-chevron {
+    display: inline-flex;
+    color: var(--text-faint);
+}
+.docket-tree-chevron svg {
+    width: 14px;
+    height: 14px;
+}
+.docket-tree-title {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    min-width: 0;
+    white-space: nowrap;
+}
+.docket-tree-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--text-muted);
+}
+.docket-tree-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.docket-tree-note {
+    color: var(--text-faint);
+    font-size: var(--font-ui-smaller);
+}
+.docket-tree-space {
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.docket-tree-acts {
+    display: flex;
+    gap: var(--size-2-1);
+    visibility: hidden;
+}
+.docket-tree-row:hover .docket-tree-acts,
+.docket-tree-row:focus-within .docket-tree-acts {
+    visibility: visible;
+}
+.docket-location.is-invalid {
+    background: rgba(var(--color-red-rgb), 0.12);
+    box-shadow: inset 3px 0 0 var(--color-red);
+}
+.docket-tree-empty {
     padding: var(--size-4-2) 0 var(--size-4-3);
 }
 

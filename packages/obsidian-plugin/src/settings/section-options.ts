@@ -13,7 +13,12 @@ import {
     HISTORY_CAP_MAX,
     parseHistoryCap,
 } from "../git/history.ts";
-import { numberSetting, type SettingsCtx } from "./fields.ts";
+import {
+    numberSetting,
+    type SettingsCtx,
+    scopeHeading,
+    scopeTag,
+} from "./fields.ts";
 
 /** notesSection draws the Notes section into `el`. */
 export function notesSection(ctx: SettingsCtx, el: HTMLElement): void {
@@ -70,12 +75,12 @@ export function notesSection(ctx: SettingsCtx, el: HTMLElement): void {
 export function gitSection(ctx: SettingsCtx, el: HTMLElement): void {
     const { plugin } = ctx;
 
-    new Setting(el).setName("Git").setHeading();
+    scopeHeading(el, "Git", "device");
 
     new Setting(el)
         .setName("Git path")
         .setDesc(
-            "The git program docket runs for the Git and History tabs. Leave empty to use the one on your PATH. Applies to this device.",
+            "The git program docket runs for the Git and History tabs. Leave empty to use the one on your PATH.",
         )
         .addText((t) => {
             t.setPlaceholder(DEFAULT_GIT)
@@ -86,7 +91,7 @@ export function gitSection(ctx: SettingsCtx, el: HTMLElement): void {
     new Setting(el)
         .setName("Change bars")
         .setDesc(
-            "Mark lines added, changed, and deleted since the last commit in the editor gutter. Applies to this device.",
+            "Mark lines added, changed, and deleted since the last commit in the editor gutter.",
         )
         .addToggle((t) =>
             t
@@ -97,7 +102,7 @@ export function gitSection(ctx: SettingsCtx, el: HTMLElement): void {
     numberSetting(
         el,
         "Commit message history",
-        `How many committed messages the Git tab offers again, from 0 (none) to ${HISTORY_CAP_MAX}. Applies to this device.`,
+        `How many committed messages the Git tab offers again, from 0 (none) to ${HISTORY_CAP_MAX}.`,
         String(HISTORY_CAP),
         plugin.historyCap,
         (n) => plugin.setHistoryCap(n),
@@ -109,10 +114,11 @@ export function gitSection(ctx: SettingsCtx, el: HTMLElement): void {
 export function advancedSection(ctx: SettingsCtx, el: HTMLElement): void {
     const s = ctx.plugin.settings;
     const advanced = el.createEl("details", { cls: "docket-advanced" });
-    advanced.createEl("summary", {
+    const summary = advanced.createEl("summary", {
         cls: "setting-item-heading",
         text: "Advanced",
     });
+    scopeTag(summary, "exported");
 
     numberSetting(
         advanced,

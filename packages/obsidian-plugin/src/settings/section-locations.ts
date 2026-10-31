@@ -1,22 +1,39 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The settings tab's Synced locations section: the sync folder, the locations
-// list (added and edited through a dialog, or picked from Confluence), and the
-// `.docket.yaml` import and export. DOM glue; the logic is locations.ts and
-// portable.ts.
+// The settings tab's Sources section: the `.docket.yaml` import and export,
+// and the Confluence card — the sync folder, the connection (folded to one
+// line once it is filled in), and the synced locations as a tree of titles
+// (added and edited through a dialog, or picked from Confluence). DOM glue;
+// the logic is location-tree.ts, locations.ts, and portable.ts.
 
 import { homedir } from "node:os";
-import { posixDir, syncFolder } from "@docket/core";
-import { Notice, parseYaml, Setting, setIcon, stringifyYaml } from "obsidian";
+import { posixDir, siteDomain, syncFolder } from "@docket/core";
+import {
+    Notice,
+    normalizePath,
+    parseYaml,
+    Setting,
+    setIcon,
+    setTooltip,
+    stringifyYaml,
+} from "obsidian";
 import { confirmModal } from "../ui/confirm.ts";
 import { confirmOverwrite, promptVaultPath } from "./dialogs.ts";
-import { type SettingsCtx, vaultBasePath } from "./fields.ts";
+import { type SettingsCtx, scopeTag, vaultBasePath } from "./fields.ts";
 import {
     confluenceClient,
     confluenceTitles,
     editLocation,
 } from "./location-modal.ts";
+import {
+    buildTree,
+    FILTER_AT,
+    notePath,
+    pageUrl,
+    type TreeGroup,
+    type TreeRow,
+} from "./location-tree.ts";
 import {
     KIND_LABEL,
     type Location,
@@ -34,71 +51,152 @@ import {
     resolvePortablePath,
     toPortableConfig,
 } from "./portable.ts";
-import { errorMessage, syncFolderDesc } from "./tab-model.ts";
+import { connectionRows } from "./section-connection.ts";
+import {
+    connectionReady,
+    errorMessage,
+    syncFolderDesc,
+    validation,
+} from "./tab-model.ts";
 import { readPath, statPath, writePath } from "./vault-io.ts";
 
-/** KIND_ICON is each location kind's icon in the list. */
+/** KIND_ICON is the icon each location kind shows by its title. */
 const KIND_ICON: Record<LocationKind, string> = {
     page: "file-text",
     folder: "folder",
     space: "library",
 };
 
+/**
+ * LocationsSection draws the Sources section. It keeps the card's view state
+ * — whether the connection is unfolded, the filter, and which groups the user
+ * opened or closed — across redraws of the tree.
+ */
 export class LocationsSection {
+    private cardEl: HTMLElement | null = null;
     private listEl: HTMLElement | null = null;
+    private connOpen = false;
+    private query = "";
+    private readonly open = new Map<string, boolean>();
 
     constructor(private readonly ctx: SettingsCtx) {}
 
-    /** render draws the section into `el`. */
     render(el: HTMLElement): void {
-        const s = this.ctx.plugin.settings;
-
-        new Setting(el)
-            .setName("Synced locations")
+        const heading = new Setting(el)
+            .setName("Sources")
             .setHeading()
             .addButton((b) =>
                 b
-                    .setButtonText("Browse Confluence…")
-                    .onClick(() => void this.browse()),
+                    .setButtonText("Import")
+                    .setTooltip("Merge the locations of a .docket.yaml file")
+                    .onClick(() => void this.importPortable()),
             )
             .addButton((b) =>
                 b
-                    .setButtonText("Add location")
-                    .setCta()
-                    .onClick(() => void this.edit(null)),
+                    .setButtonText("Export")
+                    .setTooltip(
+                        "Write the locations and shared options to a " +
+                            ".docket.yaml file. It never includes your " +
+                            "credentials.",
+                    )
+                    .onClick(() => void this.exportPortable()),
             );
+        scopeTag(heading.nameEl, "exported");
 
-        // Read-only: moving the synced pages is a manual job (syncFolderDesc).
-        new Setting(el)
-            .setName("Sync folder")
-            .setDesc(syncFolderDesc(s.syncRoot))
-            .addText((t) => {
-                t.setPlaceholder("(not set)")
-                    .setValue(syncFolder(s.syncRoot))
-                    .setDisabled(true);
-            });
-
-        this.listEl = el.createDiv({ cls: "docket-locations" });
-        this.renderList();
-
-        new Setting(el)
-            .setName("Import / export")
-            .setDesc(
-                "Share the synced locations as a .docket.yaml file. It never includes your credentials.",
-            )
-            .addButton((b) =>
-                b.setButtonText("Import").onClick(() => {
-                    void this.importPortable();
-                }),
-            )
-            .addButton((b) =>
-                b.setButtonText("Export").onClick(() => {
-                    void this.exportPortable();
-                }),
-            );
+        this.cardEl = el.createDiv({ cls: "docket-card" });
+        this.renderCard();
     }
 
-    /** renderList redraws the synced-locations list. */
+    /** renderCard draws the Confluence card: head, connection, tools, tree. */
+    private renderCard(): void {
+        const card = this.cardEl;
+        if (card === null) return;
+        card.empty();
+        const { plugin } = this.ctx;
+        const s = plugin.settings;
+        const ready = connectionReady(s, plugin.token);
+        const folder = syncFolder(s.syncRoot);
+
+        const head = card.createDiv({ cls: "docket-card-head" });
+        setIcon(
+            head.createDiv({ cls: "docket-kind-icon is-confluence" }),
+            "book-open",
+        );
+        const title = head.createDiv({ cls: "docket-card-title" });
+        const name = title.createDiv({ cls: "docket-card-name" });
+        const nameText = name.createSpan({
+            text: folder === "" ? "Sync folder not set" : folder,
+        });
+        setTooltip(nameText, syncFolderDesc(s.syncRoot));
+        name.createSpan({ cls: "docket-badge is-blue", text: "Confluence" });
+
+        const sub = title.createDiv({ cls: "docket-card-sub" });
+        sub.createSpan({
+            text: s.site === "" ? "No site yet" : siteDomain(s.site),
+        });
+        dot(sub);
+        sub.createSpan({
+            text: s.account === "" ? "Not signed in" : s.account,
+        });
+        if (ready) {
+            const toggle = sub.createEl("a", {
+                cls: "docket-card-link",
+                text: this.connOpen ? "done" : "change",
+                href: "#",
+            });
+            toggle.addEventListener("click", (e) => {
+                e.preventDefault();
+                this.connOpen = !this.connOpen;
+                this.renderCard();
+            });
+        }
+        dot(sub);
+        const count = locations(s).length;
+        sub.createSpan({
+            text: `${count} location${count === 1 ? "" : "s"}`,
+        });
+
+        const body = card.createDiv({ cls: "docket-card-body" });
+        if (folder === "") {
+            body.createDiv({
+                cls: "setting-item-description",
+                text: syncFolderDesc(s.syncRoot),
+            });
+        }
+        if (!ready || this.connOpen) {
+            connectionRows(
+                this.ctx,
+                body.createDiv({ cls: "docket-card-conn" }),
+            );
+        }
+
+        const tools = body.createDiv({ cls: "docket-tree-tools" });
+        if (count >= FILTER_AT) {
+            const filter = tools.createEl("input", {
+                cls: "docket-tree-filter",
+                type: "search",
+                placeholder: "Filter by title, path, or space",
+                value: this.query,
+            });
+            filter.addEventListener("input", () => {
+                this.query = filter.value;
+                this.renderList();
+            });
+        }
+        tools.createDiv({ cls: "docket-tree-spacer" });
+        const browse = tools.createEl("button", { text: "Browse Confluence…" });
+        browse.addEventListener("click", () => void this.browse());
+        const add = tools.createEl("button", {
+            cls: "mod-cta",
+            text: "Add by link",
+        });
+        add.addEventListener("click", () => void this.edit(null));
+
+        this.listEl = body.createDiv({ cls: "docket-tree" });
+        this.renderList();
+    }
+
+    /** renderList draws the location tree under the current filter. */
     private renderList(): void {
         const el = this.listEl;
         if (el === null) return;
@@ -106,35 +204,130 @@ export class LocationsSection {
         const list = locations(this.ctx.plugin.settings);
         if (list.length === 0) {
             el.createDiv({
-                cls: "docket-locations-empty setting-item-description",
+                cls: "docket-tree-empty setting-item-description",
                 text: "Nothing synced yet. Add a Confluence page, folder, or space.",
             });
             return;
         }
-        for (const l of list) {
-            const row = new Setting(el).setDesc(l.src);
-            row.settingEl.addClass("docket-location");
-            row.settingEl.dataset["dest"] = l.dest;
-            const icon = row.nameEl.createSpan({
-                cls: "docket-location-icon",
-                attr: { "aria-label": KIND_LABEL[l.kind] },
+        const { plugin } = this.ctx;
+        const groups = buildTree(
+            list,
+            (l) => this.noteTitle(l),
+            this.query,
+            this.open,
+            validation(plugin.settings, plugin.token).dest,
+        );
+        if (groups.length === 0) {
+            el.createDiv({
+                cls: "docket-tree-empty setting-item-description",
+                text: "No location matches the filter.",
             });
-            setIcon(icon, KIND_ICON[l.kind]);
-            row.nameEl.createSpan({ text: l.dest });
-            row.addExtraButton((b) =>
-                b
-                    .setIcon("pencil")
-                    .setTooltip("Edit")
-                    .onClick(() => void this.edit(l)),
-            ).addExtraButton((b) =>
-                b
-                    .setIcon("trash-2")
-                    .setTooltip("Remove (the notes stay in the vault)")
-                    .onClick(() => {
-                        this.save(removeLocation(this.ctx.plugin.settings, l));
-                    }),
-            );
+            return;
         }
+        const header = el.createDiv({ cls: "docket-tree-row is-header" });
+        for (const label of ["Vault path", "Confluence", "Space", ""]) {
+            header.createDiv({ text: label });
+        }
+        for (const g of groups) {
+            if (g.name !== "") this.groupRow(el, g);
+            if (!g.open) continue;
+            for (const row of g.rows) this.locationRow(el, row, g.name !== "");
+        }
+    }
+
+    /** groupRow draws a folder row that opens or closes its group. */
+    private groupRow(el: HTMLElement, g: TreeGroup): void {
+        const row = el.createDiv({ cls: "docket-tree-row is-group" });
+        const path = row.createDiv({ cls: "docket-tree-path" });
+        setIcon(
+            path.createSpan({ cls: "docket-tree-chevron" }),
+            g.open ? "chevron-down" : "chevron-right",
+        );
+        path.createSpan({ text: `${g.name}/` });
+        const title = row.createDiv({ cls: "docket-tree-title" });
+        if (!g.open) {
+            const n = g.rows.length;
+            title.createSpan({
+                cls: "docket-badge",
+                text: `${n} location${n === 1 ? "" : "s"}`,
+            });
+        }
+        row.createDiv({ cls: "docket-tree-space", text: g.space });
+        row.createDiv();
+        row.addEventListener("click", () => {
+            this.open.set(g.name, !g.open);
+            this.renderList();
+        });
+    }
+
+    /** locationRow draws one location with its hover actions. */
+    private locationRow(el: HTMLElement, r: TreeRow, nested: boolean): void {
+        const { loc } = r;
+        const s = this.ctx.plugin.settings;
+        const row = el.createDiv({ cls: "docket-tree-row docket-location" });
+        row.dataset["dest"] = loc.dest;
+
+        const path = row.createDiv({
+            cls: `docket-tree-path${nested ? " is-nested" : ""}`,
+            text: r.label,
+        });
+        setTooltip(path, loc.dest);
+
+        const title = row.createDiv({ cls: "docket-tree-title" });
+        const icon = title.createSpan({ cls: "docket-tree-icon" });
+        setIcon(icon, KIND_ICON[loc.kind]);
+        setTooltip(icon, KIND_LABEL[loc.kind]);
+        const text = title.createSpan({
+            cls: "docket-tree-text",
+            text: r.title,
+        });
+        const folder = syncFolder(s.syncRoot);
+        setTooltip(
+            text,
+            [
+                r.title,
+                loc.src,
+                `Vault: ${folder === "" ? "" : `${folder}/`}${loc.dest}`,
+            ].join("\n"),
+        );
+        if (r.titleSource === "link") {
+            title.createSpan({
+                cls: "docket-tree-note",
+                text: "not pulled yet",
+            });
+        }
+        row.createDiv({ cls: "docket-tree-space", text: r.space });
+
+        const acts = row.createDiv({ cls: "docket-tree-acts" });
+        const url = pageUrl(s.site, loc.src);
+        if (url !== "") {
+            iconButton(acts, "external-link", "Open in Confluence", () => {
+                window.open(url);
+            });
+        }
+        iconButton(acts, "pencil", "Edit", () => void this.edit(loc));
+        iconButton(
+            acts,
+            "trash-2",
+            "Remove (the notes stay in the vault)",
+            () => this.save(removeLocation(this.ctx.plugin.settings, loc)),
+        );
+    }
+
+    /**
+     * noteTitle reads the `title` property of the pulled note behind `l`, or
+     * returns `""` when the note is not in the vault yet.
+     */
+    private noteTitle(l: Location): string {
+        const { app, plugin } = this.ctx;
+        const folder = syncFolder(plugin.settings.syncRoot);
+        if (folder === "") return "";
+        const file = app.vault.getFileByPath(
+            normalizePath(`${folder}/${notePath(l)}`),
+        );
+        if (file === null) return "";
+        const t = app.metadataCache.getFileCache(file)?.frontmatter?.["title"];
+        return typeof t === "string" ? t : "";
     }
 
     /** edit opens the location dialog and saves what it returns. */
@@ -178,7 +371,7 @@ export class LocationsSection {
         this.ctx.plugin.settings = next;
         this.ctx.persist();
         this.ctx.flush();
-        this.renderList();
+        this.renderCard();
         this.ctx.refreshValidation();
     }
 
@@ -278,4 +471,26 @@ export class LocationsSection {
             new Notice(`docket: import failed: ${errorMessage(err)}`);
         }
     }
+}
+
+/** dot appends a separator dot to a card's summary line. */
+function dot(el: HTMLElement): void {
+    el.createSpan({ cls: "docket-dot", text: "·" });
+}
+
+/** iconButton appends a small icon button with a tooltip to `el`. */
+function iconButton(
+    el: HTMLElement,
+    icon: string,
+    tip: string,
+    onClick: () => void,
+): void {
+    const b = el.createEl("button", { cls: "clickable-icon" });
+    setIcon(b, icon);
+    setTooltip(b, tip);
+    b.setAttribute("aria-label", tip);
+    b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onClick();
+    });
 }

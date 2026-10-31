@@ -5,6 +5,7 @@ import { DEFAULT_SETTINGS } from "@docket/core";
 import { describe, expect, it } from "vitest";
 import {
     connectedAs,
+    connectionReady,
     errorMessage,
     syncFolderDesc,
     validation,
@@ -76,5 +77,21 @@ describe("syncFolderDesc", () => {
         expect(syncFolderDesc("")).toBe(
             "Not set yet. Choose it in the docket panel's Sync tab.",
         );
+    });
+});
+
+describe("connectionReady", () => {
+    const filled = { ...DEFAULT_SETTINGS, site: "acme", account: "a@b.c" };
+
+    it("is true when the site, account, and token are all set", () => {
+        expect(connectionReady(filled, "tok")).toBe(true);
+    });
+
+    it.each([
+        ["site", { ...filled, site: "" }, "tok"],
+        ["account", { ...filled, account: "" }, "tok"],
+        ["token", filled, ""],
+    ])("is false without the %s", (_, s, token) => {
+        expect(connectionReady(s, token)).toBe(false);
     });
 });

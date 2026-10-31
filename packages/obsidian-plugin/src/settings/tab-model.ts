@@ -58,6 +58,14 @@ export function syncFolderDesc(syncRoot: string): string {
     );
 }
 
+/**
+ * connectionReady reports whether the site, account, and token are all set, so
+ * the Confluence card can fold its connection fields into one line.
+ */
+export function connectionReady(s: docketSettings, token: string): boolean {
+    return s.site !== "" && s.account !== "" && token !== "";
+}
+
 /** connectedAs is the connection test's success line for the signed-in user. */
 export function connectedAs(user: {
     displayName: string;

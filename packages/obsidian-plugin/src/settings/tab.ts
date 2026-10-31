@@ -14,7 +14,6 @@ import { type App, Notice, PluginSettingTab, setIcon } from "obsidian";
 import type docketPlugin from "../main.ts";
 import { type Debounced, debounce } from "./debounce.ts";
 import type { SettingsCtx } from "./fields.ts";
-import { connectionSection } from "./section-connection.ts";
 import { LocationsSection } from "./section-locations.ts";
 import { McpSection } from "./section-mcp.ts";
 import {
@@ -97,7 +96,6 @@ export class docketSettingTab extends PluginSettingTab {
         containerEl.addClass("docket-settings");
 
         this.bannerEl = containerEl.createDiv({ cls: "docket-banner" });
-        connectionSection(this.ctx, containerEl);
         new LocationsSection(this.ctx).render(containerEl);
         notesSection(this.ctx, containerEl);
         gitSection(this.ctx, containerEl);

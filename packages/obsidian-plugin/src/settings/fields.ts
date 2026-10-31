@@ -4,7 +4,13 @@
 // What every settings section shares: the context the tab hands it, and the
 // whole-number field. DOM glue; the parsing is tab-model.ts.
 
-import { type App, FileSystemAdapter, Setting } from "obsidian";
+import {
+    type App,
+    FileSystemAdapter,
+    Setting,
+    setIcon,
+    setTooltip,
+} from "obsidian";
 import type docketPlugin from "../main.ts";
 import { wholeNumber } from "./tab-model.ts";
 
@@ -54,6 +60,46 @@ export function numberSetting(
                     if (ok) commit(n);
                 });
         });
+}
+
+/**
+ * Scope is where a section's values live: in the exported `.docket.yaml`, or
+ * on this device only. Sections whose values live in `data.json` carry none.
+ */
+export type Scope = "exported" | "device";
+
+/** SCOPE_TAG is each scope's label, icon, and tooltip. */
+const SCOPE_TAG: Record<Scope, { text: string; icon: string; tip: string }> = {
+    exported: {
+        text: "exported",
+        icon: "share-2",
+        tip: "Included when you export .docket.yaml",
+    },
+    device: {
+        text: "this device",
+        icon: "monitor",
+        tip: "Stored on this device only",
+    },
+};
+
+/** scopeTag appends a small scope label to `parent`. */
+export function scopeTag(parent: HTMLElement, scope: Scope): void {
+    const tag = SCOPE_TAG[scope];
+    const el = parent.createSpan({ cls: "docket-scope" });
+    setIcon(el.createSpan({ cls: "docket-scope-icon" }), tag.icon);
+    el.createSpan({ text: tag.text });
+    setTooltip(el, tag.tip);
+}
+
+/** scopeHeading adds a section heading named `name` with a scope label. */
+export function scopeHeading(
+    parent: HTMLElement,
+    name: string,
+    scope: Scope,
+): Setting {
+    const heading = new Setting(parent).setName(name).setHeading();
+    scopeTag(heading.nameEl, scope);
+    return heading;
 }
 
 /** vaultBasePath returns the vault's absolute disk path, or `""` when it has none. */

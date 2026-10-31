@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The settings tab's Connection section: the Site, the account email, the
+// The Confluence card's connection fields: the Site, the account email, the
 // per-device API token, and a live connection test against the Site via the
 // requestUrl adapter and the core's ConfluenceClient. DOM glue; the result
 // text is tab-model.ts.
@@ -15,12 +15,13 @@ import { connectedAs, errorMessage } from "./tab-model.ts";
 /** TOKEN_URL is where an Atlassian account creates API tokens. */
 const TOKEN_URL = "https://id.atlassian.com/manage-profile/security/api-tokens";
 
-/** connectionSection draws the Connection section into `el`. */
-export function connectionSection(ctx: SettingsCtx, el: HTMLElement): void {
+/**
+ * connectionRows draws the connection fields — site, account, token, and the
+ * test button — into `el`, the Confluence card's body.
+ */
+export function connectionRows(ctx: SettingsCtx, el: HTMLElement): void {
     const { plugin } = ctx;
     const s = plugin.settings;
-
-    new Setting(el).setName("Connection").setHeading();
 
     new Setting(el)
         .setName("Site")
