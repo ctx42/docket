@@ -11,6 +11,7 @@ import {
     locations,
     putLocation,
     removeLocation,
+    slugTitle,
     suggestDest,
     titleDest,
 } from "../../src/settings/locations.ts";
@@ -162,6 +163,19 @@ describe("titleDest", () => {
         ["folder", "  ", ""],
     ] as const)("%s %s → %s", (kind, title, want) => {
         const have = titleDest(kind, title);
+
+        expect(have).toBe(want);
+    });
+});
+
+describe("slugTitle", () => {
+    it.each([
+        ["/wiki/spaces/ENG/pages/123/Release+Notes", "Release Notes"],
+        ["/wiki/spaces/ENG/pages/123/K%C3%B6ln+a%2Fb", "Köln a-b"],
+        ["/wiki/spaces/ENG/pages/123/bad%E0", "bad%E0"],
+        ["/wiki/spaces/ENG/pages/123", ""],
+    ])("%s → %s", (path, want) => {
+        const have = slugTitle(path, "123");
 
         expect(have).toBe(want);
     });

@@ -90,9 +90,7 @@ export function suggestDest(kind: LocationKind, src: string): string {
     if (kind === "page") {
         const id = tryPageID(path);
         if (id === undefined) return "";
-        const segs = path.split("/");
-        const slug = segs[segs.indexOf(id) + 1] ?? "";
-        const title = safeName(safeDecode(slug.replace(/\+/g, " ")));
+        const title = slugTitle(path, id);
         return title === "" ? `page-${id}.md` : `${title}.md`;
     }
     if (kind === "folder") {
@@ -107,6 +105,17 @@ export function suggestDest(kind: LocationKind, src: string): string {
     } catch {
         return "";
     }
+}
+
+/**
+ * slugTitle reads the title slug that follows page id `id` in the page path
+ * `path` (`.../pages/123/Release+Notes` → `Release Notes`), made safe as a
+ * vault name; `""` when the path carries no slug.
+ */
+export function slugTitle(path: string, id: string): string {
+    const segs = path.split("/");
+    const slug = segs[segs.indexOf(id) + 1] ?? "";
+    return safeName(safeDecode(slug.replace(/\+/g, " ")));
 }
 
 /**
