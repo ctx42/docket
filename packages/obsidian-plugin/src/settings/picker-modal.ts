@@ -4,9 +4,11 @@
 // The "Browse Confluence" picker: a filterable list of every space the account
 // can see, each expanding lazily into its folders and pages, with a tick per
 // node to start or stop syncing it and a rename action giving a page or synced
-// root its local name, then a review step listing every addition (its vault
-// path editable), removal, and rename before anything is saved. The logic is
-// picker.ts; this file is DOM glue, verified by typecheck + manual load.
+// root its local name; then, when something is added, a folder step choosing
+// where in the sync folder the additions go; then a review step listing every
+// addition (its vault path editable), removal, and rename before anything is
+// saved. The logic is picker.ts; this file is DOM glue, verified by typecheck
+// + manual load.
 
 import {
     type ConfluenceClient,
@@ -15,15 +17,19 @@ import {
     listChildren,
     type Space,
     spaceTopLevel,
+    syncFolder,
 } from "@docket/core";
-import { type App, Modal, Setting, setIcon } from "obsidian";
+import { type App, Modal, Setting, setIcon, TFolder } from "obsidian";
 import { KIND_LABEL, type LocationKind } from "./locations.ts";
 import {
     canSave,
     changeCount,
     childNodes,
     type Draft,
+    draftFolder,
     emptyDraft,
+    folderChoices,
+    folderRows,
     groupSpaces,
     isTicked,
     localName,
@@ -32,8 +38,10 @@ import {
     renameKind,
     review,
     setDest,
+    setFolder,
     setRename,
     spaceNode,
+    suggestFolder,
     syncedAs,
     type TreeNode,
     toggle,
@@ -79,6 +87,10 @@ class PickerModal extends Modal {
     private listEl: HTMLElement | null = null;
     private countEl: HTMLElement | null = null;
     private reviewBtn: HTMLButtonElement | null = null;
+    /** folder is the folder chosen for the additions; null until first asked. */
+    private folder: string | null = null;
+    /** folderOpen holds the folders the user opened in the folder step's tree. */
+    private readonly folderOpen = new Set<string>();
 
     constructor(
         app: App,
@@ -139,9 +151,9 @@ class PickerModal extends Modal {
             )
             .addButton((b) => {
                 this.reviewBtn = b.buttonEl;
-                b.setButtonText("Review")
+                b.setButtonText("Next")
                     .setCta()
-                    .onClick(() => this.showReview());
+                    .onClick(() => this.next());
             });
         footer.settingEl.addClass("docket-picker-footer");
         this.countEl = footer.infoEl;
@@ -423,6 +435,150 @@ class PickerModal extends Modal {
         if (this.reviewBtn !== null) this.reviewBtn.disabled = n === 0;
     }
 
+    /** next leaves the tree for the folder step, or for review when nothing is added. */
+    private next(): void {
+        if (this.draft.adds.size > 0) this.showFolder(true);
+        else this.showReview();
+    }
+
+    /** back leaves review for the folder step, or for the tree when nothing is added. */
+    private back(): void {
+        if (this.draft.adds.size > 0) this.showFolder(false);
+        else this.showTree();
+    }
+
+    /**
+     * showFolder draws the folder step: a tree of the sync folder's folders to
+     * pick from, a folder field that also takes a new path, and a preview of
+     * every addition's path. It
+     * starts on the folder chosen before, else the one {@link suggestFolder}
+     * proposes; when `apply` is set (coming from the tree) it moves every
+     * addition there, otherwise (back from review) paths edited there stay.
+     */
+    private showFolder(apply: boolean): void {
+        this.setTitle("Choose a folder");
+        const { contentEl } = this;
+        contentEl.empty();
+        const root = syncFolder(this.settings.syncRoot);
+        const n = this.draft.adds.size;
+        const start = this.folder ?? suggestFolder(this.settings, this.draft);
+        if (apply) this.pickFolder(start);
+        else this.folder = start;
+
+        contentEl.createDiv({
+            cls: "setting-item-description docket-picker-intro",
+            text:
+                `Where in ${root === "" ? "the vault" : `${root}/`} the ` +
+                `${n} new location${n === 1 ? "" : "s"} go. Each keeps the ` +
+                "name from its Confluence title; you can still change single " +
+                "paths in the next step.",
+        });
+        const tree = contentEl.createDiv({ cls: "docket-picker-folders" });
+        const fieldRow = contentEl.createDiv({ cls: "docket-picker-field" });
+        fieldRow.createSpan({ text: "Folder" });
+        const field = fieldRow.createEl("input", {
+            attr: {
+                type: "text",
+                placeholder: "Top of the sync folder",
+                "aria-label": "Folder",
+            },
+        });
+        field.value = start;
+        const hint = contentEl.createDiv({ cls: "docket-picker-hint" });
+        const preview = contentEl.createDiv({ cls: "docket-picker-preview" });
+        const folders = this.app.vault
+            .getAllLoadedFiles()
+            .filter((f): f is TFolder => f instanceof TFolder && !f.isRoot())
+            .map((f) => f.path);
+        const known = new Set(folderChoices(folders, root, ""));
+
+        const draw = (): void => {
+            const current = this.folder ?? "";
+            hint.setText(
+                current !== "" && !known.has(current)
+                    ? `New folder: ${current}/ is created on the first pull.`
+                    : "",
+            );
+            tree.empty();
+            for (const f of folderRows(
+                folders,
+                root,
+                this.folderOpen,
+                current,
+            )) {
+                const row = tree.createDiv({
+                    cls: `docket-picker-row docket-picker-folder${f.path === current ? " is-selected" : ""}`,
+                });
+                row.style.setProperty("--docket-depth", String(f.depth));
+                const twisty = row.createSpan({ cls: "docket-picker-twisty" });
+                if (f.hasKids && f.path !== "") {
+                    twisty.addClass("is-clickable");
+                    setIcon(twisty, f.open ? "chevron-down" : "chevron-right");
+                    twisty.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        if (f.open) this.folderOpen.delete(f.path);
+                        else this.folderOpen.add(f.path);
+                        draw();
+                    });
+                }
+                setIcon(
+                    row.createSpan({ cls: "docket-location-icon" }),
+                    f.path === "" ? "vault" : f.open ? "folder-open" : "folder",
+                );
+                row.createSpan({
+                    cls: "docket-picker-title",
+                    text:
+                        f.path === ""
+                            ? root === ""
+                                ? "Vault"
+                                : `${root}/`
+                            : `${f.name}/`,
+                });
+                row.addEventListener("click", () => {
+                    field.value = f.path;
+                    this.pickFolder(f.path);
+                    draw();
+                });
+            }
+            preview.empty();
+            for (const add of this.draft.adds.values()) {
+                const row = preview.createDiv({
+                    cls: "docket-picker-preview-row",
+                });
+                setIcon(
+                    row.createSpan({ cls: "docket-location-icon" }),
+                    KIND_ICON[add.node.kind],
+                );
+                row.createSpan({ text: add.node.title });
+                row.createSpan({
+                    cls: "docket-picker-preview-path",
+                    text: root === "" ? add.dest : `${root}/${add.dest}`,
+                });
+            }
+        };
+        field.addEventListener("input", () => {
+            this.pickFolder(field.value);
+            draw();
+        });
+        draw();
+        new Setting(contentEl)
+            .addButton((b) =>
+                b.setButtonText("Back").onClick(() => this.showTree()),
+            )
+            .addButton((b) =>
+                b
+                    .setButtonText("Next")
+                    .setCta()
+                    .onClick(() => this.showReview()),
+            );
+    }
+
+    /** pickFolder records `dir` as the chosen folder and moves the additions there. */
+    private pickFolder(dir: string): void {
+        this.draft = setFolder(this.draft, dir);
+        this.folder = draftFolder(this.draft) ?? dir.trim();
+    }
+
     /** showReview draws the review step: one row per change, then Save. */
     private showReview(): void {
         this.setTitle("Review changes");
@@ -496,7 +652,7 @@ class PickerModal extends Modal {
 
         new Setting(contentEl)
             .addButton((b) =>
-                b.setButtonText("Back").onClick(() => this.showTree()),
+                b.setButtonText("Back").onClick(() => this.back()),
             )
             .addButton((b) => {
                 saveBtn = b.buttonEl;

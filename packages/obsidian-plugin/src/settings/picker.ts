@@ -17,10 +17,12 @@ import {
     posixDir,
     posixJoin,
     type Space,
+    spaceKeyOf,
     spaceLinkKey,
     tryPageID,
     validateName,
 } from "@docket/core";
+import { ASSETS_DIR } from "../runtime-dirs.ts";
 import {
     checkLocation,
     type Location,
@@ -30,6 +32,7 @@ import {
     removeLocation,
     titleDest,
 } from "./locations.ts";
+import { normalizeConfluenceSource } from "./source.ts";
 
 /**
  * Cover names the synced root a node falls under. A space's walk descends
@@ -310,6 +313,131 @@ export function setDest(d: Draft, key: string, dest: string): Draft {
     const adds = new Map(d.adds);
     adds.set(key, { ...add, dest: dest.trim() });
     return { ...d, adds };
+}
+
+/** folderOf is the folder of vault path `p`, `""` for the top of the sync folder. */
+function folderOf(p: string): string {
+    const dir = posixDir(p);
+    return dir === "." ? "" : dir;
+}
+
+/**
+ * draftFolder is the folder every addition shares (`""` for the top of the
+ * sync folder), or null when they differ or the draft adds nothing.
+ */
+export function draftFolder(d: Draft): string | null {
+    const dirs = new Set([...d.adds.values()].map((a) => folderOf(a.dest)));
+    return dirs.size === 1 ? ([...dirs][0] ?? null) : null;
+}
+
+/**
+ * setFolder returns the draft with every addition moved into `folder` (`""`
+ * for the top of the sync folder), each keeping its file or folder name.
+ */
+export function setFolder(d: Draft, folder: string): Draft {
+    const dir = folder.trim().replace(/^\/+|\/+$/g, "");
+    const adds = new Map<string, Addition>();
+    for (const [key, add] of d.adds) {
+        const name = posixBase(add.dest);
+        adds.set(key, { ...add, dest: dir === "" ? name : `${dir}/${name}` });
+    }
+    return { ...d, adds };
+}
+
+/**
+ * suggestFolder proposes where the draft's additions go: the folder that the
+ * synced locations from the same spaces share, or `""` (the top of the sync
+ * folder) when none are synced or their folders share nothing.
+ */
+export function suggestFolder(s: docketSettings, d: Draft): string {
+    const keys = new Set([...d.adds.values()].map((a) => a.node.spaceKey));
+    const dirs = locations(s)
+        .filter((l) => keys.has(spaceKeyOf(normalizeConfluenceSource(l.src))))
+        .map((l) => folderOf(l.dest).split("/"));
+    const [first, ...rest] = dirs;
+    if (first === undefined) return "";
+    let n = first.length;
+    for (const segs of rest) {
+        let i = 0;
+        while (i < n && segs[i] === first[i]) i++;
+        n = i;
+    }
+    return first.slice(0, n).join("/");
+}
+
+/**
+ * folderChoices lists the vault `folders` under `base` (relative to it) whose
+ * path contains `query` (case-insensitive), sorted; hidden folders and the
+ * shared media folder are left out.
+ */
+export function folderChoices(
+    folders: string[],
+    base: string,
+    query: string,
+): string[] {
+    const root =
+        base === "" || base === "." ? "" : `${base.replace(/\/+$/, "")}/`;
+    const q = query.trim().toLowerCase();
+    return folders
+        .filter((p) => p.startsWith(root) && p.length > root.length)
+        .map((p) => p.slice(root.length))
+        .filter(
+            (p) =>
+                !p
+                    .split("/")
+                    .some((seg) => seg.startsWith(".") || seg === ASSETS_DIR),
+        )
+        .filter((p) => p.toLowerCase().includes(q))
+        .sort((a, b) => a.localeCompare(b));
+}
+
+/** FolderRow is one visible row of the folder step's tree. */
+export interface FolderRow {
+    /** The folder under the sync folder; `""` for the top row. */
+    path: string;
+    /** The last path segment; `""` for the top row. */
+    name: string;
+    depth: number;
+    hasKids: boolean;
+    open: boolean;
+}
+
+/**
+ * folderRows lays the vault `folders` under `base` out as the folder step's
+ * tree: the top row, then each folder under its parent, sorted, as far down
+ * as the open folders reach. A folder is open when `open` holds it or it lies
+ * above `selected`; the top row is always open. Folders {@link folderChoices}
+ * leaves out are left out here too.
+ */
+export function folderRows(
+    folders: string[],
+    base: string,
+    open: ReadonlySet<string>,
+    selected: string,
+): FolderRow[] {
+    const kids = new Map<string, string[]>();
+    for (const p of folderChoices(folders, base, "")) {
+        const parent = folderOf(p);
+        kids.set(parent, [...(kids.get(parent) ?? []), p]);
+    }
+    const above = new Set<string>();
+    for (let p = folderOf(selected); p !== ""; p = folderOf(p)) above.add(p);
+    const rows: FolderRow[] = [];
+    const walk = (path: string, depth: number): void => {
+        const mine = kids.get(path) ?? [];
+        const isOpen = path === "" || open.has(path) || above.has(path);
+        rows.push({
+            path,
+            name: path === "" ? "" : posixBase(path),
+            depth,
+            hasKids: mine.length > 0,
+            open: mine.length > 0 && isOpen,
+        });
+        if (!isOpen) return;
+        for (const kid of mine) walk(kid, depth + 1);
+    };
+    walk("", 0);
+    return rows;
 }
 
 /** changeCount is how many additions, removals, and renames the draft holds. */

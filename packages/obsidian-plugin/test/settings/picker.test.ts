@@ -13,16 +13,21 @@ import {
     changeCount,
     childNodes,
     currentName,
+    draftFolder,
     emptyDraft,
+    folderChoices,
+    folderRows,
     groupSpaces,
     isTicked,
     localName,
     renameKind,
     review,
     setDest,
+    setFolder,
     setRename,
     sourceOf,
     spaceNode,
+    suggestFolder,
     syncedAs,
     type TreeNode,
     toggle,
@@ -389,5 +394,208 @@ describe("rename", () => {
             "docs/Taken.md is already a synced location.",
         );
         expect(canSave(clash)).toBe(false);
+    });
+});
+
+describe("draftFolder", () => {
+    const s = settings();
+    const a = child(s, ENG, kid("1", "page", "A"));
+    const b = child(s, ENG, kid("2", "page", "B"));
+
+    it("is the folder every addition shares, '' for the top", () => {
+        const d = toggle(s, toggle(s, emptyDraft(), a), b);
+
+        expect(draftFolder(d)).toBe("");
+        expect(draftFolder(setFolder(d, "srd"))).toBe("srd");
+    });
+
+    it("is null when the additions differ or there are none", () => {
+        const d = toggle(s, toggle(s, emptyDraft(), a), b);
+        const mixed = setDest(d, a.key, "x/A.md");
+
+        expect(draftFolder(mixed)).toBeNull();
+        expect(draftFolder(emptyDraft())).toBeNull();
+    });
+});
+
+describe("setFolder", () => {
+    const s = settings();
+    const page = child(s, ENG, kid("1", "page", "Release Notes"));
+    const d = toggle(s, toggle(s, emptyDraft(), page), ENG);
+
+    it("moves every addition into the folder, keeping its name", () => {
+        const have = setFolder(d, " srd/new/ ");
+
+        expect(have.adds.get(page.key)?.dest).toBe("srd/new/Release Notes.md");
+        expect(have.adds.get(ENG.key)?.dest).toBe("srd/new/Engineering");
+    });
+
+    it("moves them back to the top for ''", () => {
+        const have = setFolder(setFolder(d, "srd"), "");
+
+        expect(have.adds.get(page.key)?.dest).toBe("Release Notes.md");
+    });
+
+    it("leaves removals, renames, and the input draft alone", () => {
+        const synced = settings({
+            spaces: { eng: "/wiki/spaces/ENG/overview" },
+        });
+        const withRemove = toggle(synced, d, ENG);
+
+        const have = setFolder(withRemove, "srd");
+
+        expect(have.removes).toBe(withRemove.removes);
+        expect(have.renames).toBe(withRemove.renames);
+        expect(d.adds.get(page.key)?.dest).toBe("Release Notes.md");
+    });
+});
+
+describe("suggestFolder", () => {
+    const srd = (n: string): [string, string] => [
+        `srd/int${n}/int${n}-srd.md`,
+        `/wiki/spaces/ENG/pages/${n}0/T`,
+    ];
+
+    it("is the folder the space's synced locations share", () => {
+        const s = settings({
+            pages: Object.fromEntries([srd("1"), srd("2")]),
+            spaces: { "doc/ops": "/wiki/spaces/OPS/overview" },
+        });
+        const page = child(s, ENG, kid("9", "page"));
+
+        const have = suggestFolder(s, toggle(s, emptyDraft(), page));
+
+        expect(have).toBe("srd");
+    });
+
+    it("uses a lone location's own folder", () => {
+        const s = settings({ pages: Object.fromEntries([srd("1")]) });
+        const page = child(s, ENG, kid("9", "page"));
+
+        const have = suggestFolder(s, toggle(s, emptyDraft(), page));
+
+        expect(have).toBe("srd/int1");
+    });
+
+    it("is '' when nothing from the space is synced", () => {
+        const s = settings({
+            spaces: { "doc/ops": "/wiki/spaces/OPS/overview" },
+        });
+        const page = child(s, ENG, kid("9", "page"));
+
+        const have = suggestFolder(s, toggle(s, emptyDraft(), page));
+
+        expect(have).toBe("");
+    });
+
+    it("is '' when the folders share nothing", () => {
+        const s = settings({
+            pages: {
+                "a/x.md": "/wiki/spaces/ENG/pages/1",
+                "b/y.md": "/wiki/spaces/ENG/pages/2",
+            },
+        });
+        const page = child(s, ENG, kid("9", "page"));
+
+        const have = suggestFolder(s, toggle(s, emptyDraft(), page));
+
+        expect(have).toBe("");
+    });
+});
+
+describe("folderChoices", () => {
+    const folders = [
+        "conflu",
+        "conflu/srd",
+        "conflu/srd/int1",
+        "conflu/doc",
+        "conflu/_docket-media",
+        "conflu/_docket-media/img",
+        "conflu/.adf_cache",
+        "kb",
+    ];
+
+    it("lists the folders under the base, relative and sorted", () => {
+        const have = folderChoices(folders, "conflu", "");
+
+        expect(have).toEqual(["doc", "srd", "srd/int1"]);
+    });
+
+    it("filters by a case-insensitive substring", () => {
+        const have = folderChoices(folders, "conflu", " SRD ");
+
+        expect(have).toEqual(["srd", "srd/int1"]);
+    });
+
+    it("lists the whole vault for an empty base", () => {
+        const have = folderChoices(folders, "", "");
+
+        expect(have).toEqual([
+            "conflu",
+            "conflu/doc",
+            "conflu/srd",
+            "conflu/srd/int1",
+            "kb",
+        ]);
+    });
+});
+
+describe("folderRows", () => {
+    const folders = [
+        "conflu",
+        "conflu/srd",
+        "conflu/srd/int1",
+        "conflu/srd/int2",
+        "conflu/doc",
+        "conflu/doc/infraport",
+        "conflu/_docket-media",
+    ];
+    /** shape renders rows as indented names, `+`/`-` marking closed/open parents. */
+    const shape = (rows: ReturnType<typeof folderRows>): string[] =>
+        rows.map(
+            (r) =>
+                `${"  ".repeat(r.depth)}${r.hasKids ? (r.open ? "-" : "+") : " "}${r.name || "(top)"}`,
+        );
+
+    it("shows the top and its folders, closed", () => {
+        const have = folderRows(folders, "conflu", new Set(), "");
+
+        expect(shape(have)).toEqual(["-(top)", "  +doc", "  +srd"]);
+    });
+
+    it("opens the folders above the selected one", () => {
+        const have = folderRows(folders, "conflu", new Set(), "srd/int2");
+
+        expect(shape(have)).toEqual([
+            "-(top)",
+            "  +doc",
+            "  -srd",
+            "     int1",
+            "     int2",
+        ]);
+        expect(have.map((r) => r.path)).toEqual([
+            "",
+            "doc",
+            "srd",
+            "srd/int1",
+            "srd/int2",
+        ]);
+    });
+
+    it("opens the folders the user opened", () => {
+        const have = folderRows(folders, "conflu", new Set(["doc"]), "");
+
+        expect(shape(have)).toEqual([
+            "-(top)",
+            "  -doc",
+            "     infraport",
+            "  +srd",
+        ]);
+    });
+
+    it("shows only the top when there are no folders", () => {
+        const have = folderRows([], "conflu", new Set(), "new/place");
+
+        expect(shape(have)).toEqual([" (top)"]);
     });
 });
