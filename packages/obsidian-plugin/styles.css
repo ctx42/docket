@@ -107,11 +107,19 @@
     color: var(--text-muted);
     font-size: var(--font-ui-small);
 }
-.docket-card-link {
-    color: var(--text-muted);
+.docket-card-sub.is-one-line {
+    flex-wrap: nowrap;
+    min-width: 0;
 }
-.docket-dot {
-    color: var(--text-faint);
+.docket-card-sub .clickable-icon {
+    flex: 0 0 auto;
+    padding: 0 var(--size-2-1);
+}
+.docket-ellipsis {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .docket-card-body {
     padding: var(--size-4-2) var(--size-4-3) var(--size-4-3);
@@ -137,8 +145,13 @@
     color: var(--color-blue);
 }
 
-/* Settings: the location tree — a header, folder rows that fold, and one row
-   per location: vault path, kind icon and title, space key, hover actions. */
+/* Settings: the location tree. The tree is a size container: in a narrow
+   card (the settings window rarely gives more than ~600px) each location is
+   two lines — kind icon, title, and space chip, then the vault path — and
+   from 720px it is one row of columns under a header. Hover actions take the
+   chip's place in the narrow layout. Hover only toggles visibility, never
+   display, and the action buttons are no taller than a text line, so a row
+   keeps its height when the pointer moves over it. */
 .docket-tree-tools {
     display: flex;
     align-items: center;
@@ -146,44 +159,31 @@
     padding-bottom: var(--size-4-2);
 }
 .docket-tree-filter {
-    min-width: 260px;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 .docket-tree-spacer {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
 }
-.docket-tree-row {
-    display: grid;
-    grid-template-columns: minmax(0, 15em) minmax(0, 1fr) minmax(0, 7em) auto;
-    align-items: center;
-    gap: var(--size-4-2);
-    min-height: 32px;
-    padding: 0 var(--size-4-1);
-    border-radius: var(--radius-s);
+.docket-tree {
+    container-type: inline-size;
 }
-.docket-tree-row:hover:not(.is-header) {
-    background: var(--background-modifier-hover);
-}
-.docket-tree-row.is-header {
-    min-height: 24px;
-    color: var(--text-faint);
-    font-size: var(--font-ui-smaller);
-    font-weight: var(--font-semibold);
-    text-transform: uppercase;
-}
-.docket-tree-row.is-group {
-    cursor: pointer;
-}
-.docket-tree-path {
+.docket-tree-group {
     display: flex;
     align-items: center;
-    overflow: hidden;
+    gap: var(--size-2-2);
+    padding: var(--size-4-2) var(--size-4-1) var(--size-2-2);
     color: var(--text-muted);
+    cursor: var(--cursor);
+}
+.docket-tree-group-name {
     font-family: var(--font-monospace);
     font-size: var(--font-ui-smaller);
-    white-space: nowrap;
 }
-.docket-tree-path.is-nested {
-    padding-left: 1.4em;
+.docket-tree-group-info {
+    margin-left: auto;
+    color: var(--text-faint);
+    font-size: var(--font-ui-smaller);
 }
 .docket-tree-chevron {
     display: inline-flex;
@@ -193,17 +193,38 @@
     width: 14px;
     height: 14px;
 }
+.docket-tree-row {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    grid-template-areas:
+        "icon title meta"
+        ".    path  path";
+    align-items: center;
+    column-gap: var(--size-4-2);
+    padding: var(--size-2-3) var(--size-4-1);
+    border-radius: var(--radius-s);
+}
+.docket-tree-row.is-nested {
+    padding-left: 1.4em;
+}
+.docket-tree-row:hover:not(.is-header) {
+    background: var(--background-modifier-hover);
+}
+.docket-tree-row.is-header {
+    display: none;
+}
+.docket-tree-icon {
+    grid-area: icon;
+    display: inline-flex;
+    color: var(--text-muted);
+}
 .docket-tree-title {
+    grid-area: title;
     display: flex;
     align-items: center;
     gap: var(--size-4-2);
     min-width: 0;
     white-space: nowrap;
-}
-.docket-tree-icon {
-    display: inline-flex;
-    flex: 0 0 auto;
-    color: var(--text-muted);
 }
 .docket-tree-text {
     overflow: hidden;
@@ -213,21 +234,90 @@
     color: var(--text-faint);
     font-size: var(--font-ui-smaller);
 }
-.docket-tree-space {
-    overflow: hidden;
+.docket-tree-meta {
+    grid-area: meta;
+    display: flex;
+    justify-content: flex-end;
+}
+.docket-tree-meta.is-shared {
+    display: none;
+}
+.docket-tree-chip {
+    padding: 0 var(--size-2-3);
+    border-radius: var(--radius-s);
+    background: var(--background-modifier-hover);
     color: var(--text-muted);
     font-size: var(--font-ui-smaller);
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 .docket-tree-acts {
+    grid-area: meta;
     display: flex;
+    justify-content: flex-end;
     gap: var(--size-2-1);
     visibility: hidden;
+}
+.docket-tree-acts .clickable-icon {
+    height: 20px;
+    padding: 0 var(--size-2-2);
 }
 .docket-tree-row:hover .docket-tree-acts,
 .docket-tree-row:focus-within .docket-tree-acts {
     visibility: visible;
+}
+.docket-tree-row:hover .docket-tree-meta,
+.docket-tree-row:focus-within .docket-tree-meta {
+    visibility: hidden;
+}
+.docket-tree-path {
+    grid-area: path;
+    overflow: hidden;
+    color: var(--text-faint);
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-smaller);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+@container (min-width: 720px) {
+    .docket-tree-row,
+    .docket-tree-row.is-header {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 15em) 18px minmax(0, 1fr) minmax(0, 7em)
+            auto;
+        grid-template-areas: "path icon title meta acts";
+        min-height: 32px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .docket-tree-row.is-header {
+        min-height: 24px;
+        color: var(--text-faint);
+        font-size: var(--font-ui-smaller);
+        font-weight: var(--font-semibold);
+        text-transform: uppercase;
+    }
+    .docket-tree-row.is-header .docket-tree-path {
+        font-family: inherit;
+    }
+    .docket-tree-row.is-header .docket-tree-title {
+        grid-column: 2 / 4;
+    }
+    .docket-tree-path {
+        color: var(--text-muted);
+    }
+    .docket-tree-meta,
+    .docket-tree-meta.is-shared {
+        display: flex;
+        justify-content: flex-start;
+    }
+    .docket-tree-acts {
+        grid-area: acts;
+    }
+    .docket-tree-row:hover .docket-tree-meta,
+    .docket-tree-row:focus-within .docket-tree-meta {
+        visibility: visible;
+    }
 }
 .docket-location.is-invalid {
     background: rgba(var(--color-red-rgb), 0.12);

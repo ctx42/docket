@@ -10,6 +10,7 @@
 import { homedir } from "node:os";
 import { posixDir, siteDomain, syncFolder } from "@docket/core";
 import {
+    Menu,
     Notice,
     normalizePath,
     parseYaml,
@@ -85,26 +86,52 @@ export class LocationsSection {
         const heading = new Setting(el)
             .setName("Sources")
             .setHeading()
-            .addButton((b) =>
+            .addExtraButton((b) =>
                 b
-                    .setButtonText("Import")
-                    .setTooltip("Merge the locations of a .docket.yaml file")
+                    .setIcon("download")
+                    .setTooltip("Import a .docket.yaml file")
                     .onClick(() => void this.importPortable()),
             )
-            .addButton((b) =>
+            .addExtraButton((b) =>
                 b
-                    .setButtonText("Export")
+                    .setIcon("upload")
                     .setTooltip(
-                        "Write the locations and shared options to a " +
+                        "Export the sources and shared options to a " +
                             ".docket.yaml file. It never includes your " +
                             "credentials.",
                     )
                     .onClick(() => void this.exportPortable()),
+            )
+            .addButton((b) =>
+                b
+                    .setButtonText("Add ▾")
+                    .setCta()
+                    .setTooltip("Add a Confluence location")
+                    .onClick(() => this.addMenu(b.buttonEl)),
             );
         scopeTag(heading.nameEl, "exported");
 
         this.cardEl = el.createDiv({ cls: "docket-card" });
         this.renderCard();
+    }
+
+    /** addMenu opens the Add menu under `anchor`. */
+    private addMenu(anchor: HTMLElement): void {
+        const menu = new Menu();
+        menu.addItem((i) =>
+            i
+                .setTitle("Confluence page, folder, or space…")
+                .setIcon("link")
+                .onClick(() => void this.edit(null)),
+        );
+        menu.addItem((i) =>
+            i
+                .setTitle("Browse Confluence…")
+                .setIcon("globe")
+                .onClick(() => void this.browse()),
+        );
+        const r = anchor.getBoundingClientRect();
+        menu.showAtPosition({ x: r.left, y: r.bottom + 4 });
     }
 
     /** renderCard draws the Confluence card: head, connection, tools, tree. */
@@ -130,29 +157,26 @@ export class LocationsSection {
         setTooltip(nameText, syncFolderDesc(s.syncRoot));
         name.createSpan({ cls: "docket-badge is-blue", text: "Confluence" });
 
-        const sub = title.createDiv({ cls: "docket-card-sub" });
-        sub.createSpan({
-            text: s.site === "" ? "No site yet" : siteDomain(s.site),
-        });
-        dot(sub);
-        sub.createSpan({
-            text: s.account === "" ? "Not signed in" : s.account,
-        });
+        const sub = title.createDiv({ cls: "docket-card-sub is-one-line" });
+        const who = [
+            s.site === "" ? "No site yet" : siteDomain(s.site),
+            s.account === "" ? "Not signed in" : s.account,
+        ].join(" · ");
+        setTooltip(sub.createSpan({ cls: "docket-ellipsis", text: who }), who);
         if (ready) {
-            const toggle = sub.createEl("a", {
-                cls: "docket-card-link",
-                text: this.connOpen ? "done" : "change",
-                href: "#",
-            });
-            toggle.addEventListener("click", (e) => {
-                e.preventDefault();
-                this.connOpen = !this.connOpen;
-                this.renderCard();
-            });
+            iconButton(
+                sub,
+                this.connOpen ? "check" : "pencil",
+                this.connOpen ? "Done" : "Change the connection",
+                () => {
+                    this.connOpen = !this.connOpen;
+                    this.renderCard();
+                },
+            );
         }
-        dot(sub);
         const count = locations(s).length;
-        sub.createSpan({
+        title.createDiv({
+            cls: "docket-card-sub",
             text: `${count} location${count === 1 ? "" : "s"}`,
         });
 
@@ -184,12 +208,13 @@ export class LocationsSection {
             });
         }
         tools.createDiv({ cls: "docket-tree-spacer" });
-        const browse = tools.createEl("button", { text: "Browse Confluence…" });
-        browse.addEventListener("click", () => void this.browse());
-        const add = tools.createEl("button", {
-            cls: "mod-cta",
-            text: "Add by link",
-        });
+        iconButton(
+            tools,
+            "globe",
+            "Browse Confluence…",
+            () => void this.browse(),
+        );
+        const add = tools.createEl("button", { text: "Add by link" });
         add.addEventListener("click", () => void this.edit(null));
 
         this.listEl = body.createDiv({ cls: "docket-tree" });
@@ -225,58 +250,63 @@ export class LocationsSection {
             return;
         }
         const header = el.createDiv({ cls: "docket-tree-row is-header" });
-        for (const label of ["Vault path", "Confluence", "Space", ""]) {
-            header.createDiv({ text: label });
-        }
+        header.createDiv({ cls: "docket-tree-path", text: "Vault path" });
+        header.createDiv({ cls: "docket-tree-title", text: "Confluence" });
+        header.createDiv({ cls: "docket-tree-meta", text: "Space" });
         for (const g of groups) {
             if (g.name !== "") this.groupRow(el, g);
             if (!g.open) continue;
-            for (const row of g.rows) this.locationRow(el, row, g.name !== "");
+            for (const row of g.rows) {
+                this.locationRow(el, row, g.name !== "", g.space !== "");
+            }
         }
     }
 
     /** groupRow draws a folder row that opens or closes its group. */
     private groupRow(el: HTMLElement, g: TreeGroup): void {
-        const row = el.createDiv({ cls: "docket-tree-row is-group" });
-        const path = row.createDiv({ cls: "docket-tree-path" });
+        const row = el.createDiv({ cls: "docket-tree-group" });
         setIcon(
-            path.createSpan({ cls: "docket-tree-chevron" }),
+            row.createSpan({ cls: "docket-tree-chevron" }),
             g.open ? "chevron-down" : "chevron-right",
         );
-        path.createSpan({ text: `${g.name}/` });
-        const title = row.createDiv({ cls: "docket-tree-title" });
-        if (!g.open) {
-            const n = g.rows.length;
-            title.createSpan({
-                cls: "docket-badge",
-                text: `${n} location${n === 1 ? "" : "s"}`,
-            });
-        }
-        row.createDiv({ cls: "docket-tree-space", text: g.space });
-        row.createDiv();
+        row.createSpan({ cls: "docket-tree-group-name", text: `${g.name}/` });
+        const n = g.rows.length;
+        const info = [`${n} location${n === 1 ? "" : "s"}`];
+        if (g.space !== "") info.push(g.space);
+        row.createSpan({
+            cls: "docket-tree-group-info",
+            text: info.join(" · "),
+        });
         row.addEventListener("click", () => {
             this.open.set(g.name, !g.open);
             this.renderList();
         });
     }
 
-    /** locationRow draws one location with its hover actions. */
-    private locationRow(el: HTMLElement, r: TreeRow, nested: boolean): void {
+    /**
+     * locationRow draws one location: kind icon, title, space chip, hover
+     * actions, and the vault path. CSS lays it out as two lines in a narrow
+     * card and as one row of columns in a wide one. `shared` hides the chip
+     * in the narrow layout, where the group line already names the space.
+     */
+    private locationRow(
+        el: HTMLElement,
+        r: TreeRow,
+        nested: boolean,
+        shared: boolean,
+    ): void {
         const { loc } = r;
         const s = this.ctx.plugin.settings;
-        const row = el.createDiv({ cls: "docket-tree-row docket-location" });
+        const row = el.createDiv({
+            cls: `docket-tree-row docket-location${nested ? " is-nested" : ""}`,
+        });
         row.dataset["dest"] = loc.dest;
 
-        const path = row.createDiv({
-            cls: `docket-tree-path${nested ? " is-nested" : ""}`,
-            text: r.label,
-        });
-        setTooltip(path, loc.dest);
-
-        const title = row.createDiv({ cls: "docket-tree-title" });
-        const icon = title.createSpan({ cls: "docket-tree-icon" });
+        const icon = row.createDiv({ cls: "docket-tree-icon" });
         setIcon(icon, KIND_ICON[loc.kind]);
         setTooltip(icon, KIND_LABEL[loc.kind]);
+
+        const title = row.createDiv({ cls: "docket-tree-title" });
         const text = title.createSpan({
             cls: "docket-tree-text",
             text: r.title,
@@ -296,7 +326,13 @@ export class LocationsSection {
                 text: "not pulled yet",
             });
         }
-        row.createDiv({ cls: "docket-tree-space", text: r.space });
+
+        const meta = row.createDiv({
+            cls: `docket-tree-meta${shared ? " is-shared" : ""}`,
+        });
+        if (r.space !== "") {
+            meta.createSpan({ cls: "docket-tree-chip", text: r.space });
+        }
 
         const acts = row.createDiv({ cls: "docket-tree-acts" });
         const url = pageUrl(s.site, loc.src);
@@ -312,6 +348,9 @@ export class LocationsSection {
             "Remove (the notes stay in the vault)",
             () => this.save(removeLocation(this.ctx.plugin.settings, loc)),
         );
+
+        const path = row.createDiv({ cls: "docket-tree-path", text: r.label });
+        setTooltip(path, loc.dest);
     }
 
     /**
@@ -471,11 +510,6 @@ export class LocationsSection {
             new Notice(`docket: import failed: ${errorMessage(err)}`);
         }
     }
-}
-
-/** dot appends a separator dot to a card's summary line. */
-function dot(el: HTMLElement): void {
-    el.createSpan({ cls: "docket-dot", text: "·" });
 }
 
 /** iconButton appends a small icon button with a tooltip to `el`. */
