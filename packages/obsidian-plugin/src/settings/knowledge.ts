@@ -15,21 +15,68 @@ import {
 } from "@docket/core";
 import { ASSETS_DIR } from "../runtime-dirs.ts";
 
+/** FRONT_RE matches a note's leading front matter block. */
+const FRONT_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
+
+/** unquote strips one pair of matching YAML quotes from a scalar. */
+function unquote(v: string): string {
+    const t = v.trim();
+    const q = t[0];
+    return (q === '"' || q === "'") && t.endsWith(q) && t.length > 1
+        ? t.slice(1, -1)
+        : t;
+}
+
 /**
- * addSource adds `name` to the `sources` list of a `project-config.md` front
- * matter object, in place: appended to a list, a single string turned into a
- * list, or a new list. It returns whether it changed anything.
+ * addSource returns the text of a `project-config.md` note with `name`
+ * added to its front matter's `sources`, editing only those lines: appended
+ * to a block list in its indent, to a flow list, a single value turned into
+ * a flow list, or a new block list at the end of the front matter. It is
+ * undefined when `name` is already listed, and throws for a note without
+ * front matter.
  */
-export function addSource(fm: Record<string, unknown>, name: string): boolean {
-    const raw = fm["sources"];
-    const list = Array.isArray(raw)
-        ? [...raw]
-        : typeof raw === "string"
-          ? [raw]
-          : [];
-    if (list.includes(name)) return false;
-    fm["sources"] = [...list, name];
-    return true;
+export function addSource(text: string, name: string): string | undefined {
+    const m = FRONT_RE.exec(text);
+    if (m === null) throw new Error("the config note has no front matter");
+    const front = m[1] as string;
+    const nl = text.includes("\r\n") ? "\r\n" : "\n";
+    const lines = front.split(/\r?\n/);
+    const at = lines.findIndex((l) => /^sources:/.test(l));
+    let next: string[];
+    if (at < 0) {
+        next = [...lines, "sources:", `  - ${name}`];
+    } else {
+        const rest = (lines[at] as string).slice("sources:".length).trim();
+        if (rest === "") {
+            let end = at + 1;
+            let indent = "  ";
+            const items: string[] = [];
+            for (; end < lines.length; end++) {
+                const item = /^(\s+)-\s*(.*)$/.exec(lines[end] as string);
+                if (item === null) break;
+                indent = item[1] as string;
+                items.push(unquote(item[2] as string));
+            }
+            if (items.includes(name)) return undefined;
+            next = [...lines];
+            next.splice(end, 0, `${indent}- ${name}`);
+        } else if (rest.startsWith("[") && rest.endsWith("]")) {
+            const inner = rest.slice(1, -1).trim();
+            const items = inner === "" ? [] : inner.split(",").map(unquote);
+            if (items.includes(name)) return undefined;
+            next = [...lines];
+            next[at] =
+                `sources: [${[...(inner === "" ? [] : [inner]), name].join(", ")}]`;
+        } else {
+            if (unquote(rest) === name) return undefined;
+            next = [...lines];
+            next[at] = `sources: [${rest}, ${name}]`;
+        }
+    }
+    const start = m[0].indexOf(front);
+    return (
+        text.slice(0, start) + next.join(nl) + text.slice(start + front.length)
+    );
 }
 
 /**

@@ -335,11 +335,20 @@ export class KnowledgeSection {
             );
             return;
         }
-        let changed = false;
-        await app.fileManager.processFrontMatter(file, (fm) => {
-            changed = addSource(fm as Record<string, unknown>, kb.name);
-        });
-        if (changed && plugin.mcp.host.running) await plugin.mcp.host.restart();
+        // Edit only the `sources` lines: a front matter rewrite would drop
+        // comments and reformat the keys other tools write.
+        let next: string | undefined;
+        try {
+            next = addSource(await app.vault.read(file), kb.name);
+        } catch (err) {
+            new Notice(
+                `docket: ${(err as Error).message}; add ${kb.name} to its sources by hand.`,
+            );
+            return;
+        }
+        if (next === undefined) return;
+        await app.vault.modify(file, next);
+        if (plugin.mcp.host.running) await plugin.mcp.host.restart();
     }
 
     /** save stores the knowledge base list and redraws the cards. */

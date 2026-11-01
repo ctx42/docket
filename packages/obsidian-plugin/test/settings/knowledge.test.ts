@@ -12,34 +12,66 @@ import {
 } from "../../src/settings/knowledge.ts";
 
 describe("addSource", () => {
-    it("appends the folder to an existing list", () => {
-        const fm: Record<string, unknown> = { sources: ["conflu", "kb"] };
+    const BODY = "\n# Project\n\nHand-written notes.\n";
 
-        const have = addSource(fm, "kb-anna");
+    it("appends to a block list and keeps every other byte", () => {
+        const text = `---\nmcp-server: docs # the name\nsources:\n  - conflu\n  - kb\nkb: kb\n---${BODY}`;
 
-        expect(have).toBe(true);
-        expect(fm["sources"]).toEqual(["conflu", "kb", "kb-anna"]);
+        const have = addSource(text, "kb-anna");
+
+        expect(have).toBe(
+            `---\nmcp-server: docs # the name\nsources:\n  - conflu\n  - kb\n  - kb-anna\nkb: kb\n---${BODY}`,
+        );
     });
 
-    it("leaves a list that already has it", () => {
-        const fm: Record<string, unknown> = { sources: ["kb-anna"] };
+    it("appends to a flow list", () => {
+        const have = addSource(
+            "---\nsources: [conflu, kb]\nwatch: true\n---\n",
+            "kb-anna",
+        );
 
-        expect(addSource(fm, "kb-anna")).toBe(false);
-        expect(fm["sources"]).toEqual(["kb-anna"]);
+        expect(have).toBe(
+            "---\nsources: [conflu, kb, kb-anna]\nwatch: true\n---\n",
+        );
     });
 
-    it("starts a list when there is none", () => {
-        const fm: Record<string, unknown> = {};
+    it("turns a single value into a flow list", () => {
+        const have = addSource("---\nsources: conflu\n---\n", "kb");
 
-        expect(addSource(fm, "kb")).toBe(true);
-        expect(fm["sources"]).toEqual(["kb"]);
+        expect(have).toBe("---\nsources: [conflu, kb]\n---\n");
     });
 
-    it("turns a single string into a list", () => {
-        const fm: Record<string, unknown> = { sources: "conflu" };
+    it("adds a missing list at the end of the front matter", () => {
+        const have = addSource("---\nmcp-server: docs\n---\nBody\n", "kb");
 
-        expect(addSource(fm, "kb")).toBe(true);
-        expect(fm["sources"]).toEqual(["conflu", "kb"]);
+        expect(have).toBe(
+            "---\nmcp-server: docs\nsources:\n  - kb\n---\nBody\n",
+        );
+    });
+
+    it("keeps CRLF line ends", () => {
+        const have = addSource(
+            "---\r\nsources:\r\n  - conflu\r\n---\r\n",
+            "kb",
+        );
+
+        expect(have).toBe("---\r\nsources:\r\n  - conflu\r\n  - kb\r\n---\r\n");
+    });
+
+    it("is undefined when the folder is listed, quoted or not", () => {
+        expect(
+            addSource('---\nsources:\n  - "kb"\n---\n', "kb"),
+        ).toBeUndefined();
+        expect(
+            addSource("---\nsources: [conflu, 'kb']\n---\n", "kb"),
+        ).toBeUndefined();
+        expect(addSource("---\nsources: kb\n---\n", "kb")).toBeUndefined();
+    });
+
+    it("error - a note without front matter", () => {
+        expect(() => addSource("# Project\n", "kb")).toThrow(
+            "the config note has no front matter",
+        );
     });
 });
 
