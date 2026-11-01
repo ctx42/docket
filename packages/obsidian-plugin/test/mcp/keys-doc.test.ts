@@ -50,4 +50,41 @@ describe("withKeysSection", () => {
         expect(KEYS_SECTION).not.toMatch(/`(kb|srd-standard|srd-work)`/);
         expect(KEYS_SECTION).not.toMatch(/infraport|conflu/i);
     });
+
+    it("is prose, with no table", () => {
+        const rows = KEYS_SECTION.split("\n").filter((l) => l.startsWith("|"));
+
+        expect(rows).toEqual([]);
+    });
+
+    it("gives every key its own subsection, in the order a reader needs", () => {
+        const subs = KEYS_SECTION.split("\n").filter((l) =>
+            l.startsWith("### "),
+        );
+
+        expect(subs).toEqual([
+            "### `mcp-server`",
+            "### `mcp-port`",
+            "### `sources`",
+            "### `watch` and `watch-debounce`",
+            "### `precedence`",
+            "### `initiatives`",
+            "### `glossary`",
+            "### `gaps`",
+        ]);
+    });
+
+    it("never opens a second section, so a replace stops at the next one", () => {
+        const heads = KEYS_SECTION.split("\n").filter((l) =>
+            l.startsWith("## "),
+        );
+
+        expect(heads).toEqual([KEYS_HEADING]);
+    });
+
+    it("says the plugin restarts the server when a key changes", () => {
+        const text = KEYS_SECTION.replace(/\s+/g, " ");
+
+        expect(text).toContain("the plugin restarts the doc server");
+    });
 });
