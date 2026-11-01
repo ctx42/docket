@@ -116,7 +116,28 @@ describe("mergeSettings", () => {
         const have = parseSettings(structuredClone(saved));
 
         // --- Then ---
-        expect(have).toEqual({ ...saved, mcpConfigPath: "" });
+        expect(have).toEqual({
+            ...saved,
+            mcpConfigPath: "",
+            knowledgeBases: [],
+        });
+    });
+
+    it("defaults knowledgeBases for a file saved before they existed", () => {
+        expect(mergeSettings({ site: "ex" }).knowledgeBases).toEqual([]);
+    });
+
+    it("keeps well-formed knowledge bases and drops the rest", () => {
+        const have = mergeSettings({
+            knowledgeBases: [
+                { name: "kb", url: "git@h:me/kb.git", branch: "main" },
+                { name: "bad" },
+            ],
+        });
+
+        expect(have.knowledgeBases).toEqual([
+            { kind: "git", name: "kb", url: "git@h:me/kb.git", branch: "main" },
+        ]);
     });
 
     it("keeps a saved mcpConfigPath", () => {

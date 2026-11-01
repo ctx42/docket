@@ -29,6 +29,7 @@ export * from "./adf/render/table.ts";
 export * from "./cache/cache.ts";
 export * from "./config/config.ts";
 export * from "./config/device.ts";
+export * from "./config/knowledge.ts";
 export * from "./config/settings.ts";
 export * from "./config/sync-root.ts";
 export * from "./confluence/browse.ts";

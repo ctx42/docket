@@ -9,6 +9,7 @@
 // Reads no files and no environment; the hosts supply the parsed JSON.
 
 import { buildConfig, type Config } from "./config.ts";
+import { type KnowledgeBase, readKnowledgeBases } from "./knowledge.ts";
 
 /**
  * SETTINGS_SCHEMA_VERSION is the `data.json` schema version this build writes and
@@ -56,6 +57,8 @@ export interface docketSettings {
      * per-device choice kept outside this file.
      */
     mcpConfigPath: string;
+    /** Git repositories cloned into top-level vault folders for the doc server. */
+    knowledgeBases: KnowledgeBase[];
 }
 
 /** DEFAULT_SETTINGS is the configuration a freshly installed plugin starts with. */
@@ -73,6 +76,7 @@ export const DEFAULT_SETTINGS: docketSettings = {
     spaces: {},
     names: {},
     mcpConfigPath: "",
+    knowledgeBases: [],
 };
 
 /**
@@ -84,7 +88,12 @@ export const DEFAULT_SETTINGS: docketSettings = {
  */
 export function mergeSettings(data: unknown): docketSettings {
     const obj = isRecord(data) ? (data as Partial<docketSettings>) : {};
-    return { ...DEFAULT_SETTINGS, schemaVersion: 1, ...obj };
+    return {
+        ...DEFAULT_SETTINGS,
+        schemaVersion: 1,
+        ...obj,
+        knowledgeBases: readKnowledgeBases(obj.knowledgeBases),
+    };
 }
 
 /** SettingsVersionError is thrown for a `data.json` newer than this build reads. */
