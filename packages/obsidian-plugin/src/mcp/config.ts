@@ -1,9 +1,8 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The doc server's configuration as the plugin sees it: the vault-relative
-// path of its `project-config.md` (a shared setting; empty means the one at
-// the vault root) resolved to a disk path, and the URL clients reach the
+// The doc server's configuration as the plugin sees it: the
+// vault root's `project-config.md` resolved to a disk path, and the URL clients reach the
 // server at, read from that config the way `docket mcp` reads it. No
 // Obsidian imports, so it is unit-tested.
 
@@ -15,9 +14,17 @@ import { slashPath, splitHostPort } from "@docket/docserver-node";
 /** DEFAULT_CONFIG_PATH is the config an empty setting names: the vault root's. */
 export const DEFAULT_CONFIG_PATH = "project-config.md";
 
-/** configPath is the vault-relative config path a setting names. */
-export function configPath(setting: string): string {
-    return setting.trim() || DEFAULT_CONFIG_PATH;
+/**
+ * legacyConfigPath returns the config path an older plugin's saved settings
+ * (`raw`, the parsed `data.json`) named instead of the vault root's, or
+ * undefined. The config now always lives at the vault root.
+ */
+export function legacyConfigPath(raw: unknown): string | undefined {
+    if (typeof raw !== "object" || raw === null) return undefined;
+    const v = (raw as Record<string, unknown>)["mcpConfigPath"];
+    if (typeof v !== "string") return undefined;
+    const path = v.trim();
+    return path === "" || path === DEFAULT_CONFIG_PATH ? undefined : path;
 }
 
 /** McpConfigState is a resolved server config, or why there is none. */
@@ -32,7 +39,7 @@ export type McpConfigState =
  * rel is absolute or leaves the vault.
  */
 export function configDiskPath(base: string, rel: string): string {
-    const trimmed = configPath(rel);
+    const trimmed = rel.trim() || DEFAULT_CONFIG_PATH;
     if (trimmed.startsWith("/") || /^[A-Za-z]:[\\/]/.test(trimmed)) {
         throw new Error(`config path ${trimmed} must be relative to the vault`);
     }

@@ -95,7 +95,7 @@ describe("mergeSettings", () => {
         expect(mergeSettings({ site: "ex" }).names).toEqual({});
     });
 
-    it("loads a data.json saved before mcpConfigPath unchanged", () => {
+    it("loads a version-1 data.json unchanged", () => {
         // --- Given --- a complete file as a version-1 build wrote it.
         const saved = {
             schemaVersion: 1,
@@ -118,7 +118,6 @@ describe("mergeSettings", () => {
         // --- Then ---
         expect(have).toEqual({
             ...saved,
-            mcpConfigPath: "",
             knowledgeBases: [],
         });
     });
@@ -140,9 +139,9 @@ describe("mergeSettings", () => {
         ]);
     });
 
-    it("keeps a saved mcpConfigPath", () => {
+    it("drops a saved mcpConfigPath: the config is always the vault root's", () => {
         const have = mergeSettings({ mcpConfigPath: "srd/project-config.md" });
-        expect(have.mcpConfigPath).toBe("srd/project-config.md");
+        expect(have).not.toHaveProperty("mcpConfigPath");
     });
 
     it("reads a file without schemaVersion as version 1", () => {

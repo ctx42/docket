@@ -23,7 +23,7 @@ import {
 } from "@docket/core";
 import { Notice, setIcon, setTooltip, TFolder } from "obsidian";
 import { NodeGitExec } from "../adapters/git.ts";
-import { configPath } from "../mcp/config.ts";
+import { DEFAULT_CONFIG_PATH } from "../mcp/config.ts";
 import { type SettingsCtx, vaultBasePath } from "./fields.ts";
 import { addLocalFolder } from "./folder-kb-modal.ts";
 import { addKnowledgeBase } from "./kb-modal.ts";

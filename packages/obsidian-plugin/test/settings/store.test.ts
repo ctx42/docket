@@ -186,24 +186,23 @@ describe("MCP server switch", () => {
         expect(MCP_ENABLED_KEY).toBe("docket-mcp-enabled");
     });
 
-    it("keeps the path in data.json and the switch out of it", async () => {
+    it("keeps the switch out of data.json and drops an old config path", async () => {
         // --- Given ---
-        const plugin = fakePlugin({ site: "ex" });
+        const plugin = fakePlugin({
+            site: "ex",
+            mcpConfigPath: "srd/project-config.md",
+        });
         saveMcpEnabled(plugin, true);
         const settings = await loadSettings(plugin);
 
         // --- When ---
-        await saveSettings(plugin, {
-            ...settings,
-            mcpConfigPath: "srd/project-config.md",
-        });
+        await saveSettings(plugin, settings);
 
         // --- Then ---
         const have = (await plugin.loadData()) as Record<string, unknown>;
-        expect(have["mcpConfigPath"]).toBe("srd/project-config.md");
+        expect(have).not.toHaveProperty("mcpConfigPath");
         expect(Object.keys(have).sort()).toEqual(
             Object.keys(DEFAULT_SETTINGS).sort(),
         );
-        expect(settings.mcpConfigPath).toBe("");
     });
 });

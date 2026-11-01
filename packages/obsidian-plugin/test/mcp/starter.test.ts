@@ -50,7 +50,7 @@ describe("ensureConfig", () => {
     it("creates a missing default config", async () => {
         const files: Record<string, string> = {};
 
-        const have = await ensureConfig(memDeps(files), CFG, "", "conflu");
+        const have = await ensureConfig(memDeps(files), CFG, "conflu");
 
         expect(have).toBe(true);
         expect(files[CFG]).toBe(starterConfig("conflu"));
@@ -59,29 +59,14 @@ describe("ensureConfig", () => {
     it("leaves an existing config alone", async () => {
         const files: Record<string, string> = { [CFG]: "---\nx: 1\n---\n" };
 
-        const have = await ensureConfig(memDeps(files), CFG, "", "conflu");
+        const have = await ensureConfig(memDeps(files), CFG, "conflu");
 
         expect(have).toBe(false);
         expect(files[CFG]).toBe("---\nx: 1\n---\n");
     });
 
-    it("never creates a config the setting names elsewhere", async () => {
-        const files: Record<string, string> = {};
-        const cfg = "/v/team/project-config.md";
-
-        const have = await ensureConfig(
-            memDeps(files),
-            cfg,
-            "team/project-config.md",
-            "conflu",
-        );
-
-        expect(have).toBe(false);
-        expect(files).toEqual({});
-    });
-
     it("refuses without a sync folder to serve", async () => {
-        const have = ensureConfig(memDeps({}), CFG, "", "");
+        const have = ensureConfig(memDeps({}), CFG, "");
 
         await expect(have).rejects.toThrow(
             "project-config.md does not exist, and docket can only create one " +
@@ -92,7 +77,7 @@ describe("ensureConfig", () => {
     it("gets its port on the first start", async () => {
         const files: Record<string, string> = {};
         const deps = memDeps(files);
-        await ensureConfig(deps, CFG, "", "conflu");
+        await ensureConfig(deps, CFG, "conflu");
 
         const have = await assignPort(deps, CFG);
 

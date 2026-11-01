@@ -11,8 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
     configDiskPath,
-    configPath,
-    DEFAULT_CONFIG_PATH,
+    legacyConfigPath,
     mcpPort,
     mcpUrl,
     readMcpConfig,
@@ -65,15 +64,21 @@ describe("configDiskPath", () => {
     });
 });
 
-describe("configPath", () => {
+describe("legacyConfigPath", () => {
     it.each([
-        ["set", "srd/project-config.md", "srd/project-config.md"],
-        ["surrounding space", " srd/a.md ", "srd/a.md"],
-        ["empty", "", DEFAULT_CONFIG_PATH],
-        ["blank", "  ", DEFAULT_CONFIG_PATH],
-    ])("%s", (_name, setting, want) => {
+        ["no data", undefined, undefined],
+        ["no setting", { syncRoot: "x" }, undefined],
+        ["empty", { mcpConfigPath: "  " }, undefined],
+        ["the default", { mcpConfigPath: "project-config.md" }, undefined],
+        [
+            "another file",
+            { mcpConfigPath: " srd/project-config.md " },
+            "srd/project-config.md",
+        ],
+        ["not a string", { mcpConfigPath: 7 }, undefined],
+    ])("%s", (_name, raw, want) => {
         // --- When ---
-        const have = configPath(setting);
+        const have = legacyConfigPath(raw);
 
         // --- Then ---
         expect(have).toBe(want);

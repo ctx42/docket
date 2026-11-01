@@ -14,7 +14,6 @@ import {
     TFile,
     TFolder,
 } from "obsidian";
-
 import { loadDeviceToken, writePointer, writeToken } from "./device-state.ts";
 import {
     capHistory,
@@ -26,6 +25,7 @@ import { addIgnoreItem } from "./git/ignore-menu.ts";
 import { openRepos } from "./git/open-repos.ts";
 import { SignsFeature } from "./git/signs/feature.ts";
 import { ICON_ID, ICON_SVG } from "./icon.ts";
+import { legacyConfigPath } from "./mcp/config.ts";
 import { McpController } from "./mcp/controller.ts";
 import {
     commandApplies,
@@ -128,7 +128,17 @@ export default class docketPlugin extends Plugin {
     );
 
     override async onload(): Promise<void> {
+        const legacy = legacyConfigPath(await this.loadData());
         this.settings = await loadSettings(this);
+        if (legacy !== undefined) {
+            // The config is always the vault root's now: say so once, then
+            // save, which drops the old setting.
+            new Notice(
+                `docket: the MCP server now reads project-config.md at the vault root; move ${legacy} there.`,
+                0,
+            );
+            await saveSettings(this, this.settings);
+        }
         this.cacheRoot = resolveCacheRoot(this.app);
         this.token = await this.loadToken();
         void this.recordPointer();

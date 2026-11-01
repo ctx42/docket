@@ -24,7 +24,11 @@ import {
     TFolder,
 } from "obsidian";
 
-import { configDiskPath, configPath, readMcpConfig } from "./config.ts";
+import {
+    configDiskPath,
+    DEFAULT_CONFIG_PATH,
+    readMcpConfig,
+} from "./config.ts";
 import { McpHost, type McpState, type RunRequest } from "./host.ts";
 import { McpLog } from "./log.ts";
 import { type Assigned, assignPort, NODE_PORT_DEPS } from "./port.ts";
@@ -36,7 +40,7 @@ import { type VaultEventKind, VaultWatchers } from "./vault-notifier.ts";
 export interface McpPlugin extends Plugin {
     /** mcpEnabled is this device's switch. */
     mcpEnabled: boolean;
-    settings: { mcpConfigPath: string; syncRoot: string };
+    settings: { syncRoot: string };
 }
 
 /** McpController runs the plugin's doc server; see the module comment. */
@@ -118,7 +122,7 @@ export class McpController {
      */
     configChanged(): Promise<void> {
         const restart = restartsOnConfig({
-            path: configPath(this.plugin.settings.mcpConfigPath),
+            path: DEFAULT_CONFIG_PATH,
             served: this.served,
             enabled: this.plugin.mcpEnabled,
             running: this.host.running,
@@ -137,7 +141,7 @@ export class McpController {
         const cfg = await readMcpConfig(
             new NodeDocFs(),
             this.basePath(),
-            this.plugin.settings.mcpConfigPath,
+            DEFAULT_CONFIG_PATH,
         );
         if (!cfg.ok) throw new Error(cfg.error);
         return cfg.url;
@@ -167,21 +171,14 @@ export class McpController {
      * free one written back to the note and its `.mcp.json`.
      */
     private async run(req: RunRequest): Promise<void> {
-        this.served = configPath(this.plugin.settings.mcpConfigPath);
+        this.served = DEFAULT_CONFIG_PATH;
         const base = this.basePath();
         if (base === "") {
             throw new Error("the vault has no folder on disk to serve from");
         }
-        const { mcpConfigPath, syncRoot } = this.plugin.settings;
-        const config = configDiskPath(base, mcpConfigPath);
-        if (
-            await ensureConfig(
-                NODE_PORT_DEPS,
-                config,
-                mcpConfigPath,
-                syncFolder(syncRoot),
-            )
-        ) {
+        const { syncRoot } = this.plugin.settings;
+        const config = configDiskPath(base, DEFAULT_CONFIG_PATH);
+        if (await ensureConfig(NODE_PORT_DEPS, config, syncFolder(syncRoot))) {
             req.stderr.write(`created ${config}\n`);
             new Notice(
                 "docket: created project-config.md for the MCP server; it " +

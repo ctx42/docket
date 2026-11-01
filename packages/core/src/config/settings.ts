@@ -51,12 +51,6 @@ export interface docketSettings {
     spaces: Record<string, string>;
     /** Page id → local name a folder or space walk gives the page. */
     names: Record<string, string>;
-    /**
-     * Vault-relative path of the doc server's `project-config.md`; `""`
-     * names the one at the vault root. Whether the server runs is a
-     * per-device choice kept outside this file.
-     */
-    mcpConfigPath: string;
     /** Git repositories cloned into top-level vault folders for the doc server. */
     knowledgeBases: KnowledgeBase[];
 }
@@ -75,7 +69,6 @@ export const DEFAULT_SETTINGS: docketSettings = {
     folders: {},
     spaces: {},
     names: {},
-    mcpConfigPath: "",
     knowledgeBases: [],
 };
 
@@ -88,10 +81,16 @@ export const DEFAULT_SETTINGS: docketSettings = {
  */
 export function mergeSettings(data: unknown): docketSettings {
     const obj = isRecord(data) ? (data as Partial<docketSettings>) : {};
+    // Older builds saved the config path here; the config is now always the
+    // vault root's, so the key is dropped on load and gone after a save.
+    const { mcpConfigPath: _dropped, ...rest } =
+        obj as Partial<docketSettings> & {
+            mcpConfigPath?: unknown;
+        };
     return {
         ...DEFAULT_SETTINGS,
         schemaVersion: 1,
-        ...obj,
+        ...rest,
         knowledgeBases: readKnowledgeBases(obj.knowledgeBases),
     };
 }

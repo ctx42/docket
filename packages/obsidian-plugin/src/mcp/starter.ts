@@ -9,7 +9,7 @@
 // `initiatives`, and the rest) are theirs to add (`srd:init`). File access is
 // injected, so the logic is unit-tested.
 
-import { configPath, DEFAULT_CONFIG_PATH } from "./config.ts";
+import { DEFAULT_CONFIG_PATH } from "./config.ts";
 import type { PortDeps } from "./port.ts";
 
 /** STARTER_SERVER is the server name a starter config gives. */
@@ -35,17 +35,14 @@ export function starterConfig(syncFolder: string): string {
 
 /**
  * ensureConfig writes a starter config at the disk path `config` and reports
- * whether it did: only for the default config (`setting` names no other)
- * when it does not exist. It throws when it is missing and the vault has no
+ * whether it did: only when it does not exist. It throws when it is missing and the vault has no
  * sync folder to serve.
  */
 export async function ensureConfig(
     deps: Pick<PortDeps, "readOptional" | "writeText">,
     config: string,
-    setting: string,
     syncFolder: string,
 ): Promise<boolean> {
-    if (configPath(setting) !== DEFAULT_CONFIG_PATH) return false;
     if ((await deps.readOptional(config)) !== undefined) return false;
     if (syncFolder === "") {
         throw new Error(
