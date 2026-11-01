@@ -38,6 +38,7 @@ export * from "./confluence/sources.ts";
 export * from "./flavor/flavor.ts";
 export * from "./git/ignore.ts";
 export * from "./git/log.ts";
+export * from "./git/remote.ts";
 export * from "./git/repo.ts";
 export * from "./git/status.ts";
 export * from "./models/adf.ts";
