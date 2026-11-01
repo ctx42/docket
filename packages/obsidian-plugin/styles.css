@@ -144,6 +144,51 @@
     background: rgba(var(--color-blue-rgb), 0.15);
     color: var(--color-blue);
 }
+.docket-badge.is-orange {
+    background: rgba(var(--color-orange-rgb), 0.15);
+    color: var(--color-orange);
+}
+.docket-kind-icon.is-git {
+    background: rgba(var(--color-orange-rgb), 0.15);
+    color: var(--color-orange);
+}
+.docket-card-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--size-4-1);
+}
+.docket-card-warn {
+    color: var(--text-warning);
+}
+.docket-mono {
+    font-family: var(--font-monospace);
+    font-size: var(--font-ui-smaller);
+}
+
+/* Settings: the "Add knowledge base" dialog's URL check line. */
+.docket-kb-status {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-4-2);
+    min-height: 1.4em;
+    margin: calc(-1 * var(--size-4-2)) 0 var(--size-4-2);
+    font-size: var(--font-ui-small);
+}
+.docket-kb-status-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin-top: 0.1em;
+}
+.docket-kb-status.is-pending {
+    color: var(--text-muted);
+}
+.docket-kb-status.is-ok {
+    color: var(--text-success);
+}
+.docket-kb-status.is-err {
+    color: var(--text-error);
+}
 
 /* Settings: the location tree. The tree is a size container: in a narrow
    card (the settings window rarely gives more than ~600px) each location is

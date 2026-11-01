@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
+import type { KnowledgeBase } from "@docket/core";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -10,6 +11,7 @@ import {
 import {
     applyImportedMaps,
     expandTilde,
+    importSummary,
     isInVault,
     PORTABLE_FILE,
     resolvePortablePath,
@@ -51,6 +53,46 @@ describe("toPortableConfig", () => {
             "pages",
             "folders",
             "spaces",
+        ]);
+    });
+
+    it("lists the knowledge bases, the branch only when set", () => {
+        const out = toPortableConfig(
+            settings({
+                knowledgeBases: [
+                    {
+                        kind: "git",
+                        name: "kb",
+                        url: "git@h:me/kb.git",
+                        branch: "",
+                    },
+                    {
+                        kind: "git",
+                        name: "kb-anna",
+                        url: "git@h:anna/kb.git",
+                        branch: "draft",
+                    },
+                ],
+            }),
+        );
+
+        expect(out.knowledge_bases).toEqual([
+            { name: "kb", url: "git@h:me/kb.git" },
+            { name: "kb-anna", url: "git@h:anna/kb.git", branch: "draft" },
+        ]);
+    });
+
+    it("lists a local folder by name and kind only", () => {
+        const out = toPortableConfig(
+            settings({
+                knowledgeBases: [
+                    { kind: "folder", name: "notes", url: "", branch: "" },
+                ],
+            }),
+        );
+
+        expect(out.knowledge_bases).toEqual([
+            { name: "notes", kind: "folder" },
         ]);
     });
 
@@ -197,5 +239,107 @@ describe("isInVault", () => {
     it("handles Windows paths", () => {
         expect(isInVault("c:\\Vault\\a.yaml", "C:\\Vault")).toBe(true);
         expect(isInVault("D:/Vault/a.yaml", "C:\\Vault")).toBe(false);
+    });
+});
+
+describe("applyImportedMaps knowledge bases", () => {
+    const mine: KnowledgeBase = {
+        kind: "git",
+        name: "kb",
+        url: "git@h:me/kb.git",
+        branch: "",
+    };
+
+    it("adds knowledge bases under new names", () => {
+        const have = applyImportedMaps(settings({ knowledgeBases: [mine] }), {
+            knowledge_bases: [
+                { name: "kb-anna", url: "git@h:anna/kb.git", branch: "draft" },
+            ],
+        });
+
+        expect(have.settings.knowledgeBases).toEqual([
+            mine,
+            {
+                kind: "git",
+                name: "kb-anna",
+                url: "git@h:anna/kb.git",
+                branch: "draft",
+            },
+        ]);
+        expect(have.addedKnowledgeBases).toBe(1);
+        expect(have.skippedKnowledgeBases).toEqual([]);
+    });
+
+    it("keeps an existing entry whose name the file reuses", () => {
+        const have = applyImportedMaps(settings({ knowledgeBases: [mine] }), {
+            knowledge_bases: [
+                { name: "kb", url: "git@h:anna/other.git" },
+                { name: "kb", url: "git@h:me/kb.git" },
+            ],
+        });
+
+        expect(have.settings.knowledgeBases).toEqual([mine]);
+        expect(have.addedKnowledgeBases).toBe(0);
+        expect(have.skippedKnowledgeBases).toEqual(["kb"]);
+    });
+
+    it("adds a local folder, and skips one whose name is a git entry", () => {
+        const have = applyImportedMaps(settings({ knowledgeBases: [mine] }), {
+            knowledge_bases: [
+                { kind: "folder", name: "notes" },
+                { kind: "folder", name: "kb" },
+            ],
+        });
+
+        expect(have.settings.knowledgeBases).toEqual([
+            mine,
+            { kind: "folder", name: "notes", url: "", branch: "" },
+        ]);
+        expect(have.skippedKnowledgeBases).toEqual(["kb"]);
+    });
+
+    it("drops malformed entries", () => {
+        const have = applyImportedMaps(settings(), {
+            knowledge_bases: [{ name: "x" }, "y"],
+        });
+
+        expect(have.settings.knowledgeBases).toEqual([]);
+        expect(have.addedKnowledgeBases).toBe(0);
+    });
+});
+
+describe("importSummary", () => {
+    const r = {
+        settings: settings(),
+        imported: 3,
+        addedKnowledgeBases: 0,
+        skippedKnowledgeBases: [],
+    };
+
+    it("counts the mappings", () => {
+        expect(importSummary(r, "a/.docket.yaml")).toBe(
+            "docket: imported 3 mappings from a/.docket.yaml.",
+        );
+    });
+
+    it("counts added knowledge bases and says how to get them", () => {
+        const have = importSummary({ ...r, addedKnowledgeBases: 1 }, "f");
+
+        expect(have).toBe(
+            "docket: imported 3 mappings and 1 knowledge base from f. " +
+                "Clone it from its card.",
+        );
+    });
+
+    it("names the knowledge bases it kept", () => {
+        const have = importSummary(
+            { ...r, imported: 1, skippedKnowledgeBases: ["kb", "notes"] },
+            "f",
+        );
+
+        expect(have).toBe(
+            "docket: imported 1 mapping from f. Kept your kb, notes: " +
+                "the file names a different source for them.",
+        );
     });
 });

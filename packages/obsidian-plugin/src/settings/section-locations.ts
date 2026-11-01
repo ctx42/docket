@@ -48,11 +48,13 @@ import { browseConfluence } from "./picker-modal.ts";
 import {
     applyImportedMaps,
     expandTilde,
+    importSummary,
     isInVault,
     resolvePortablePath,
     toPortableConfig,
 } from "./portable.ts";
 import { connectionRows } from "./section-connection.ts";
+import { KnowledgeSection } from "./section-knowledge.ts";
 import {
     connectionReady,
     errorMessage,
@@ -80,7 +82,11 @@ export class LocationsSection {
     private query = "";
     private readonly open = new Map<string, boolean>();
 
-    constructor(private readonly ctx: SettingsCtx) {}
+    private readonly kb: KnowledgeSection;
+
+    constructor(private readonly ctx: SettingsCtx) {
+        this.kb = new KnowledgeSection(ctx);
+    }
 
     render(el: HTMLElement): void {
         const heading = new Setting(el)
@@ -106,13 +112,14 @@ export class LocationsSection {
                 b
                     .setButtonText("Add ▾")
                     .setCta()
-                    .setTooltip("Add a Confluence location")
+                    .setTooltip("Add a Confluence location or a knowledge base")
                     .onClick(() => this.addMenu(b.buttonEl)),
             );
         scopeTag(heading.nameEl, "exported");
 
         this.cardEl = el.createDiv({ cls: "docket-card" });
         this.renderCard();
+        this.kb.render(el);
     }
 
     /** addMenu opens the Add menu under `anchor`. */
@@ -129,6 +136,19 @@ export class LocationsSection {
                 .setTitle("Browse Confluence…")
                 .setIcon("globe")
                 .onClick(() => void this.browse()),
+        );
+        menu.addSeparator();
+        menu.addItem((i) =>
+            i
+                .setTitle("Git repository…")
+                .setIcon("git-branch")
+                .onClick(() => void this.kb.addGit()),
+        );
+        menu.addItem((i) =>
+            i
+                .setTitle("Local folder…")
+                .setIcon("folder")
+                .onClick(() => void this.kb.addLocal()),
         );
         const r = anchor.getBoundingClientRect();
         menu.showAtPosition({ x: r.left, y: r.bottom + 4 });
@@ -498,14 +518,11 @@ export class LocationsSection {
                 inputStat?.type === "folder",
             );
             const text = await readPath(app, path);
-            const { settings, imported } = applyImportedMaps(
-                plugin.settings,
-                parseYaml(text),
-            );
-            plugin.settings = settings;
+            const r = applyImportedMaps(plugin.settings, parseYaml(text));
+            plugin.settings = r.settings;
             await plugin.persistSettings();
             this.ctx.redisplay();
-            new Notice(`docket: imported ${imported} mappings from ${path}`);
+            new Notice(importSummary(r, path), 10000);
         } catch (err) {
             new Notice(`docket: import failed: ${errorMessage(err)}`);
         }
