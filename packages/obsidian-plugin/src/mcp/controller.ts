@@ -33,7 +33,12 @@ import { McpHost, type McpState, type RunRequest } from "./host.ts";
 import { McpLog } from "./log.ts";
 import { type Assigned, assignPort, NODE_PORT_DEPS } from "./port.ts";
 import { ensureConfig } from "./starter.ts";
-import { listeningUrl, restartsOnConfig } from "./status.ts";
+import {
+    listeningUrl,
+    restartsOnConfig,
+    restartsOnEdit,
+    serverKeyLines,
+} from "./status.ts";
 import { type VaultEventKind, VaultWatchers } from "./vault-notifier.ts";
 
 /** McpPlugin is the part of the plugin the controller reads. */
@@ -52,6 +57,8 @@ export class McpController {
     private readonly listeners = new Set<(state: McpState) => void>();
     /** served is the config path the latest run was started on. */
     private served: string | undefined;
+    /** started is the server key lines of the config the server runs on. */
+    private started: string | undefined;
     private unloaded = false;
 
     constructor(private readonly plugin: McpPlugin) {
@@ -193,6 +200,7 @@ export class McpController {
             );
         }
         if (req.signal.aborted) return;
+        this.started = serverKeyLines(await NODE_PORT_DEPS.readText(config));
         return run({
             config,
             version: this.plugin.manifest.version,
@@ -237,12 +245,39 @@ export class McpController {
         file: TAbstractFile,
         oldPath?: string,
     ): void {
+        if (kind === "modify" && file.path === DEFAULT_CONFIG_PATH) {
+            void this.configEdited();
+        }
         this.watchers.event({
             kind,
             path: file.path,
             folder: file instanceof TFolder,
             ...(oldPath === undefined ? {} : { oldPath }),
         });
+    }
+
+    /**
+     * configEdited restarts a running server when an edit of the config
+     * changed a key the server reads; other edits leave it running.
+     */
+    private async configEdited(): Promise<void> {
+        let text: string;
+        try {
+            text = await NODE_PORT_DEPS.readText(
+                configDiskPath(this.basePath(), DEFAULT_CONFIG_PATH),
+            );
+        } catch {
+            return;
+        }
+        if (
+            restartsOnEdit(
+                this.started,
+                serverKeyLines(text),
+                this.host.running,
+            )
+        ) {
+            await this.host.restart();
+        }
     }
 
     /** basePath is the vault's disk path, or "" when it has none. */

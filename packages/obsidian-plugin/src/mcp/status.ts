@@ -138,3 +138,57 @@ export function rereadsConfig(prev: McpState, next: McpState): boolean {
         (next.kind === "listening" || next.kind === "error")
     );
 }
+
+/** SERVER_KEYS are the project-config.md keys the doc server reads. */
+const SERVER_KEYS: ReadonlySet<string> = new Set([
+    "mcp-server",
+    "mcp-port",
+    "sources",
+    "gaps",
+    "watch",
+    "watch-debounce",
+    "glossary",
+    "precedence",
+    "kb",
+    "initiatives",
+    "srd-standard",
+]);
+
+/**
+ * serverKeyLines returns the front matter lines of the keys the doc server
+ * reads in a project-config.md `text`, each key with its continuation lines,
+ * sorted by key: equal results mean the server would load the same config.
+ * Other keys, the body, and line ends are left out; no front matter gives "".
+ */
+export function serverKeyLines(text: string): string {
+    const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
+    if (m === null) return "";
+    const entries = new Map<string, string[]>();
+    let current: string[] | undefined;
+    for (const line of (m[1] as string).split(/\r?\n/)) {
+        const key = /^([A-Za-z0-9_-]+):/.exec(line)?.[1];
+        if (key !== undefined) {
+            current = SERVER_KEYS.has(key) ? [line] : undefined;
+            if (current !== undefined) entries.set(key, current);
+        } else if (current !== undefined && /^[\s-]/.test(line)) {
+            current.push(line);
+        }
+    }
+    return [...entries.keys()]
+        .sort()
+        .map((k) => (entries.get(k) as string[]).join("\n"))
+        .join("\n");
+}
+
+/**
+ * restartsOnEdit reports whether an edit of the config restarts the server:
+ * only a running server started from server key lines `started` that now
+ * read `now`.
+ */
+export function restartsOnEdit(
+    started: string | undefined,
+    now: string,
+    running: boolean,
+): boolean {
+    return running && started !== undefined && started !== now;
+}

@@ -347,8 +347,8 @@ export class KnowledgeSection {
             return;
         }
         if (next === undefined) return;
+        // The controller restarts a running server on this edit.
         await app.vault.modify(file, next);
-        if (plugin.mcp.host.running) await plugin.mcp.host.restart();
     }
 
     /** save stores the knowledge base list and redraws the cards. */

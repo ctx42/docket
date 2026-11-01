@@ -15,6 +15,8 @@ import {
     panelLine,
     rereadsConfig,
     restartsOnConfig,
+    restartsOnEdit,
+    serverKeyLines,
     shown,
 } from "../../src/mcp/status.ts";
 
@@ -191,5 +193,41 @@ describe("rereadsConfig", () => {
         expect(rereadsConfig(STOPPED, STARTING)).toBe(false);
         expect(rereadsConfig(LISTENING, STOPPED)).toBe(false);
         expect(rereadsConfig(LISTENING, LISTENING)).toBe(false);
+    });
+});
+
+describe("serverKeyLines", () => {
+    const NOTE =
+        "---\nmcp-server: docs\nsources:\n  - docs\n  - kb # the KB\nkb: kb\nsrd-work: work\n---\n\n# Body\n";
+
+    it("keeps the lines of the keys the server reads", () => {
+        const have = serverKeyLines(NOTE);
+
+        expect(have).toBe(
+            "kb: kb\nmcp-server: docs\nsources:\n  - docs\n  - kb # the KB",
+        );
+    });
+
+    it("ignores keys the server does not read, the body, and line ends", () => {
+        const other = NOTE.replace("srd-work: work", "srd-work: none")
+            .replace("# Body", "# Other body")
+            .replaceAll("\n", "\r\n");
+
+        expect(serverKeyLines(other)).toBe(serverKeyLines(NOTE));
+    });
+
+    it("is empty without front matter", () => {
+        expect(serverKeyLines("# Body\n")).toBe("");
+    });
+});
+
+describe("restartsOnEdit", () => {
+    it.each([
+        ["a server key changed while running", "a", "b", true, true],
+        ["nothing the server reads changed", "a", "a", true, false],
+        ["the server is not running", "a", "b", false, false],
+        ["the server never started", undefined, "b", true, false],
+    ])("%s", (_name, started, now, running, want) => {
+        expect(restartsOnEdit(started, now, running)).toBe(want);
     });
 });
