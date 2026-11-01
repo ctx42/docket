@@ -13,6 +13,7 @@ import {
     noteServer,
     type PortDeps,
     pickPort,
+    registeredPort,
     SCAN_PORTS,
     setMcpJsonPort,
     setNotePort,
@@ -201,6 +202,44 @@ function fakeDeps(files: Record<string, string>, taken: number[]) {
     return { deps, files, writes };
 }
 
+describe("registeredPort", () => {
+    it("reads the server's port", () => {
+        const raw =
+            '{"MCPServers":{"srd":{"url":"http://localhost:7781/mcp"}}}';
+
+        const have = registeredPort(raw, "srd");
+
+        expect(have).toBe(7781);
+    });
+
+    it("takes the scheme's port when the URL names none", () => {
+        const raw =
+            '{"mcpServers":{"srd":{"url":"https://docs.example.com/mcp"}}}';
+
+        const have = registeredPort(raw, "srd");
+
+        expect(have).toBe(443);
+    });
+
+    it("is undefined without a file, an entry, or a usable URL", () => {
+        expect(registeredPort(undefined, "srd")).toBeUndefined();
+        expect(registeredPort('{"mcpServers":{}}', "srd")).toBeUndefined();
+        expect(
+            registeredPort('{"mcpServers":{"srd":{"url":"not a url"}}}', "srd"),
+        ).toBeUndefined();
+        expect(
+            registeredPort('{"mcpServers":{"srd":{}}}', "srd"),
+        ).toBeUndefined();
+    });
+
+    it("error - a file that does not parse", () => {
+        expect(() => registeredPort("{", "srd")).toThrow("parse .mcp.json: ");
+        expect(() => registeredPort("[]", "srd")).toThrow(
+            "parse .mcp.json: not a JSON object",
+        );
+    });
+});
+
 describe("pickPort", () => {
     it("takes the first free port from the start", async () => {
         // --- Given ---
@@ -243,7 +282,13 @@ describe("assignPort", () => {
 
     it("keeps a free configured port and writes nothing", async () => {
         // --- Given ---
-        const { deps, writes } = fakeDeps({ [CFG]: NOTE }, []);
+        const { deps, writes } = fakeDeps(
+            {
+                [CFG]: NOTE,
+                [MCP]: '{"mcpServers":{"srd":{"type":"http","url":"http://localhost:7777/mcp"}}}',
+            },
+            [],
+        );
 
         // --- When ---
         const have = await assignPort(deps, CFG);
@@ -251,6 +296,59 @@ describe("assignPort", () => {
         // --- Then ---
         expect(have).toEqual({ port: 7777, written: false });
         expect(writes).toEqual([]);
+    });
+
+    it("writes a missing .mcp.json for a free configured port", async () => {
+        // --- Given ---
+        const { deps, files, writes } = fakeDeps({ [CFG]: NOTE }, []);
+
+        // --- When ---
+        const have = await assignPort(deps, CFG);
+
+        // --- Then ---
+        expect(have).toEqual({ port: 7777, written: false, registered: true });
+        expect(writes).toEqual([MCP]);
+        expect(JSON.parse(files[MCP] as string).mcpServers.srd.url).toBe(
+            "http://localhost:7777/mcp",
+        );
+    });
+
+    it("re-registers a .mcp.json that names another port", async () => {
+        // --- Given ---
+        const { deps, files, writes } = fakeDeps(
+            {
+                [CFG]: NOTE,
+                [MCP]: '{"mcpServers":{"srd":{"type":"http","url":"http://localhost:7000/mcp"},"other":{"url":"http://x:1/mcp"}}}',
+            },
+            [],
+        );
+
+        // --- When ---
+        const have = await assignPort(deps, CFG);
+
+        // --- Then ---
+        expect(have).toEqual({ port: 7777, written: false, registered: true });
+        expect(writes).toEqual([MCP]);
+        const reg = JSON.parse(files[MCP] as string).mcpServers;
+        expect(reg.srd.url).toBe("http://localhost:7777/mcp");
+        expect(reg.other.url).toBe("http://x:1/mcp");
+    });
+
+    it("re-registers a .mcp.json without the server", async () => {
+        // --- Given ---
+        const { deps, files } = fakeDeps(
+            { [CFG]: NOTE, [MCP]: '{"mcpServers":{}}' },
+            [],
+        );
+
+        // --- When ---
+        const have = await assignPort(deps, CFG);
+
+        // --- Then ---
+        expect(have?.registered).toBe(true);
+        expect(JSON.parse(files[MCP] as string).mcpServers.srd.url).toBe(
+            "http://localhost:7777/mcp",
+        );
     });
 
     it("moves off a taken port and writes both files", async () => {

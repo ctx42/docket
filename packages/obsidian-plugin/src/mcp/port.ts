@@ -41,6 +41,11 @@ export interface Assigned {
     moved?: number;
     /** written is set when the note and .mcp.json were rewritten. */
     written: boolean;
+    /**
+     * registered is set when only `.mcp.json` was rewritten: it was missing,
+     * lacked the server, or named another port.
+     */
+    registered?: boolean;
 }
 
 /** FRONT_RE matches a note's leading front matter block. */
@@ -100,19 +105,7 @@ export function setMcpJsonPort(
     server: string,
     port: number,
 ): string {
-    let top: Record<string, unknown> = {};
-    if (raw !== undefined) {
-        let parsed: unknown;
-        try {
-            parsed = JSON.parse(raw);
-        } catch (err) {
-            throw new Error(`parse ${MCP_JSON}: ${(err as Error).message}`);
-        }
-        if (!isRecord(parsed)) {
-            throw new Error(`parse ${MCP_JSON}: not a JSON object`);
-        }
-        top = parsed;
-    }
+    const top = raw === undefined ? {} : parseRegistry(raw);
     const key =
         Object.keys(top).find((k) => k.toLowerCase() === "mcpservers") ??
         "mcpServers";
@@ -123,6 +116,45 @@ export function setMcpJsonPort(
     servers[server] = entry;
     top[key] = servers;
     return `${JSON.stringify(top, null, 2)}\n`;
+}
+
+/**
+ * registeredPort returns the port `.mcp.json` text (raw; undefined when
+ * there is no file) registers server's URL on, or undefined when it has no
+ * such entry or URL. It throws for a file that does not parse.
+ */
+export function registeredPort(
+    raw: string | undefined,
+    server: string,
+): number | undefined {
+    if (raw === undefined) return undefined;
+    const top = parseRegistry(raw);
+    const key = Object.keys(top).find((k) => k.toLowerCase() === "mcpservers");
+    const servers = key === undefined ? undefined : top[key];
+    const entry = isRecord(servers) ? servers[server] : undefined;
+    const url = isRecord(entry) ? entry["url"] : undefined;
+    if (typeof url !== "string") return undefined;
+    try {
+        const u = new URL(url);
+        if (u.port !== "") return Number(u.port);
+        return u.protocol === "https:" ? 443 : 80;
+    } catch {
+        return undefined;
+    }
+}
+
+/** parseRegistry parses `.mcp.json` text; it throws unless it is an object. */
+function parseRegistry(raw: string): Record<string, unknown> {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (err) {
+        throw new Error(`parse ${MCP_JSON}: ${(err as Error).message}`);
+    }
+    if (!isRecord(parsed)) {
+        throw new Error(`parse ${MCP_JSON}: not a JSON object`);
+    }
+    return parsed;
 }
 
 /** withPort returns url on port, or the localhost endpoint when unusable. */
@@ -166,11 +198,17 @@ export async function assignPort(
     if (!config.endsWith(".md")) return undefined;
     const note = await deps.readText(config);
     const configured = notePort(note);
+    const mcpJson = posix.join(posix.dirname(config), MCP_JSON);
     if (configured !== undefined && (await deps.isFree(configured))) {
-        return { port: configured, written: false };
+        const raw = await deps.readOptional(mcpJson);
+        const server = noteServer(note);
+        if (registeredPort(raw, server) === configured) {
+            return { port: configured, written: false };
+        }
+        await deps.writeText(mcpJson, setMcpJsonPort(raw, server, configured));
+        return { port: configured, written: false, registered: true };
     }
     const port = await pickPort(deps, configured ?? BASE_PORT);
-    const mcpJson = posix.join(posix.dirname(config), MCP_JSON);
     const registry = setMcpJsonPort(
         await deps.readOptional(mcpJson),
         noteServer(note),

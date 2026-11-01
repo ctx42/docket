@@ -190,6 +190,11 @@ export class McpController {
         }
         const assigned = await assignPort(NODE_PORT_DEPS, config);
         if (assigned?.written) this.moved(assigned, req);
+        if (assigned?.registered) {
+            req.stderr.write(
+                `wrote .mcp.json: the server on port ${assigned.port}\n`,
+            );
+        }
         if (req.signal.aborted) return;
         return run({
             config,
