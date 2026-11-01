@@ -30,6 +30,7 @@ import {
     readMcpConfig,
 } from "./config.ts";
 import { McpHost, type McpState, type RunRequest } from "./host.ts";
+import { withKeysSection } from "./keys-doc.ts";
 import { McpLog } from "./log.ts";
 import { type Assigned, assignPort, NODE_PORT_DEPS } from "./port.ts";
 import { ensureConfig } from "./starter.ts";
@@ -200,7 +201,13 @@ export class McpController {
             );
         }
         if (req.signal.aborted) return;
-        this.started = serverKeyLines(await NODE_PORT_DEPS.readText(config));
+        const text = await NODE_PORT_DEPS.readText(config);
+        // Keep the body's section on the plugin's keys current; a body edit
+        // changes no key the server reads, so it restarts nothing.
+        const documented = withKeysSection(text);
+        if (documented !== text)
+            await NODE_PORT_DEPS.writeText(config, documented);
+        this.started = serverKeyLines(documented);
         return run({
             config,
             version: this.plugin.manifest.version,
