@@ -61,19 +61,19 @@
 
 /* Settings: a source card — kind icon, name and badge, a summary line, and a
    body with the connection fields, the tree tools, and the tree. */
-.docket-card {
+.docket-source {
     margin-top: var(--size-4-3);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-l);
     background: var(--background-secondary);
 }
-.docket-card-head {
+.docket-source-head {
     display: flex;
     align-items: center;
     gap: var(--size-4-3);
     padding: var(--size-4-3);
 }
-.docket-kind-icon {
+.docket-source-icon {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
@@ -84,21 +84,21 @@
     background: var(--background-modifier-hover);
     color: var(--text-muted);
 }
-.docket-kind-icon.is-confluence {
+.docket-source-icon.is-confluence {
     background: rgba(var(--color-blue-rgb), 0.15);
     color: var(--color-blue);
 }
-.docket-card-title {
+.docket-source-title {
     flex: 1 1 auto;
     min-width: 0;
 }
-.docket-card-name {
+.docket-source-name {
     display: flex;
     align-items: center;
     gap: var(--size-4-2);
     font-weight: var(--font-semibold);
 }
-.docket-card-sub {
+.docket-source-sub {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -107,11 +107,11 @@
     color: var(--text-muted);
     font-size: var(--font-ui-small);
 }
-.docket-card-sub.is-one-line {
+.docket-source-sub.is-one-line {
     flex-wrap: nowrap;
     min-width: 0;
 }
-.docket-card-sub .clickable-icon {
+.docket-source-sub .clickable-icon {
     flex: 0 0 auto;
     padding: 0 var(--size-2-1);
 }
@@ -121,11 +121,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.docket-card-body {
+.docket-source-body {
     padding: var(--size-4-2) var(--size-4-3) var(--size-4-3);
     border-top: 1px solid var(--background-modifier-border);
 }
-.docket-card-conn {
+.docket-source-conn {
     margin-bottom: var(--size-4-3);
     padding-bottom: var(--size-4-2);
     border-bottom: 1px solid var(--background-modifier-border);
@@ -148,17 +148,17 @@
     background: rgba(var(--color-orange-rgb), 0.15);
     color: var(--color-orange);
 }
-.docket-kind-icon.is-git {
+.docket-source-icon.is-git {
     background: rgba(var(--color-orange-rgb), 0.15);
     color: var(--color-orange);
 }
-.docket-card-actions {
+.docket-source-actions {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
     gap: var(--size-4-1);
 }
-.docket-card-warn {
+.docket-source-warn {
     color: var(--text-warning);
 }
 .docket-mono {

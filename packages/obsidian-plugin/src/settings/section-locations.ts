@@ -117,7 +117,7 @@ export class LocationsSection {
             );
         scopeTag(heading.nameEl, "exported");
 
-        this.cardEl = el.createDiv({ cls: "docket-card" });
+        this.cardEl = el.createDiv({ cls: "docket-source" });
         this.renderCard();
         this.kb.render(el);
     }
@@ -164,20 +164,20 @@ export class LocationsSection {
         const ready = connectionReady(s, plugin.token);
         const folder = syncFolder(s.syncRoot);
 
-        const head = card.createDiv({ cls: "docket-card-head" });
+        const head = card.createDiv({ cls: "docket-source-head" });
         setIcon(
-            head.createDiv({ cls: "docket-kind-icon is-confluence" }),
+            head.createDiv({ cls: "docket-source-icon is-confluence" }),
             "book-open",
         );
-        const title = head.createDiv({ cls: "docket-card-title" });
-        const name = title.createDiv({ cls: "docket-card-name" });
+        const title = head.createDiv({ cls: "docket-source-title" });
+        const name = title.createDiv({ cls: "docket-source-name" });
         const nameText = name.createSpan({
             text: folder === "" ? "Sync folder not set" : folder,
         });
         setTooltip(nameText, syncFolderDesc(s.syncRoot));
         name.createSpan({ cls: "docket-badge is-blue", text: "Confluence" });
 
-        const sub = title.createDiv({ cls: "docket-card-sub is-one-line" });
+        const sub = title.createDiv({ cls: "docket-source-sub is-one-line" });
         const who = [
             s.site === "" ? "No site yet" : siteDomain(s.site),
             s.account === "" ? "Not signed in" : s.account,
@@ -196,11 +196,11 @@ export class LocationsSection {
         }
         const count = locations(s).length;
         title.createDiv({
-            cls: "docket-card-sub",
+            cls: "docket-source-sub",
             text: `${count} location${count === 1 ? "" : "s"}`,
         });
 
-        const body = card.createDiv({ cls: "docket-card-body" });
+        const body = card.createDiv({ cls: "docket-source-body" });
         if (folder === "") {
             body.createDiv({
                 cls: "setting-item-description",
@@ -210,7 +210,7 @@ export class LocationsSection {
         if (!ready || this.connOpen) {
             connectionRows(
                 this.ctx,
-                body.createDiv({ cls: "docket-card-conn" }),
+                body.createDiv({ cls: "docket-source-conn" }),
             );
         }
 

@@ -157,29 +157,29 @@ export class KnowledgeSection {
             this.folderCard(el, kb);
             return;
         }
-        const card = el.createDiv({ cls: "docket-card" });
-        const head = card.createDiv({ cls: "docket-card-head" });
+        const card = el.createDiv({ cls: "docket-source" });
+        const head = card.createDiv({ cls: "docket-source-head" });
         setIcon(
-            head.createDiv({ cls: "docket-kind-icon is-git" }),
+            head.createDiv({ cls: "docket-source-icon is-git" }),
             "git-branch",
         );
-        const title = head.createDiv({ cls: "docket-card-title" });
-        const name = title.createDiv({ cls: "docket-card-name" });
+        const title = head.createDiv({ cls: "docket-source-title" });
+        const name = title.createDiv({ cls: "docket-source-name" });
         name.createSpan({ text: kb.name });
         name.createSpan({ cls: "docket-badge is-orange", text: "Git" });
-        const sub = title.createDiv({ cls: "docket-card-sub is-one-line" });
+        const sub = title.createDiv({ cls: "docket-source-sub is-one-line" });
         const where = sub.createSpan({
             cls: "docket-ellipsis docket-mono",
             text: `${kb.url} · ${kb.branch === "" ? "default branch" : kb.branch}`,
         });
         setTooltip(where, kb.url);
-        const state = title.createDiv({ cls: "docket-card-sub" });
+        const state = title.createDiv({ cls: "docket-source-sub" });
 
-        const acts = head.createDiv({ cls: "docket-card-actions" });
+        const acts = head.createDiv({ cls: "docket-source-actions" });
         const busy = this.busy.has(kb.name);
         void this.folderExists(kb.name).then((exists) => {
             if (!exists) {
-                state.addClass("docket-card-warn");
+                state.addClass("docket-source-warn");
                 state.setText("Folder missing");
             }
             const b = acts.createEl("button", {
@@ -204,28 +204,28 @@ export class KnowledgeSection {
      * the vault repository's, Create when the folder is missing, and Remove.
      */
     private folderCard(el: HTMLElement, kb: KnowledgeBase): void {
-        const card = el.createDiv({ cls: "docket-card" });
-        const head = card.createDiv({ cls: "docket-card-head" });
-        setIcon(head.createDiv({ cls: "docket-kind-icon" }), "folder");
-        const title = head.createDiv({ cls: "docket-card-title" });
-        const name = title.createDiv({ cls: "docket-card-name" });
+        const card = el.createDiv({ cls: "docket-source" });
+        const head = card.createDiv({ cls: "docket-source-head" });
+        setIcon(head.createDiv({ cls: "docket-source-icon" }), "folder");
+        const title = head.createDiv({ cls: "docket-source-title" });
+        const name = title.createDiv({ cls: "docket-source-name" });
         name.createSpan({ text: kb.name });
         name.createSpan({ cls: "docket-badge", text: "Folder" });
-        const sub = title.createDiv({ cls: "docket-card-sub" });
-        const acts = head.createDiv({ cls: "docket-card-actions" });
+        const sub = title.createDiv({ cls: "docket-source-sub" });
+        const acts = head.createDiv({ cls: "docket-source-actions" });
         void this.folderExists(kb.name).then((exists) => {
             if (exists) {
                 sub.setText("Local folder · history in the vault repository");
                 void this.folderExists(`${kb.name}/.git`).then((repo) => {
                     if (!repo) return;
-                    sub.addClass("docket-card-warn");
+                    sub.addClass("docket-source-warn");
                     sub.setText(
                         "Now its own git repository: remove it and add it " +
                             "again to keep it out of the vault repository",
                     );
                 });
             } else {
-                sub.addClass("docket-card-warn");
+                sub.addClass("docket-source-warn");
                 sub.setText("Folder missing");
                 const b = acts.createEl("button", { text: "Create" });
                 setTooltip(b, `Create ${kb.name}/ in the vault`);
@@ -327,7 +327,7 @@ export class KnowledgeSection {
             );
         }
         if (!serve) return;
-        const path = configPath(plugin.settings.mcpConfigPath);
+        const path = DEFAULT_CONFIG_PATH;
         const file = app.vault.getFileByPath(path);
         if (file === null) {
             new Notice(
