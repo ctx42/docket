@@ -12,7 +12,7 @@ import {
     applyImportedMaps,
     expandTilde,
     importSummary,
-    isInVault,
+    isPortableConfig,
     PORTABLE_FILE,
     resolvePortablePath,
     toPortableConfig,
@@ -101,6 +101,12 @@ describe("toPortableConfig", () => {
         const out = toPortableConfig(s);
         out.pages["b.md"] = "/wiki/q";
         expect(s.pages).toEqual({ "a.md": "/wiki/p" });
+    });
+});
+
+describe("PORTABLE_FILE", () => {
+    it("is not a hidden file", () => {
+        expect(PORTABLE_FILE).toBe("docket.yaml");
     });
 });
 
@@ -217,31 +223,6 @@ describe("applyImportedMaps", () => {
     });
 });
 
-describe("isInVault", () => {
-    it("treats a relative path as inside the vault", () => {
-        expect(isInVault("notes/.docket.yaml", "/v")).toBe(true);
-        expect(isInVault(".docket.yaml", "")).toBe(true);
-    });
-
-    it("detects an absolute path under the vault root", () => {
-        expect(isInVault("/v/.docket.yaml", "/v")).toBe(true);
-        expect(isInVault("/v/a/", "/v/")).toBe(true);
-        expect(isInVault("/v", "/v")).toBe(true);
-    });
-
-    it("keeps an absolute path outside the vault outside", () => {
-        expect(isInVault("/vault2/.docket.yaml", "/v")).toBe(false);
-        expect(isInVault("/home/me/.docket.yaml", "/v")).toBe(false);
-        expect(isInVault("/v/../w/.docket.yaml", "/v")).toBe(false);
-        expect(isInVault("/v/.docket.yaml", "")).toBe(false);
-    });
-
-    it("handles Windows paths", () => {
-        expect(isInVault("c:\\Vault\\a.yaml", "C:\\Vault")).toBe(true);
-        expect(isInVault("D:/Vault/a.yaml", "C:\\Vault")).toBe(false);
-    });
-});
-
 describe("applyImportedMaps knowledge bases", () => {
     const mine: KnowledgeBase = {
         kind: "git",
@@ -339,7 +320,35 @@ describe("importSummary", () => {
 
         expect(have).toBe(
             "docket: imported 1 mapping from f. Kept your kb, notes: " +
-                "the file names a different source for them.",
+                "the import names a different source for them.",
+        );
+    });
+});
+
+describe("isPortableConfig", () => {
+    it("accepts what an export writes", () => {
+        expect(isPortableConfig(toPortableConfig(settings()))).toBe(true);
+    });
+
+    it("accepts a config holding only one section", () => {
+        expect(isPortableConfig({ pages: { "a.md": "/wiki/p" } })).toBe(true);
+        expect(isPortableConfig({ folders: {} })).toBe(true);
+        expect(isPortableConfig({ spaces: {} })).toBe(true);
+        expect(isPortableConfig({ knowledge_bases: [] })).toBe(true);
+    });
+
+    it("refuses anything else", () => {
+        expect(isPortableConfig("some copied text")).toBe(false);
+        expect(isPortableConfig(null)).toBe(false);
+        expect(isPortableConfig(["a"])).toBe(false);
+        expect(isPortableConfig({ title: "a note" })).toBe(false);
+    });
+});
+
+describe("resolvePortablePath on Windows", () => {
+    it("joins the file name onto a folder the picker returned", () => {
+        expect(resolvePortablePath("C:\\Users\\me", true)).toBe(
+            "C:\\Users\\me/docket.yaml",
         );
     });
 });

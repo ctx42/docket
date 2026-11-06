@@ -19,9 +19,8 @@ import {
     setTooltip,
     stringifyYaml,
 } from "obsidian";
-import { confirmModal } from "../ui/confirm.ts";
 import { confirmOverwrite, promptVaultPath } from "./dialogs.ts";
-import { type SettingsCtx, scopeTag, vaultBasePath } from "./fields.ts";
+import { type SettingsCtx, scopeTag } from "./fields.ts";
 import {
     confluenceClient,
     confluenceTitles,
@@ -44,12 +43,13 @@ import {
     removeLocation,
 } from "./locations.ts";
 import type { docketSettings } from "./model.ts";
+import { electronDialog, pickFile, pickFolder } from "./native-picker.ts";
 import { browseConfluence } from "./picker-modal.ts";
 import {
     applyImportedMaps,
     expandTilde,
     importSummary,
-    isInVault,
+    isPortableConfig,
     resolvePortablePath,
     toPortableConfig,
 } from "./portable.ts";
@@ -95,18 +95,18 @@ export class LocationsSection {
             .addExtraButton((b) =>
                 b
                     .setIcon("download")
-                    .setTooltip("Import a .docket.yaml file")
-                    .onClick(() => void this.importPortable()),
+                    .setTooltip("Import a config from a file or the clipboard")
+                    .onClick(() => this.importMenu(b.extraSettingsEl)),
             )
             .addExtraButton((b) =>
                 b
                     .setIcon("upload")
                     .setTooltip(
-                        "Export the sources and shared options to a " +
-                            ".docket.yaml file. It never includes your " +
+                        "Export the sources and shared options to a folder " +
+                            "or the clipboard. It never includes your " +
                             "credentials.",
                     )
-                    .onClick(() => void this.exportPortable()),
+                    .onClick(() => this.exportMenu(b.extraSettingsEl)),
             )
             .addButton((b) =>
                 b
@@ -150,8 +150,7 @@ export class LocationsSection {
                 .setIcon("folder")
                 .onClick(() => void this.kb.addLocal()),
         );
-        const r = anchor.getBoundingClientRect();
-        menu.showAtPosition({ x: r.left, y: r.bottom + 4 });
+        showBelow(menu, anchor);
     }
 
     /** renderCard draws the Confluence card: head, connection, tools, tree. */
@@ -434,23 +433,65 @@ export class LocationsSection {
         this.ctx.refreshValidation();
     }
 
+    /** importMenu opens the Import menu under `anchor`. */
+    private importMenu(anchor: HTMLElement): void {
+        const menu = new Menu();
+        menu.addItem((i) =>
+            i
+                .setTitle("Import from file…")
+                .setIcon("file-input")
+                .onClick(() => void this.importFromFile()),
+        );
+        menu.addItem((i) =>
+            i
+                .setTitle("Paste from clipboard")
+                .setIcon("clipboard-paste")
+                .onClick(() => void this.importFromClipboard()),
+        );
+        showBelow(menu, anchor);
+    }
+
+    /** exportMenu opens the Export menu under `anchor`. */
+    private exportMenu(anchor: HTMLElement): void {
+        const menu = new Menu();
+        menu.addItem((i) =>
+            i
+                .setTitle("Export to folder…")
+                .setIcon("folder-output")
+                .onClick(() => void this.exportToFolder()),
+        );
+        menu.addItem((i) =>
+            i
+                .setTitle("Copy to clipboard")
+                .setIcon("clipboard-copy")
+                .onClick(() => void this.exportToClipboard()),
+        );
+        showBelow(menu, anchor);
+    }
+
+    /** portableText is the shareable config as YAML text. */
+    private portableText(): string {
+        return stringifyYaml(toPortableConfig(this.ctx.plugin.settings));
+    }
+
     /**
-     * exportPortable prompts for a path — vault-relative, an absolute OS path, or
-     * a `~`-relative one — resolves it (a folder gets the file name appended), and
-     * writes the current shareable config as `.docket.yaml`. The target's
-     * containing folder must already exist — export never creates directories, so
-     * a path into a missing folder is rejected. An existing target file is
-     * overwritten only after confirmation. A target inside the vault needs
-     * confirmation too: the CLI refuses to run from a vault folder holding a
-     * `.docket.yaml`. Any failure surfaces as a Notice rather than throwing.
+     * exportToFolder asks for a folder, with the system picker when there is
+     * one and a typed path otherwise, and writes `docket.yaml` into it. An
+     * existing file is overwritten only after confirmation. Any failure
+     * surfaces as a Notice.
      */
-    private async exportPortable(): Promise<void> {
+    private async exportToFolder(): Promise<void> {
         const { app, plugin } = this.ctx;
-        const input = await promptVaultPath(app, {
-            title: "Export .docket.yaml",
-            placeholder: plugin.settings.syncRoot || "folder or file path",
-            cta: "Export",
-        });
+        const title = "Export docket.yaml";
+        const dialog = electronDialog(require);
+        const input =
+            dialog === null
+                ? await promptVaultPath(app, {
+                      title,
+                      placeholder: plugin.settings.syncRoot || "folder path",
+                      cta: "Export",
+                  })
+                : await pickFolder(dialog, title);
         if (input === null) {
             return;
         }
@@ -466,47 +507,45 @@ export class LocationsSection {
                 new Notice(`docket: no such folder: ${dir}`);
                 return;
             }
-            if (
-                isInVault(path, vaultBasePath(app)) &&
-                !(await confirmModal(
-                    app,
-                    "Export inside the vault?",
-                    "Inside a vault the docket CLI reads this plugin's " +
-                        "settings, so it will refuse to run from this folder " +
-                        "while this file exists:",
-                    [path],
-                    "Export",
-                ))
-            ) {
-                return;
-            }
             if ((await statPath(app, path)) !== null) {
                 if (!(await confirmOverwrite(app, path))) {
                     return;
                 }
             }
-            const text = stringifyYaml(toPortableConfig(plugin.settings));
-            await writePath(app, path, text);
+            await writePath(app, path, this.portableText());
             new Notice(`docket: exported to ${path}`);
         } catch (err) {
             new Notice(`docket: export failed: ${errorMessage(err)}`);
         }
     }
 
+    /** exportToClipboard copies the shareable config to the clipboard. */
+    private async exportToClipboard(): Promise<void> {
+        try {
+            await navigator.clipboard.writeText(this.portableText());
+            new Notice("docket: copied the config to the clipboard.");
+        } catch (err) {
+            new Notice(`docket: copy failed: ${errorMessage(err)}`);
+        }
+    }
+
     /**
-     * importPortable prompts for a path — vault-relative, an absolute OS path, or
-     * a `~`-relative one — resolves it (a folder gets the file name appended),
-     * reads and parses the YAML, merges its page/folder/space maps into the
-     * settings (incoming wins), persists, and re-renders. Any failure surfaces as
-     * a Notice rather than throwing.
+     * importFromFile asks for a file, with the system picker when there is one
+     * and a typed path otherwise, and imports it. Any failure surfaces as a
+     * Notice.
      */
-    private async importPortable(): Promise<void> {
+    private async importFromFile(): Promise<void> {
         const { app, plugin } = this.ctx;
-        const input = await promptVaultPath(app, {
-            title: "Import .docket.yaml",
-            placeholder: plugin.settings.syncRoot || "folder or file path",
-            cta: "Import",
-        });
+        const title = "Import a docket config";
+        const dialog = electronDialog(require);
+        const input =
+            dialog === null
+                ? await promptVaultPath(app, {
+                      title,
+                      placeholder: plugin.settings.syncRoot || "file path",
+                      cta: "Import",
+                  })
+                : await pickFile(dialog, title);
         if (input === null) {
             return;
         }
@@ -517,16 +556,45 @@ export class LocationsSection {
                 expanded,
                 inputStat?.type === "folder",
             );
-            const text = await readPath(app, path);
-            const r = applyImportedMaps(plugin.settings, parseYaml(text));
-            plugin.settings = r.settings;
-            await plugin.persistSettings();
-            this.ctx.redisplay();
-            new Notice(importSummary(r, path), 10000);
+            await this.importText(await readPath(app, path), path);
         } catch (err) {
             new Notice(`docket: import failed: ${errorMessage(err)}`);
         }
     }
+
+    /** importFromClipboard imports the config the clipboard holds. */
+    private async importFromClipboard(): Promise<void> {
+        try {
+            const text = await navigator.clipboard.readText();
+            await this.importText(text, "the clipboard");
+        } catch (err) {
+            new Notice(`docket: import failed: ${errorMessage(err)}`);
+        }
+    }
+
+    /**
+     * importText parses config `text` from `source`, merges its maps into the
+     * settings (incoming wins), persists, and re-renders. It throws when the
+     * text is not YAML or not a docket config, leaving the settings unchanged.
+     */
+    private async importText(text: string, source: string): Promise<void> {
+        const { plugin } = this.ctx;
+        const parsed: unknown = parseYaml(text);
+        if (!isPortableConfig(parsed)) {
+            throw new Error(`${source} does not hold a docket config`);
+        }
+        const r = applyImportedMaps(plugin.settings, parsed);
+        plugin.settings = r.settings;
+        await plugin.persistSettings();
+        this.ctx.redisplay();
+        new Notice(importSummary(r, source), 10000);
+    }
+}
+
+/** showBelow opens `menu` under `anchor`. */
+function showBelow(menu: Menu, anchor: HTMLElement): void {
+    const rect = anchor.getBoundingClientRect();
+    menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 });
 }
 
 /** iconButton appends a small icon button with a tooltip to `el`. */

@@ -433,9 +433,12 @@ Not every file under a mapped root is synced. `docket` skips:
   re-add `ignore-push` after a pull if you still want it held back.)
 
 > [!TIP]
-> The Obsidian plugin reads and writes the **same `.docket.yaml` sync map** —
-> Import one you already have, or Export the map you built in settings to share
-> it with CLI users. Credentials are never part of it.
+> The Obsidian plugin reads and writes the **same sync map** as `.docket.yaml`.
+> In **Settings → docket**, next to **Sources**, Import takes one from any file
+> or from the clipboard. Export writes the map you built to `docket.yaml` in any
+> folder, or copies it to the clipboard. Credentials are never part of it. To use
+> an exported file with the CLI, pass `--config docket.yaml` or rename it to
+> `.docket.yaml`.
 
 The plugin keeps the equivalent settings in its **Settings → docket** tab: the
 connection fields and Markdown options (flavor, wrap margin, request timeout,
@@ -471,9 +474,6 @@ Obsidian can be pushed from the terminal and the other way round.
   marked stale. A lock left by a crashed process is cleared automatically.
 - **Versions** — the plugin's `data.json` carries a schema version. A CLI older
   than the plugin that wrote it refuses to run and asks to be upgraded.
-
-Exporting a `.docket.yaml` into the vault from the plugin asks for confirmation
-first, since the CLI then refuses to run from that folder.
 
 ## Markdown dialect
 

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The portable-config transforms for import/export of a `.docket.yaml` file. This
+// The portable-config transforms for import and export of a docket config. This
 // module is pure — no `obsidian` runtime, no I/O — so it unit-tests under vitest.
 // The glue layer (dialogs + settings tab) does the YAML string step and vault I/O
 // and calls these to shape the object out and merge the maps back in. Secrets are
@@ -9,19 +9,20 @@
 // shared config.
 
 import {
-    isAbsPosix,
     type KnowledgeBase,
-    posixClean,
     posixJoin,
     readKnowledgeBases,
 } from "@docket/core";
 import type { docketSettings } from "./model.ts";
 
-/** The portable config file's name, matching the CLI's `CONFIG_FILE`. */
-export const PORTABLE_FILE = ".docket.yaml";
+/**
+ * The name an export writes. It is visible in a file manager, unlike the CLI's
+ * default `.docket.yaml`, so a CLI user passes `--config` or renames the file.
+ */
+export const PORTABLE_FILE = "docket.yaml";
 
 /**
- * PortableConfig is the object serialized to `.docket.yaml`. It carries only the
+ * PortableConfig is the object an export serializes. It carries only the
  * shareable config — the timeout, the Markdown settings, and the three maps —
  * never the Site credentials or the sync root (the CLI/core reject those keys).
  */
@@ -39,7 +40,7 @@ export interface PortableConfig {
 }
 
 /**
- * PortableKnowledgeBase is a knowledge base as `.docket.yaml` lists it: a git
+ * PortableKnowledgeBase is a knowledge base as the config lists it: a git
  * entry by name, URL, and branch (no `kind`); a local folder by name and
  * `kind: folder`.
  */
@@ -107,31 +108,6 @@ export function resolvePortablePath(input: string, isFolder: boolean): string {
         return posixJoin(trimmed, PORTABLE_FILE);
     }
     return trimmed;
-}
-
-/**
- * isInVault reports whether the export target `path` lies inside the vault at
- * the absolute `vaultBase`: a relative path is vault-relative and always inside;
- * an absolute one is inside when it is the vault root or under it. Backslashes
- * count as separators, and a Windows drive letter compares case-insensitively.
- * An empty `vaultBase` (no disk path) treats only relative paths as inside.
- */
-export function isInVault(path: string, vaultBase: string): boolean {
-    const norm = (p: string): string =>
-        posixClean(p.trim().replace(/\\/g, "/")).replace(
-            /^([A-Za-z]):/,
-            (_, d: string) => `${d.toLowerCase()}:`,
-        );
-    const target = norm(path);
-    const absolute = isAbsPosix(target) || /^[a-z]:\//.test(target);
-    if (!absolute) {
-        return true;
-    }
-    if (vaultBase === "") {
-        return false;
-    }
-    const base = norm(vaultBase);
-    return target === base || target.startsWith(`${base.replace(/\/$/, "")}/`);
 }
 
 /** ImportResult is the merged settings plus what the import applied. */
@@ -203,22 +179,36 @@ export function applyImportedMaps(
 }
 
 /**
+ * isPortableConfig reports whether a parsed value looks like a portable config:
+ * an object with at least one of the sections an import reads. It tells a config
+ * from anything else, such as unrelated text pasted from the clipboard.
+ */
+export function isPortableConfig(parsed: unknown): boolean {
+    return (
+        isRecord(parsed) &&
+        ["pages", "folders", "spaces", "knowledge_bases"].some(
+            (key) => key in parsed,
+        )
+    );
+}
+
+/**
  * importSummary is the notice an import shows: how many mappings and
- * knowledge bases it added from `path`, that added knowledge bases still need
+ * knowledge bases it added from `source`, that added knowledge bases still need
  * cloning, and which existing ones it kept.
  */
-export function importSummary(r: ImportResult, path: string): string {
+export function importSummary(r: ImportResult, source: string): string {
     const plural = (n: number, word: string): string =>
         `${n} ${word}${n === 1 ? "" : "s"}`;
     const n = r.addedKnowledgeBases;
     let out = `docket: imported ${plural(r.imported, "mapping")}`;
     if (n > 0) out += ` and ${plural(n, "knowledge base")}`;
-    out += ` from ${path}.`;
+    out += ` from ${source}.`;
     if (n > 0)
         out += ` Clone ${n === 1 ? "it from its card" : "them from their cards"}.`;
     const kept = r.skippedKnowledgeBases;
     if (kept.length > 0) {
-        out += ` Kept your ${kept.join(", ")}: the file names a different source for ${kept.length === 1 ? "it" : "them"}.`;
+        out += ` Kept your ${kept.join(", ")}: the import names a different source for ${kept.length === 1 ? "it" : "them"}.`;
     }
     return out;
 }
