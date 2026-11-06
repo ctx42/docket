@@ -309,9 +309,12 @@ to use the Git tab later.
 
 **Without a sync folder.** Docket does not pull or push, in the plugin or the
 CLI, when no sync folder is set; `docket status` and `docket gc` (without
-`--prune`) still run. Docket never moves files to make one: for a vault that
-already holds synced pages, move them into one top-level folder by hand and
-set `syncRoot` in the plugin's `data.json`.
+`--prune`) still run. Choose the folder in the Sync tab. In a vault that
+already holds synced pages, the tab's **Move pages** button moves them and the
+shared images into the folder, and leaves the notes unchanged. A link from a
+note outside the move that uses a path to a moved page stops working. A location
+at the vault root cannot move: move those pages into one top-level folder by
+hand and set `syncRoot` in the plugin's `data.json`.
 
 ## CLI commands
 

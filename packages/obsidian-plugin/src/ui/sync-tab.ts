@@ -11,7 +11,7 @@ import {
     posixClean,
     syncFolderProblem,
 } from "@docket/core";
-import { Menu, Notice, setIcon, type TFile } from "obsidian";
+import { Menu, Notice, normalizePath, setIcon, type TFile } from "obsidian";
 import type docketPlugin from "../main.ts";
 import { confluenceTitles, editLocation } from "../settings/location-modal.ts";
 import { putLocation } from "../settings/locations.ts";
@@ -27,6 +27,7 @@ import {
     setupStep,
 } from "./panel-model.ts";
 import { ChangesList } from "./sync-changes.ts";
+import { movePages, vaultFiles } from "./sync-move.ts";
 import { RunLog } from "./sync-run.ts";
 
 /** STATE_ICON is the card's icon for each note state. */
@@ -147,12 +148,17 @@ export class SyncTab {
      * sync section is drawn.
      */
     private renderSetup(root: HTMLElement): boolean {
-        const step = setupStep(this.plugin.settings, this.plugin.token);
+        const { vault } = this.plugin.app;
+        const step = setupStep(
+            this.plugin.settings,
+            this.plugin.token,
+            (dest) => vault.getAbstractFileByPath(normalizePath(dest)) !== null,
+        );
         if (step === null) return false;
         const empty = root.createDiv({ cls: "docket-empty" });
         setIcon(empty.createDiv({ cls: "docket-empty-icon" }), step.icon);
         empty.createDiv({ cls: "docket-empty-text", text: step.text });
-        if (step.action === "folder") {
+        if (step.action === "folder" || step.action === "move") {
             this.renderFolderStep(empty, step);
             return true;
         }
@@ -170,7 +176,8 @@ export class SyncTab {
 
     /**
      * renderFolderStep draws the sync folder's name box, what is wrong with
-     * the name, and the button creating the folder and its repositories.
+     * the name, and the button creating the folder and its repositories,
+     * moving the synced pages in first when the step says so.
      */
     private renderFolderStep(parent: HTMLElement, step: SetupStep): void {
         const input = parent.createEl("input", {
@@ -196,19 +203,31 @@ export class SyncTab {
         input.onkeydown = (e) => {
             if (e.key === "Enter" && !btn.disabled) btn.click();
         };
-        btn.onclick = () => void this.createFolder(input.value.trim());
+        btn.onclick = () =>
+            void this.createFolder(input.value.trim(), step.action === "move");
         check();
     }
 
     /**
      * createFolder saves `name` as the sync folder, then creates it and, when
      * git is found, the vault and sync repositories (see `GitRepos.setupSync`).
+     * With `move` it first moves the synced pages in; a failed move leaves the
+     * sync folder unset.
      */
-    private async createFolder(name: string): Promise<void> {
+    private async createFolder(name: string, move: boolean): Promise<void> {
         if (this.creating || syncFolderProblem(name) !== "") return;
         this.creating = true;
         this.host.rerender();
         try {
+            if (move) {
+                const { settings, app } = this.plugin;
+                const moved = await movePages(
+                    settings,
+                    name,
+                    vaultFiles(app.vault),
+                );
+                new Notice(`docket: moved ${moved} item(s) into ${name}.`);
+            }
             this.plugin.settings = { ...this.plugin.settings, syncRoot: name };
             await this.plugin.persistSettings();
             await this.plugin.repos.setupSync();

@@ -7,16 +7,17 @@
 // its note, and whether a log follows its newest line. It is obsidian-free, so
 // it unit-tests; the panel modules (view.ts, sync-*.ts, mcp-tab.ts) draw it.
 
-import { type RemoteBody, syncFolder } from "@docket/core";
+import { posixClean, type RemoteBody, syncFolder } from "@docket/core";
 import type { docketSettings } from "../settings/model.ts";
 import type { NoteAction } from "./note-actions.ts";
 import type { ChangeGroupId } from "./review.ts";
 
 /**
  * SetupAction is what a setup step's button does: open the settings, create
- * the sync folder, add a location, or nothing (the step has no button).
+ * the sync folder, create it and move the synced pages in, add a location, or
+ * nothing (the step has no button).
  */
-export type SetupAction = "settings" | "folder" | "location" | "none";
+export type SetupAction = "settings" | "folder" | "move" | "location" | "none";
 
 /** SetupStep is the first-run step the Sync tab shows instead of its sections. */
 export interface SetupStep {
@@ -32,11 +33,17 @@ export const SYNC_FOLDER_SUGGESTION = "confluence";
 
 /**
  * setupStep returns the first-run step still open — connect, choose the sync
- * folder, then add a location — or null once all three are done. A vault that
- * already syncs pages without a sync folder gets no folder choice: docket
- * never moves files, so the pages must be moved by hand.
+ * folder, then add a location — or null once all three are done. `onDisk`
+ * reports whether a location's destination exists in the vault. A vault with a
+ * location on disk and no sync folder moves its pages into the folder it
+ * chooses. A location at the vault root cannot move into a folder of itself,
+ * so those pages must be moved by hand.
  */
-export function setupStep(s: docketSettings, token: string): SetupStep | null {
+export function setupStep(
+    s: docketSettings,
+    token: string,
+    onDisk: (dest: string) => boolean,
+): SetupStep | null {
     if (s.site === "" || s.account === "" || token === "") {
         return {
             icon: "plug",
@@ -45,17 +52,26 @@ export function setupStep(s: docketSettings, token: string): SetupStep | null {
             action: "settings",
         };
     }
-    const count =
-        Object.keys(s.pages).length +
-        Object.keys(s.folders).length +
-        Object.keys(s.spaces).length;
+    const dests = [
+        ...Object.keys(s.pages),
+        ...Object.keys(s.folders),
+        ...Object.keys(s.spaces),
+    ];
     if (syncFolder(s.syncRoot) === "") {
-        if (count > 0) {
+        if (dests.some((d) => posixClean(d) === ".")) {
             return {
                 icon: "alert-triangle",
-                text: 'This vault syncs pages but has no sync folder, so docket does not pull or push. Move the synced pages by hand into one top-level folder, set "syncRoot" in the plugin\'s data.json to it, and reload the plugin.',
+                text: 'A location syncs into the vault root, so docket cannot move it. Move the synced pages by hand into one top-level folder, set "syncRoot" in the plugin\'s data.json to it, and reload the plugin.',
                 cta: "",
                 action: "none",
+            };
+        }
+        if (dests.some(onDisk)) {
+            return {
+                icon: "folder-input",
+                text: "This vault syncs pages but has no sync folder, so docket does not pull or push. Choose a top-level folder and docket moves the synced pages into it.",
+                cta: "Move pages",
+                action: "move",
             };
         }
         return {
@@ -65,7 +81,7 @@ export function setupStep(s: docketSettings, token: string): SetupStep | null {
             action: "folder",
         };
     }
-    if (count === 0) {
+    if (dests.length === 0) {
         return {
             icon: "file-plus",
             text: "Choose the Confluence pages, folders, or spaces to sync into this vault.",

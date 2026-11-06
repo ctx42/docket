@@ -3,17 +3,15 @@
 
 // The sync folder: the one top-level vault folder docket pulls pages into and
 // pushes them from. Without one, docket refuses to pull or push in the plugin
-// and in the command-line tool alike, with the same message; it never moves
-// files to make one.
+// and in the command-line tool alike, with the same message. Only the plugin's
+// panel moves synced pages into a new one.
 
 import { posixClean } from "../util/path.ts";
 
 /** NO_SYNC_FOLDER is why pull and push refuse to run without a sync folder. */
 export const NO_SYNC_FOLDER =
     "no sync folder is set, so docket does not pull or push. Choose one in " +
-    "the docket panel. A vault that already holds synced pages needs them " +
-    'moved by hand into a top-level folder named by "syncRoot" in the ' +
-    "plugin's data.json.";
+    "the docket panel, which moves any pages already synced into it.";
 
 /** NoSyncFolderError is a pull or push refused for want of a sync folder. */
 export class NoSyncFolderError extends Error {

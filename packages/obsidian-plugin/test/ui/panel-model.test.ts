@@ -23,16 +23,18 @@ describe("setupStep", () => {
         account: "a@ex.com",
     };
     const withFolder = { ...connected, syncRoot: "confluence" };
+    const absent = (): boolean => false;
+    const present = (): boolean => true;
 
     it("asks to connect while the site, account or token is missing", () => {
-        expect(setupStep(DEFAULT_SETTINGS, "t")?.cta).toBe(
+        expect(setupStep(DEFAULT_SETTINGS, "t", absent)?.cta).toBe(
             "Connect to Confluence",
         );
-        expect(setupStep(connected, "")?.action).toBe("settings");
+        expect(setupStep(connected, "", absent)?.action).toBe("settings");
     });
 
     it("asks for the sync folder once connected", () => {
-        const have = setupStep(connected, "t");
+        const have = setupStep(connected, "t", absent);
 
         expect(have).toEqual({
             icon: "folder-plus",
@@ -43,19 +45,48 @@ describe("setupStep", () => {
         expect(SYNC_FOLDER_SUGGESTION).toBe("confluence");
     });
 
-    it("refuses to guess a sync folder for a vault that already syncs pages", () => {
-        const s = { ...connected, pages: { "a.md": "/wiki/x/1" } };
+    it("asks for the sync folder when no location is on disk yet", () => {
+        const s = {
+            ...connected,
+            pages: { "a.md": "/wiki/x/1" },
+            spaces: { docs: "/wiki/spaces/D/overview" },
+        };
 
-        expect(setupStep(s, "t")).toEqual({
+        expect(setupStep(s, "t", absent)?.action).toBe("folder");
+    });
+
+    it("offers to move a location already on disk", () => {
+        const pages = { ...connected, pages: { "a.md": "/wiki/x/1" } };
+        const folders = { ...connected, folders: { team: "/wiki/x/2" } };
+        const spaces = { ...connected, spaces: { docs: "/wiki/x/3" } };
+
+        expect(setupStep(pages, "t", present)).toEqual({
+            icon: "folder-input",
+            text: "This vault syncs pages but has no sync folder, so docket does not pull or push. Choose a top-level folder and docket moves the synced pages into it.",
+            cta: "Move pages",
+            action: "move",
+        });
+        expect(setupStep(folders, "t", (d) => d === "team")?.action).toBe(
+            "move",
+        );
+        expect(setupStep(spaces, "t", (d) => d === "docs")?.action).toBe(
+            "move",
+        );
+    });
+
+    it("leaves a location at the vault root to be moved by hand", () => {
+        const s = { ...connected, spaces: { ".": "/wiki/x/1" } };
+
+        expect(setupStep(s, "t", absent)).toEqual({
             icon: "alert-triangle",
-            text: 'This vault syncs pages but has no sync folder, so docket does not pull or push. Move the synced pages by hand into one top-level folder, set "syncRoot" in the plugin\'s data.json to it, and reload the plugin.',
+            text: 'A location syncs into the vault root, so docket cannot move it. Move the synced pages by hand into one top-level folder, set "syncRoot" in the plugin\'s data.json to it, and reload the plugin.',
             cta: "",
             action: "none",
         });
     });
 
     it("asks for a location once the sync folder is set", () => {
-        const have = setupStep(withFolder, "t");
+        const have = setupStep(withFolder, "t", absent);
 
         expect(have).toEqual({
             icon: "file-plus",
@@ -68,7 +99,7 @@ describe("setupStep", () => {
     it("is done once a location exists", () => {
         const s = { ...withFolder, spaces: { team: "/wiki/spaces/T" } };
 
-        expect(setupStep(s, "t")).toBeNull();
+        expect(setupStep(s, "t", absent)).toBeNull();
     });
 });
 
