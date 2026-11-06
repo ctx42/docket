@@ -127,11 +127,17 @@ copy it onto your `PATH` wherever you keep your own executables.
 
 ### Obsidian plugin
 
-Install it from the Obsidian community-plugin store — no build required:
+Docket is not in the Obsidian community-plugin store. Install it from its GitHub
+releases with [BRAT](https://github.com/TfTHacker/obsidian42-brat), a community
+plugin that installs and updates plugins from a GitHub repository — no build
+required:
 
 1. **Settings → Community plugins**, and turn off Restricted mode if it's on.
-2. **Browse**, search for **docket**, and click **Install**.
-3. **Enable** the plugin.
+2. **Browse**, search for **BRAT**, then **Install** and **Enable** it.
+3. Open the command palette and run **BRAT: Plugins: Add a beta plugin for
+   testing**.
+4. Enter `ctx42/docket` as the repository and add the plugin.
+5. Check that **docket** is on under **Settings → Community plugins**.
 
 Then jump to [In Obsidian](#in-obsidian) to connect and start syncing.
 
@@ -632,8 +638,8 @@ Obsidian adapters, and the tests' in-memory fakes.
 
 Both front ends cover the full pull / edit / push / create / gc / clean cycle
 against a real Confluence Site. The **CLI** ships as a single self-contained
-binary; the **Obsidian plugin** is available in the community-plugin store and
-drives the same cycle — connect, map, and pull/push from the control center.
+binary; the **Obsidian plugin** installs through BRAT from the GitHub releases
+and drives the same cycle — connect, map, and pull/push from the control center.
 
 ## License
 
