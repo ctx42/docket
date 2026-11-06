@@ -75,6 +75,22 @@ export function saveHideProps(plugin: Plugin, hide: boolean): void {
     plugin.app.saveLocalStorage(HIDE_PROPS_KEY, hide ? null : "0");
 }
 
+/** TERMINAL_ICON_KEY marks that docket set Lean Terminal's icon on this device. */
+export const TERMINAL_ICON_KEY = "docket-terminal-icon-set";
+
+/**
+ * loadTerminalIconSet reads whether docket already handled Lean Terminal's icon
+ * on this device. It does so only once, so a user can go back to the default.
+ */
+export function loadTerminalIconSet(plugin: Plugin): boolean {
+    return plugin.app.loadLocalStorage(TERMINAL_ICON_KEY) === "1";
+}
+
+/** saveTerminalIconSet records that Lean Terminal's icon was handled. */
+export function saveTerminalIconSet(plugin: Plugin): void {
+    plugin.app.saveLocalStorage(TERMINAL_ICON_KEY, "1");
+}
+
 /** GIT_PATH_KEY is the localStorage key of this device's git binary path. */
 export const GIT_PATH_KEY = "docket-git-path";
 

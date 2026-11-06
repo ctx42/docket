@@ -25,6 +25,7 @@ import { addIgnoreItem } from "./git/ignore-menu.ts";
 import { openRepos } from "./git/open-repos.ts";
 import { SignsFeature } from "./git/signs/feature.ts";
 import { ICON_ID, ICON_SVG } from "./icon.ts";
+import { applyTerminalIcon, type LeanRegistry } from "./lean-terminal.ts";
 import { legacyConfigPath } from "./mcp/config.ts";
 import { McpController } from "./mcp/controller.ts";
 import {
@@ -46,6 +47,7 @@ import {
     loadHistoryCap,
     loadMcpEnabled,
     loadSettings,
+    loadTerminalIconSet,
     loadToken,
     saveCommitHistory,
     saveDiffSigns,
@@ -54,6 +56,7 @@ import {
     saveHistoryCap,
     saveMcpEnabled,
     saveSettings,
+    saveTerminalIconSet,
     saveToken,
 } from "./settings/store.ts";
 import { docketSettingTab } from "./settings/tab.ts";
@@ -189,6 +192,8 @@ export default class docketPlugin extends Plugin {
             }),
         );
 
+        ws.onLayoutReady(() => void this.setTerminalIcon());
+
         console.log(`docket: loaded (core=${PACKAGE_NAME})`);
     }
 
@@ -197,6 +202,19 @@ export default class docketPlugin extends Plugin {
         this.repos.dispose();
         document.body.removeClass(HIDE_PROPS_CLASS);
         console.log("docket: unloaded");
+    }
+
+    /** leanRegistry is Obsidian's undocumented plugin registry. */
+    get leanRegistry(): LeanRegistry | undefined {
+        return (this.app as unknown as { plugins?: LeanRegistry }).plugins;
+    }
+
+    /** setTerminalIcon sets Lean Terminal's icon once on this device. */
+    private async setTerminalIcon(): Promise<void> {
+        if (loadTerminalIconSet(this)) return;
+        if (await applyTerminalIcon(this.leanRegistry)) {
+            saveTerminalIconSet(this);
+        }
     }
 
     /** persistSettings writes the current shareable settings to `data.json`. */

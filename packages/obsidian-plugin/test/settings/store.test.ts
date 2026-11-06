@@ -15,6 +15,7 @@ import {
     loadHistoryCap,
     loadMcpEnabled,
     loadSettings,
+    loadTerminalIconSet,
     loadToken,
     MCP_ENABLED_KEY,
     saveCommitHistory,
@@ -24,6 +25,7 @@ import {
     saveHistoryCap,
     saveMcpEnabled,
     saveSettings,
+    saveTerminalIconSet,
     saveToken,
     TOKEN_KEY,
 } from "../../src/settings/store.ts";
@@ -96,6 +98,14 @@ describe("settings store", () => {
 });
 
 describe("hide-properties preference", () => {
+    it("remembers per device that the terminal icon was set", () => {
+        const plugin = fakePlugin();
+
+        expect(loadTerminalIconSet(plugin)).toBe(false);
+        saveTerminalIconSet(plugin);
+        expect(loadTerminalIconSet(plugin)).toBe(true);
+    });
+
     it("defaults to hiding and round-trips a change", () => {
         const plugin = fakePlugin();
 

@@ -139,6 +139,10 @@ required:
 4. Enter `ctx42/docket` as the repository and add the plugin.
 5. Check that **docket** is on under **Settings → Community plugins**.
 
+To start Claude inside Obsidian, also install the **Lean Terminal** community
+plugin. The Sync tab warns while it is not ready, but pull and push work without
+it. On each device, docket sets its ribbon icon once, unless you chose your own.
+
 Then jump to [In Obsidian](#in-obsidian) to connect and start syncing.
 
 > [!NOTE]

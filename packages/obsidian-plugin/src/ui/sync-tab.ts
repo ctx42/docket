@@ -12,6 +12,7 @@ import {
     syncFolderProblem,
 } from "@docket/core";
 import { Menu, Notice, normalizePath, setIcon, type TFile } from "obsidian";
+import { leanTerminalProblem } from "../lean-terminal.ts";
 import type docketPlugin from "../main.ts";
 import { confluenceTitles, editLocation } from "../settings/location-modal.ts";
 import { putLocation } from "../settings/locations.ts";
@@ -87,6 +88,7 @@ export class SyncTab {
 
     /** render draws the tab into `root`. */
     render(root: HTMLElement): void {
+        this.renderTerminalWarning(root);
         if (this.renderSetup(root)) return;
         this.renderToolbar(root);
         this.renderCard(root);
@@ -140,6 +142,20 @@ export class SyncTab {
             },
             false,
         );
+    }
+
+    /** renderTerminalWarning says why Lean Terminal is not ready, if it is not. */
+    private renderTerminalWarning(root: HTMLElement): void {
+        const text = leanTerminalProblem(this.plugin.leanRegistry);
+        if (text === "") return;
+        const banner = root.createDiv({ cls: "docket-error docket-git-guard" });
+        setIcon(
+            banner.createSpan({ cls: "docket-error-icon" }),
+            "alert-triangle",
+        );
+        banner.createSpan({ cls: "docket-error-text", text });
+        const btn = banner.createEl("button", { text: "Check again" });
+        btn.onclick = () => this.host.rerender();
     }
 
     /**
