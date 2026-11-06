@@ -34,6 +34,9 @@ fi
 
 # Obsidian's CLI exits 0 even when a command fails, so the plugin's reported
 # state decides the result, not the exit codes.
+# Obsidian reads plugin folders only at startup, so a first install needs a
+# rescan before it knows the plugin.
+obsidian "vault=$NAME" eval 'code=app.plugins.loadManifests()' >/dev/null
 obsidian "vault=$NAME" plugin:disable "id=$ID" >/dev/null
 obsidian "vault=$NAME" plugin:enable "id=$ID" >/dev/null
 INFO="$(obsidian "vault=$NAME" plugin "id=$ID" 2>&1)"
@@ -41,5 +44,5 @@ if grep -q '^enabled[[:space:]]*true' <<<"$INFO"; then
     echo "update: reloaded $ID in $NAME"
 else
     echo "update: could not reload $ID in $NAME: $INFO" >&2
-    echo "update: enable it under Settings → Community plugins" >&2
+    echo "update: refresh Installed plugins under Settings → Community plugins, then enable it" >&2
 fi

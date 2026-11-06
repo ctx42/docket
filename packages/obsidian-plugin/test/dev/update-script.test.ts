@@ -123,6 +123,7 @@ describe("dev/update.sh", () => {
         expect(await calls()).toEqual([
             "install",
             `bun run deploy:plugin ${vault} --link`,
+            "obsidian vault=my vault eval code=app.plugins.loadManifests()",
             "obsidian vault=my vault plugin:disable id=ctx42-docket",
             "obsidian vault=my vault plugin:enable id=ctx42-docket",
             "obsidian vault=my vault plugin id=ctx42-docket",
@@ -227,6 +228,7 @@ describe("dev/update.sh", () => {
         expect(have.status).toBe(0);
         expect(have.stderr).toContain("could not reload ctx42-docket");
         expect(have.stderr).toContain("Vault not found.");
+        expect(have.stderr).toContain("refresh Installed plugins");
         expect(have.stdout).not.toContain("update: reloaded");
     });
 });
