@@ -55,7 +55,12 @@ import {
     spanMarker,
 } from "../render/table.ts";
 import { collectAnnotationRuns, reanchorAnnotations } from "./annotate.ts";
-import { buildBlock, healAdfCodeBlock } from "./build.ts";
+import {
+    buildBlock,
+    healAdfCodeBlock,
+    isPanelType,
+    parsePanelTag,
+} from "./build.ts";
 import { diffBlocks, type Edit } from "./diff.ts";
 import { baselineBlocks, type Origin } from "./sourcemap.ts";
 
@@ -1235,9 +1240,9 @@ export function splitOrderedItems(text: string): string[] {
 }
 
 /**
- * rebuildPanel back-ports an edit into a panel's body. The `[!TYPE]` tag line is
- * structure and stays frozen (a changed tag is caught by PutGet and rejected);
- * only the body paragraphs are editable. See {@link rebuildQuotedBody}.
+ * rebuildPanel back-ports an edit into a panel: a changed `[!TYPE]` tag line
+ * changes the panel type (see {@link retypePanel}) and the body paragraphs are
+ * rebuilt as any quoted body (see {@link rebuildQuotedBody}).
  */
 function rebuildPanel(
     node: Node,
@@ -1246,8 +1251,31 @@ function rebuildPanel(
     pc: ParseCtx,
     force: boolean,
 ): void {
-    // Drop the frozen "[!TYPE]" tag line; the rest is the quoted body.
-    rebuildQuotedBody(node, text.split("\n").slice(1), "panel", ctx, pc, force);
+    const lines = text.split("\n");
+    retypePanel(node, (lines[0] ?? "").replace(/^ {0,3}> ?/, "").trim());
+    rebuildQuotedBody(node, lines.slice(1), "panel", ctx, pc, force);
+}
+
+/**
+ * retypePanel sets the panel type a changed `[!TYPE]` tag names. A panel with no
+ * type renders as `[!NOTE]`, so it counts as `note`. Only a standard panel may
+ * change type: a custom panel's icon and color have no meaning on another type,
+ * so changing it is refused, as is a tag naming an unknown type. A tag that still
+ * names the current type changes nothing.
+ */
+function retypePanel(node: Node, tag: string): void {
+    const cur = attrStr(node.attrs, "panelType") || "note";
+    if (tag === `[!${cur.toUpperCase()}]`) {
+        return;
+    }
+    const typ = parsePanelTag(tag);
+    if (typ === cur) {
+        return;
+    }
+    if (!isPanelType(cur)) {
+        throw new Error(`cannot change the type of a ${cur} panel`);
+    }
+    node.attrs = { ...node.attrs, panelType: typ };
 }
 
 /**

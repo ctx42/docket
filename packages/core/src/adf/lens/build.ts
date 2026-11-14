@@ -51,6 +51,28 @@ import {
 const panelTypes = new Set(["info", "note", "success", "warning", "error"]);
 
 /**
+ * isPanelType reports whether typ, a lowercase Confluence panel type, is one a
+ * `[!TYPE]` tag may name (see {@link panelTypes}).
+ */
+export function isPanelType(typ: string): boolean {
+    return panelTypes.has(typ);
+}
+
+/**
+ * parsePanelTag returns the lowercase panel type a `[!TYPE]` tag names, the tag
+ * already unquoted and trimmed. A malformed tag, or one naming a type outside
+ * {@link panelTypes}, is rejected rather than guessed.
+ */
+export function parsePanelTag(tag: string): string {
+    const inner = tag.startsWith("[!") ? tag.slice(2) : "";
+    const typ = inner.endsWith("]") ? inner.slice(0, -1).toLowerCase() : "";
+    if (!isPanelType(typ)) {
+        throw new Error(`unknown panel type "${tag}"`);
+    }
+    return typ;
+}
+
+/**
  * buildBlock constructs a new top-level node from an inserted Markdown block. idx
  * names the block in error messages; images resolves an inserted `![](path)` to
  * its uploaded attachment. It throws a `push: cannot insert block N: …` error when
@@ -375,17 +397,11 @@ function buildExpand(lines: string[], pc: ParseCtx): Node {
 
 /**
  * buildPanel constructs a panel from its quoted lines and its already unquoted
- * `[!TYPE]` tag, the inverse of the panel render. The tag must name a type from
- * {@link panelTypes}; anything else — a malformed tag included — is rejected
- * rather than guessed.
+ * `[!TYPE]` tag, the inverse of the panel render. The tag is read by
+ * {@link parsePanelTag}, which rejects a type it does not know.
  */
 function buildPanel(lines: string[], tag: string, pc: ParseCtx): Node {
-    const inner = tag.replace(/^\[!/, "");
-    const ok = inner.endsWith("]");
-    const typ = (ok ? inner.slice(0, -1) : inner).toLowerCase();
-    if (!ok || !panelTypes.has(typ)) {
-        throw new Error(`unknown panel type "${tag}"`);
-    }
+    const typ = parsePanelTag(tag);
     return {
         type: "panel",
         attrs: { panelType: typ },

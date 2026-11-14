@@ -14,7 +14,11 @@
 // block). Everything else is dialect-stable and ports 1:1.
 
 import { describe, expect, it } from "vitest";
-import { healAdfCodeBlock } from "../../../src/adf/lens/build.ts";
+import {
+    healAdfCodeBlock,
+    isPanelType,
+    parsePanelTag,
+} from "../../../src/adf/lens/build.ts";
 import { put } from "../../../src/adf/lens/reconstruct.ts";
 import { marshallMarkdownMapped } from "../../../src/index.ts";
 import {
@@ -393,6 +397,41 @@ describe("put insert rejects (tabular)", () => {
     for (const tc of cases) {
         it(tc.name, () => {
             expect(() => insert(tc.body)).toThrow(tc.want);
+        });
+    }
+});
+
+describe("isPanelType", () => {
+    for (const typ of ["info", "note", "success", "warning", "error"]) {
+        it(`accepts ${typ}`, () => {
+            expect(isPanelType(typ)).toBe(true);
+        });
+    }
+
+    for (const typ of ["custom", "expand", "INFO", ""]) {
+        it(`rejects "${typ}"`, () => {
+            expect(isPanelType(typ)).toBe(false);
+        });
+    }
+});
+
+describe("parsePanelTag", () => {
+    const cases: Array<{ tag: string; want: string }> = [
+        { tag: "[!INFO]", want: "info" },
+        { tag: "[!Warning]", want: "warning" },
+        { tag: "[!error]", want: "error" },
+    ];
+    for (const tc of cases) {
+        it(`reads ${tc.tag}`, () => {
+            expect(parsePanelTag(tc.tag)).toBe(tc.want);
+        });
+    }
+
+    for (const tag of ["[!CUSTOM]", "[!INFO", "INFO]", "[INFO]", "[!]", ""]) {
+        it(`refuses "${tag}"`, () => {
+            expect(() => parsePanelTag(tag)).toThrow(
+                `unknown panel type "${tag}"`,
+            );
         });
     }
 });

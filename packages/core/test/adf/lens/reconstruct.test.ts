@@ -1373,6 +1373,69 @@ describe("put nested (lists and panels)", () => {
         expect(panel?.content?.[0]?.content?.[0]?.text).toBe("top note");
         expect(panel?.content?.[1]?.content?.[0]?.text).toBe("LOW");
     });
+
+    const warningPanel = `{ "adf": { "type": "doc", "content": [
+       { "type": "panel", "attrs": { "panelType": "warning", "localId": "pn" },
+         "content": [ { "type": "paragraph",
+           "content": [ { "type": "text", "text": "careful" } ] } ] } ] } }`;
+
+    it("changing the [!TYPE] tag changes the panel type", () => {
+        const base = newADF(warningPanel);
+        const body = renderBody(base).replace("[!WARNING]", "[!INFO]");
+
+        const have = put(base, body, null, null, null);
+
+        const panel = have.doc.content?.[0];
+        expect(panel?.attrs).toEqual({ panelType: "info", localId: "pn" });
+        expect(panel?.content?.[0]?.content?.[0]?.text).toBe("careful");
+        expect(renderBody(have)).toBe(body);
+    });
+
+    it("changing the [!TYPE] tag and the body together", () => {
+        const base = newADF(warningPanel);
+        const body = renderBody(base)
+            .replace("[!WARNING]", "[!SUCCESS]")
+            .replace("careful", "all good");
+
+        const have = put(base, body, null, null, null);
+
+        const panel = have.doc.content?.[0];
+        expect(attrStr(panel?.attrs, "panelType")).toBe("success");
+        expect(panel?.content?.[0]?.content?.[0]?.text).toBe("all good");
+    });
+
+    it("a panel with no type reads as NOTE and can change type", () => {
+        const base = newADF(`{ "adf": { "type": "doc", "content": [
+           { "type": "panel", "content": [ { "type": "paragraph",
+             "content": [ { "type": "text", "text": "plain" } ] } ] } ] } }`);
+        const body = renderBody(base).replace("[!NOTE]", "[!ERROR]");
+
+        const have = put(base, body, null, null, null);
+
+        expect(have.doc.content?.[0]?.attrs).toEqual({ panelType: "error" });
+    });
+
+    it("refuses a [!TYPE] tag naming an unknown panel type", () => {
+        const base = newADF(warningPanel);
+        const body = renderBody(base).replace("[!WARNING]", "[!DANGER]");
+
+        expect(() => put(base, body, null, null, null)).toThrow(
+            'unknown panel type "[!DANGER]" (line 1)',
+        );
+    });
+
+    it("refuses to change the type of a custom panel", () => {
+        const base = newADF(`{ "adf": { "type": "doc", "content": [
+           { "type": "panel", "attrs": { "panelType": "custom",
+               "panelIcon": ":star:", "panelColor": "#eae6ff" },
+             "content": [ { "type": "paragraph",
+               "content": [ { "type": "text", "text": "shiny" } ] } ] } ] } }`);
+        const body = renderBody(base).replace("[!CUSTOM]", "[!INFO]");
+
+        expect(() => put(base, body, null, null, null)).toThrow(
+            "cannot change the type of a custom panel (line 1)",
+        );
+    });
 });
 
 describe("put orderedList", () => {
