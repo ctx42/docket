@@ -285,6 +285,64 @@ describe("put insertTable", () => {
         expect(cell?.content?.[1]?.content?.[0]?.text).toBe("b");
     });
 
+    it("a ****cell**** in a body row is a bold header cell", () => {
+        const body = [
+            "|              | **A** | **B** |",
+            "|--------------|-------|-------|",
+            "| ****Row1**** | `a1`  | b1    |",
+            "| ****Row2**** | `a2`  | b2    |",
+        ].join("\n");
+
+        const have = insert(body);
+
+        expect(renderBody(have)).toBe(body);
+        const row1 = have.doc.content?.[0]?.content?.[1];
+        expect(row1?.content?.map((c) => c.type)).toEqual([
+            "tableHeader",
+            "tableCell",
+            "tableCell",
+        ]);
+        const text = row1?.content?.[0]?.content?.[0]?.content?.[0];
+        expect(text?.text).toBe("Row1");
+        expect(text?.marks).toEqual([{ type: "strong" }]);
+    });
+
+    it("a ****cell**** in a headerless table is a bold header cell", () => {
+        const body = [
+            "|          |    |",
+            "|----------|----|",
+            "| ****K**** | v |",
+        ].join("\n");
+
+        const have = insert(body);
+
+        const row = have.doc.content?.[0]?.content?.[0];
+        expect(row?.content?.map((c) => c.type)).toEqual([
+            "tableHeader",
+            "tableCell",
+        ]);
+    });
+
+    it("a **cell** in a body row stays a bold data cell", () => {
+        const have = insert(
+            "| a       | b |\n|---------|---|\n| **k**   | v |",
+        );
+
+        const cell = have.doc.content?.[0]?.content?.[1]?.content?.[0];
+        expect(cell?.type).toBe("tableCell");
+        expect(cell?.content?.[0]?.content?.[0]?.marks).toEqual([
+            { type: "strong" },
+        ]);
+    });
+
+    it("refuses a ****cell**** in the header row", () => {
+        // A header-row cell renders without the extra ** pair, so ****h****
+        // there has no ADF that renders back to it; it parses as a plain h.
+        expect(() => insert("| ****h**** | b |\n|---|---|\n| 1 | 2 |")).toThrow(
+            '"| ****h**** | b |" would push as "| h | b |"',
+        );
+    });
+
     it("escaped pipe stays inside its cell", () => {
         const cell = insert("| a \\| b |\n|--------|\n| c      |").doc
             .content?.[0]?.content?.[0]?.content?.[0];

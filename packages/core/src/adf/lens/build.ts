@@ -439,7 +439,9 @@ function buildQuotedParagraphs(
  * buildTable constructs a table from an inserted Markdown pipe table, the inverse
  * of the table render. A first row with any content becomes a row of header cells,
  * the GFM header; an all-blank first row is the synthetic header the renderer
- * writes for a headerless table, and is dropped. Every row must have the same cell
+ * writes for a headerless table, and is dropped. Below the header row, a cell
+ * written `****text****` is a header cell (see {@link headerCellText}), as in a
+ * key/value table's first column. Every row must have the same cell
  * count, and a cell showing the `«` span marker is rejected, as GFM cannot express
  * the span behind it.
  */
@@ -467,14 +469,37 @@ function buildTable(text: string, pc: ParseCtx): Node {
 
     const node: Node = { type: "table", content: [] };
     grid.forEach((row, r) => {
-        const typ = header && r === 0 ? "tableHeader" : "tableCell";
+        const headRow = header && r === 0;
         const tr: Node = { type: "tableRow", content: [] };
         for (const cel of row) {
-            tr.content?.push(buildTableCell(cel, typ, pc));
+            const inner = headRow ? null : headerCellText(cel);
+            tr.content?.push(
+                inner !== null
+                    ? buildTableCell(inner, "tableHeader", pc)
+                    : buildTableCell(
+                          cel,
+                          headRow ? "tableHeader" : "tableCell",
+                          pc,
+                      ),
+            );
         }
         node.content?.push(tr);
     });
     return node;
+}
+
+/**
+ * headerCellText returns the text of a header cell outside the header row, or
+ * null when cel is not one. The renderer wraps such a cell in `**`, so a header
+ * cell holding bold text shows as `****text****`: that form can only be a header
+ * cell, and it yields the cell's own `**text**`. A cell in plain `**text**` stays
+ * a bold data cell, since a bold data cell renders the same.
+ */
+function headerCellText(cel: string): string | null {
+    if (cel.length <= 8 || !cel.startsWith("****") || !cel.endsWith("****")) {
+        return null;
+    }
+    return cel.slice(2, -2);
 }
 
 /**
