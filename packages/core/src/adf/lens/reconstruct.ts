@@ -182,7 +182,7 @@ export function putLinks(
         applyInPlace(out, origins, userBlocks, edits, ctx, pc, force, bodyLine);
     }
 
-    validatePut(out, baseBlocks, userBlocks, edits, full, links);
+    validatePut(out, baseBlocks, userBlocks, edits, full, links, bodyLine);
     return out;
 }
 
@@ -858,7 +858,9 @@ function inlineSegmentsOf(content: Node[]): Node[][] {
  * identifying the first block that fails. GetPut: a kept block must re-render
  * byte-identically to its cached render. PutGet: every block must re-render to
  * the user's edit (compared normalized, so soft-wrap differences do not count).
- * This is the last gate before a push.
+ * This is the last gate before a push. A PutGet refusal names the file line and
+ * quotes what the user wrote next to what the push would send (see
+ * {@link roundTripMismatch}); `bodyLine` is the file line where the body starts.
  */
 function validatePut(
     out: ADF,
@@ -867,6 +869,7 @@ function validatePut(
     edits: Edit[],
     assets: Record<string, string>,
     links: Links | null,
+    bodyLine: number,
 ): void {
     const [newBlocks] = baselineBlocks(out, assets, links);
     if (newBlocks.length !== userBlocks.length) {
@@ -885,8 +888,11 @@ function validatePut(
             continue;
         }
         if (normalizeBlock(nb.text) !== ub.key) {
+            const mm = roundTripMismatch(ub.text, nb.text);
             throw new Error(
-                `push: block ${i} did not round-trip (PutGet failed)`,
+                `push: block ${i} did not round-trip (PutGet failed): ` +
+                    `"${mm.user}" would push as "${mm.pushed}" ` +
+                    `(line ${bodyLine + ub.line - 1 + mm.offset})`,
             );
         }
     }
@@ -902,6 +908,76 @@ function validatePut(
             );
         }
     }
+}
+
+/** EXCERPT_MAX is the most characters a refusal quotes from one line. */
+const EXCERPT_MAX = 60;
+
+/**
+ * EXCERPT_LEAD is how many characters before the first difference a refusal
+ * quotes, for context, when it cannot pair the two blocks line by line.
+ */
+const EXCERPT_LEAD = 20;
+
+/**
+ * RoundTripMismatch locates where a user block and its re-render part ways:
+ * `offset` is the line within the user block, `user` and `pushed` the two
+ * lines, whitespace-collapsed and shortened for a refusal message.
+ */
+interface RoundTripMismatch {
+    offset: number;
+    user: string;
+    pushed: string;
+}
+
+/**
+ * roundTripMismatch finds the first line where `user` (the block as written) and
+ * `pushed` (the re-render of what the push would send) differ, comparing lines
+ * with whitespace collapsed and dash runs shortened, so table padding and
+ * separator widths do not count. When the two have a different line count (a
+ * re-wrapped paragraph, a dropped quote paragraph) the lines do not pair up, so
+ * it collapses each block to one line and quotes both from a little before the
+ * first character where they differ, at the block's first line.
+ */
+function roundTripMismatch(user: string, pushed: string): RoundTripMismatch {
+    const ul = user.split("\n");
+    const pl = pushed.split("\n");
+    if (ul.length === pl.length) {
+        for (let i = 0; i < ul.length; i++) {
+            const u = collapseLine(ul[i] ?? "");
+            const p = collapseLine(pl[i] ?? "");
+            if (u.replace(/-+/g, "-") !== p.replace(/-+/g, "-")) {
+                return { offset: i, user: excerpt(u), pushed: excerpt(p) };
+            }
+        }
+    }
+    const u = Array.from(collapseLine(user));
+    const p = Array.from(collapseLine(pushed));
+    let k = 0;
+    while (k < u.length && k < p.length && u[k] === p[k]) {
+        k++;
+    }
+    const from = Math.max(0, k - EXCERPT_LEAD);
+    const lead = from > 0 ? "…" : "";
+    return {
+        offset: 0,
+        user: lead + excerpt(u.slice(from).join("")),
+        pushed: lead + excerpt(p.slice(from).join("")),
+    };
+}
+
+/** collapseLine trims s and collapses each whitespace run to one space. */
+function collapseLine(s: string): string {
+    return s.trim().replace(/\s+/g, " ");
+}
+
+/** excerpt shortens s to {@link EXCERPT_MAX} characters, marking a cut with `…`. */
+function excerpt(s: string): string {
+    const cs = Array.from(s);
+    if (cs.length <= EXCERPT_MAX) {
+        return s;
+    }
+    return `${cs.slice(0, EXCERPT_MAX).join("")}…`;
 }
 
 // --- M4.3: container rebuilders (lists, panels, expands, blockquotes, tables) ---

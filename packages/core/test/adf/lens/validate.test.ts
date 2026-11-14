@@ -15,7 +15,7 @@
 // reason, never silently pushed.
 
 import { describe, expect, it } from "vitest";
-import { put } from "../../../src/adf/lens/reconstruct.ts";
+import { put, putLinks } from "../../../src/adf/lens/reconstruct.ts";
 import { marshallMarkdownMapped } from "../../../src/index.ts";
 import { type ADF, newADF } from "../../../src/models/adf.ts";
 
@@ -120,4 +120,97 @@ describe("validatePut refusal contract", () => {
             expect(() => put(base, body, null, null, null)).toThrow(r.want);
         });
     }
+});
+
+describe("validatePut refusal message", () => {
+    // A paragraph, then a key/value table: a header row and one row whose first
+    // cell is a tableHeader (rendered **ab**). Body lines: 1 intro, 3 header,
+    // 4 separator, 5 the ab row.
+    const keyValue = `{ "adf": { "type": "doc", "content": [
+       { "type": "paragraph", "content": [ { "type": "text", "text": "intro" } ] },
+       { "type": "table", "attrs": { "localId": "t" }, "content": [
+          { "type": "tableRow", "content": [
+             { "type": "tableHeader", "content": [ { "type": "paragraph",
+               "content": [ { "type": "text", "text": "K" } ] } ] },
+             { "type": "tableHeader", "content": [ { "type": "paragraph",
+               "content": [ { "type": "text", "text": "V" } ] } ] } ] },
+          { "type": "tableRow", "content": [
+             { "type": "tableHeader", "content": [ { "type": "paragraph",
+               "content": [ { "type": "text", "text": "ab" } ] } ] },
+             { "type": "tableCell", "content": [ { "type": "paragraph",
+               "content": [ { "type": "text", "text": "v1" } ] } ] } ] } ] } ] } }`;
+
+    it("names the file line and quotes the line that does not round-trip", () => {
+        const base = newADF(keyValue);
+        const body = renderBody(base).replace("**ab**", "**a** **b**");
+
+        let have = "";
+        try {
+            putLinks(base, body, null, null, null, null, false, 10);
+        } catch (err) {
+            have = (err as Error).message;
+        }
+
+        expect(have).toMatch(/^push: block 1 did not round-trip/);
+        expect(have).toContain('"| **a** **b** | v1 |" would push as "');
+        expect(have).toMatch(/\(line 14\)$/);
+    });
+
+    it("quotes a long line shortened", () => {
+        const base = newADF(keyValue);
+        const long = `**a** **${"b".repeat(100)}**`;
+        const body = renderBody(base).replace("**ab**", long);
+
+        let have = "";
+        try {
+            putLinks(base, body, null, null, null, null, false, 1);
+        } catch (err) {
+            have = (err as Error).message;
+        }
+
+        expect(have).toContain(`"| **a** **${"b".repeat(50)}…" would push as`);
+        expect(have).toMatch(/\(line 5\)$/);
+    });
+
+    // A blockquote of two paragraphs. Under force, a block that cannot be
+    // re-derived is kept verbatim, so dropping its second paragraph leaves the
+    // push with more lines than the edit: the lines cannot pair up.
+    const twoParaQuote = (first: string): string => `{ "adf": { "type": "doc",
+       "content": [ { "type": "blockquote", "content": [
+          { "type": "paragraph", "content": [ { "type": "text", "text": "${first}" } ] },
+          { "type": "paragraph", "content": [ { "type": "text", "text": "two" } ] }
+       ] } ] } }`;
+
+    it("quotes whole blocks when the lines do not pair up", () => {
+        const base = newADF(twoParaQuote("one"));
+        const body = renderBody(base).replace("\n>\n> two", "");
+
+        let have = "";
+        try {
+            putLinks(base, body, null, null, null, null, true, 3);
+        } catch (err) {
+            have = (err as Error).message;
+        }
+
+        expect(have).toContain(
+            '"> one" would push as "> one > > two" (line 3)',
+        );
+    });
+
+    it("quotes from just before the difference in a long block", () => {
+        const base = newADF(twoParaQuote("a".repeat(100)));
+        const body = renderBody(base).replace("\n>\n> two", "");
+
+        let have = "";
+        try {
+            putLinks(base, body, null, null, null, null, true, 1);
+        } catch (err) {
+            have = (err as Error).message;
+        }
+
+        const tail = "a".repeat(20);
+        expect(have).toContain(
+            `"…${tail}" would push as "…${tail} > > two" (line 1)`,
+        );
+    });
 });
