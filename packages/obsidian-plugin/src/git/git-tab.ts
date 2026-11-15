@@ -1,13 +1,16 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The panel's Git tab: a Vault | Confluence switch between the vault's two
-// repositories (repos.ts), each with its own state message, change list,
-// unticked files, message draft, and commit form over a flat change list with
-// per-file checkboxes. The Vault side adds Pull and Push with the ahead and
-// behind counts, and the obsidian-git guard banner. Nothing commits on its
-// own, and the tab never runs git itself — the controllers do. DOM shell; the
-// logic is core's `git/` modules, repos.ts, history.ts, and guard.ts.
+// The panel's Git tab: a Vault | Confluence | <knowledge base> switch between
+// the vault's repositories (repos.ts), each with its own state message, change
+// list, unticked files, message draft, and commit form over a flat change list
+// with per-file checkboxes. The knowledge-base button names the base picked
+// last; its menu picks another (repo-choice.ts). The Vault side and every
+// knowledge base add Pull and Push with the ahead and behind counts; a
+// knowledge base shows its branch, and the Vault side the obsidian-git guard
+// banner. Nothing commits on its own, and the tab never runs git itself — the
+// controllers do. DOM shell; the logic is core's `git/` modules, repos.ts,
+// repo-choice.ts, history.ts, and guard.ts.
 
 import { type GitChange, KIND_TEXT, posixBase, posixDir } from "@docket/core";
 import { Notice, setIcon, TFile } from "obsidian";
@@ -19,13 +22,15 @@ import {
     type PluginRegistry,
     stopAutoCommit,
 } from "./guard.ts";
-import { firstLine, type RepoId } from "./history.ts";
+import { firstLine, kbName, kbRepoId, type RepoId } from "./history.ts";
+import { kbButton, switchButton } from "./kb-switch.ts";
+import { type Choice, settleChoice } from "./repo-choice.ts";
 
-/** REPO_LABEL names each repository on its sub-tab. */
-const REPO_LABEL: Record<RepoId, string> = {
-    vault: "Vault",
-    sync: "Confluence",
-};
+/** FIXED are the switch's fixed buttons: id, label, and icon. */
+const FIXED = [
+    ["vault", "Vault", "vault"],
+    ["sync", "Confluence", "cloud"],
+] as const;
 
 /** Pane is one sub-tab's form state, kept across re-renders. */
 interface Pane {
@@ -38,31 +43,46 @@ interface Pane {
 }
 
 export class GitTab {
-    /** The sub-tab shown. */
-    private repo: RepoId = "vault";
-    private readonly panes: Record<RepoId, Pane> = {
-        vault: { unchecked: new Set(), draft: null, focus: null },
-        sync: { unchecked: new Set(), draft: null, focus: null },
-    };
+    /** The repository shown and the knowledge base the switch names. */
+    private choice: Choice<"vault" | "sync"> = { repo: "vault", kb: null };
+    private readonly panes = new Map<RepoId, Pane>();
 
     constructor(
         private readonly plugin: docketPlugin,
         private readonly rerender: () => void,
     ) {}
 
-    /** git is the controller of the sub-tab shown. */
-    private get git(): GitController {
-        return this.plugin.repos[this.repo];
+    /** repo is the id of the repository shown. */
+    private get repo(): RepoId {
+        return this.choice.repo;
     }
 
-    /** pane is the form state of the sub-tab shown. */
+    /** git is the controller of the repository shown. */
+    private get git(): GitController {
+        const repos = this.plugin.repos;
+        return repos.get(this.repo) ?? repos.vault;
+    }
+
+    /** pane is the form state of the repository shown. */
     private get pane(): Pane {
-        return this.panes[this.repo];
+        let pane = this.panes.get(this.repo);
+        if (pane === undefined) {
+            pane = { unchecked: new Set(), draft: null, focus: null };
+            this.panes.set(this.repo, pane);
+        }
+        return pane;
     }
 
     /** render draws the tab into `root`. */
     render(root: HTMLElement): void {
+        const names = this.plugin.repos.kbNames();
+        this.choice = settleChoice(this.choice, names, "vault");
+        for (const id of this.panes.keys()) {
+            const kb = kbName(id);
+            if (kb !== null && !names.includes(kb)) this.panes.delete(id);
+        }
         this.renderSwitch(root);
+        const kb = kbName(this.repo);
         const git = this.git;
         const st = git.state;
         switch (st.kind) {
@@ -86,6 +106,13 @@ export class GitTab {
                 return;
             }
             case "no-repo": {
+                if (kb !== null) {
+                    this.kbProblem(
+                        root,
+                        `The knowledge base folder ${kb} is not a git clone.`,
+                    );
+                    return;
+                }
                 const el = this.empty(
                     root,
                     "git-branch",
@@ -105,6 +132,13 @@ export class GitTab {
                 return;
             }
             case "no-folder":
+                if (kb !== null) {
+                    this.kbProblem(
+                        root,
+                        `The knowledge base folder ${kb} does not exist.`,
+                    );
+                    return;
+                }
                 this.empty(
                     root,
                     "folder-x",
@@ -119,7 +153,9 @@ export class GitTab {
                     "alert-triangle",
                     this.repo === "vault"
                         ? "This vault sits inside a git repository rooted above it. The vault must be the repository root."
-                        : "The sync folder sits inside a git repository rooted above the vault. Initialize the vault's own repository first.",
+                        : kb !== null
+                          ? `The knowledge base folder ${kb} sits inside a git repository rooted above the vault, not in its own clone.`
+                          : "The sync folder sits inside a git repository rooted above the vault. Initialize the vault's own repository first.",
                 );
                 return;
             case "error":
@@ -128,33 +164,65 @@ export class GitTab {
             case "ready":
                 break;
         }
-        if (this.repo === "vault") {
-            this.renderGuard(root);
-            this.renderRemote(root);
-        }
+        if (this.repo === "vault") this.renderGuard(root);
+        if (kb !== null) this.renderBranch(root);
+        if (this.repo !== "sync") this.renderRemote(root);
         this.renderChanges(root);
     }
 
-    /** renderSwitch draws the Vault | Confluence switch with change counts. */
+    /**
+     * renderSwitch draws the Vault | Confluence switch with change counts,
+     * and the knowledge-base button when there is one.
+     */
     private renderSwitch(root: HTMLElement): void {
         const bar = root.createDiv({ cls: "docket-history-toggle" });
-        for (const id of ["vault", "sync"] as const) {
-            const git = this.plugin.repos[id];
-            const el = bar.createDiv({
-                cls: "clickable-icon docket-history-mode",
-                attr: { "aria-label": `${REPO_LABEL[id]} repository` },
-            });
-            setIcon(el.createSpan(), id === "vault" ? "vault" : "cloud");
-            el.createSpan({ text: REPO_LABEL[id] });
-            const n = git.ready ? git.changes.length : 0;
-            if (n > 0)
-                el.createSpan({ cls: "docket-git-badge", text: String(n) });
+        const repos = this.plugin.repos;
+        for (const [id, label, icon] of FIXED) {
+            const el = switchButton(bar, label, icon, repos[id]);
+            el.setAttribute("aria-label", `${label} repository`);
             if (id === this.repo) el.addClass("is-active");
             el.onclick = () => {
-                this.repo = id;
+                this.choice = { ...this.choice, repo: id };
                 this.rerender();
             };
         }
+        const kb = this.choice.kb;
+        if (kb === null) return;
+        kbButton(bar, {
+            repos,
+            kb,
+            shown: kbName(this.repo),
+            counts: true,
+            pick: (name) => this.show(name),
+        });
+    }
+
+    /** show switches the tab to the knowledge base in folder `name`. */
+    private show(name: string): void {
+        this.choice = { repo: kbRepoId(name), kb: name };
+        this.rerender();
+    }
+
+    /** renderBranch names the checked-out branch of the knowledge base shown. */
+    private renderBranch(root: HTMLElement): void {
+        const row = root.createDiv({ cls: "docket-muted docket-git-branch" });
+        setIcon(row.createSpan(), "git-branch");
+        const branch = this.git.branch;
+        row.createSpan({ text: branch === "" ? "detached HEAD" : branch });
+    }
+
+    /**
+     * kbProblem says what is wrong with the knowledge base shown and points to
+     * the settings, where removing and adding it again clones it afresh.
+     */
+    private kbProblem(root: HTMLElement, text: string): void {
+        const el = this.empty(
+            root,
+            "alert-triangle",
+            `${text} Remove it in the settings and add it again to clone it.`,
+        );
+        const btn = el.createEl("button", { text: "Open settings" });
+        btn.onclick = () => this.plugin.openSettings();
     }
 
     /**
@@ -283,7 +351,7 @@ export class GitTab {
     private renderCommit(parent: HTMLElement, checked: GitChange[]): void {
         const git = this.git;
         const pane = this.pane;
-        const history = this.plugin.commitHistory[this.repo];
+        const history = this.plugin.commitHistory.get(this.repo);
         if (history.length > 0) {
             const pick = parent.createEl("select", {
                 cls: "dropdown docket-git-recent",

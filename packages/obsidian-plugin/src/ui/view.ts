@@ -43,7 +43,7 @@ const TABS: [PanelTab, string, string][] = [
 
 export class docketView extends ItemView {
     private unsubscribe: (() => void) | null = null;
-    /** Unsubscribers from both repositories' changes and commits. */
+    /** Unsubscribers from every repository's changes and commits. */
     private unsubscribeGit: (() => void)[] = [];
     private unsubscribeMcp: (() => void) | null = null;
     private unsubscribeMcpLog: (() => void) | null = null;
@@ -119,12 +119,20 @@ export class docketView extends ItemView {
         this.contentEl.addClass("docket-panel");
 
         this.unsubscribe = c.subscribe(() => this.schedule());
-        this.unsubscribeGit = this.plugin.repos
-            .all()
-            .flatMap((git) => [
-                git.subscribe(() => this.schedule()),
-                git.onCommitted(() => this.historyTab.invalidate()),
-            ]);
+        const repos = this.plugin.repos;
+        this.unsubscribeGit = [
+            repos.each((git) => {
+                const offs = [
+                    git.subscribe(() => this.schedule()),
+                    git.onCommitted(() => this.historyTab.invalidate()),
+                ];
+                return () => {
+                    for (const off of offs) off();
+                };
+            }),
+            // A knowledge base added or removed changes the Git tab's menu.
+            repos.onChange(() => this.schedule()),
+        ];
         this.unsubscribeMcp = this.plugin.mcp.subscribe(() => this.schedule());
         this.unsubscribeMcpLog = this.plugin.mcp.log.subscribe(() => {
             if (this.tab === "mcp") this.schedule();

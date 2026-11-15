@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The panel's History tab: a Note | Vault | Confluence toggle over read-only
-// commit rows, `DD/MM/YY HH:MM: <subject>` each, newest first, a page at a
-// time. Vault and Confluence list their own repository's commits; Note follows
+// The panel's History tab: a Note | Vault | Confluence | <knowledge base>
+// toggle over read-only commit rows, `DD/MM/YY HH:MM: <subject>` each, newest
+// first, a page at a time. Vault, Confluence, and a knowledge base list their
+// own repository's commits (the knowledge-base button is kb-switch.ts); Note follows
 // the active note in the repository owning it, across renames — committed ones
 // through `git log --follow`, and a move not yet committed through the change
 // list's rename (history-source.ts). In Note mode, clicking a row compares the
@@ -11,20 +12,26 @@
 // (history-pick.ts). DOM shell over the controllers' `log`.
 
 import { type LogEntry, logLine } from "@docket/core";
-import { setIcon } from "obsidian";
 import type docketPlugin from "../main.ts";
+import { kbName, kbRepoId } from "./history.ts";
 import { isPicked, nextPick, pickBlock } from "./history-pick.ts";
 import {
     type HistoryMode,
     type HistorySource,
     historySource,
 } from "./history-source.ts";
+import { kbButton, switchButton } from "./kb-switch.ts";
+import { type Choice, settleChoice } from "./repo-choice.ts";
 
 /** PAGE_SIZE is how many commits one load (and each Load more) adds. */
 export const PAGE_SIZE = 100;
 
 export class HistoryTab {
-    private mode: HistoryMode = "note";
+    /** The mode shown and the knowledge base the toggle names. */
+    private choice: Choice<"note" | "vault" | "sync"> = {
+        repo: "note",
+        kb: null,
+    };
     private rows: LogEntry[] = [];
     private more = false;
     private loading = false;
@@ -44,8 +51,15 @@ export class HistoryTab {
         this.loadedFor = null;
     }
 
+    /** mode is whose history the tab shows. */
+    private get mode(): HistoryMode {
+        return this.choice.repo;
+    }
+
     /** render draws the tab into `root`, loading the rows it needs. */
     render(root: HTMLElement): void {
+        const names = this.plugin.repos.kbNames();
+        this.choice = settleChoice(this.choice, names, "note");
         this.renderToggle(root);
         const active = this.plugin.app.workspace.getActiveFile()?.path ?? null;
         const src = historySource(this.plugin.repos, this.mode, active);
@@ -104,25 +118,40 @@ export class HistoryTab {
         }
     }
 
-    /** renderToggle draws the Note | Vault | Confluence switch. */
+    /**
+     * renderToggle draws the Note | Vault | Confluence switch and the
+     * knowledge-base button when there is one.
+     */
     private renderToggle(root: HTMLElement): void {
         const bar = root.createDiv({ cls: "docket-history-toggle" });
-        const item = (mode: HistoryMode, label: string, icon: string): void => {
-            const el = bar.createDiv({
-                cls: "clickable-icon docket-history-mode",
-                attr: { "aria-label": `${label} history` },
-            });
-            setIcon(el.createSpan(), icon);
-            el.createSpan({ text: label });
+        const item = (
+            mode: "note" | "vault" | "sync",
+            label: string,
+            icon: string,
+        ): void => {
+            const el = switchButton(bar, label, icon, null);
+            el.setAttribute("aria-label", `${label} history`);
             if (mode === this.mode) el.addClass("is-active");
             el.onclick = () => {
-                this.mode = mode;
+                this.choice = { ...this.choice, repo: mode };
                 this.rerender();
             };
         };
         item("note", "Note", "file-text");
         item("vault", "Vault", "vault");
         item("sync", "Confluence", "cloud");
+        const kb = this.choice.kb;
+        if (kb === null) return;
+        kbButton(bar, {
+            repos: this.plugin.repos,
+            kb,
+            shown: kbName(this.mode),
+            counts: false,
+            pick: (name) => {
+                this.choice = { repo: kbRepoId(name), kb: name };
+                this.rerender();
+            },
+        });
     }
 
     /** note is the active note's path in Note mode, else null. */

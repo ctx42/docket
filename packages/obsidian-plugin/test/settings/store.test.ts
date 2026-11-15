@@ -153,6 +153,23 @@ describe("commit message history", () => {
         expect(plugin.app.loadLocalStorage(HISTORY_CAP_KEY)).toBeNull();
     });
 
+    it("keeps each repository's messages apart", () => {
+        const plugin = fakePlugin();
+
+        saveCommitHistory(plugin, "vault", ["v"]);
+        saveCommitHistory(plugin, "sync", ["s"]);
+        saveCommitHistory(plugin, "kb:kb", ["k"]);
+        saveCommitHistory(plugin, "kb:kb-team", ["t"]);
+
+        expect(loadCommitHistory(plugin, "vault")).toEqual(["v"]);
+        expect(loadCommitHistory(plugin, "sync")).toEqual(["s"]);
+        expect(loadCommitHistory(plugin, "kb:kb")).toEqual(["k"]);
+        expect(loadCommitHistory(plugin, "kb:kb-team")).toEqual(["t"]);
+        expect(
+            plugin.app.loadLocalStorage(`${COMMIT_HISTORY_KEY}-kb:kb`),
+        ).toEqual(["k"]);
+    });
+
     it("reads junk as no messages and the default cap", () => {
         const plugin = fakePlugin();
         plugin.app.saveLocalStorage(COMMIT_HISTORY_KEY, ["a", 1, null, "b"]);

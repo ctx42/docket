@@ -37,7 +37,9 @@ async function repos(): Promise<GitRepos> {
             `1 .D N... 100644 100644 000000 ${h} ${h} old/p.md\0? new/p.md\0`,
         ),
         files,
+        (name) => ctl(name, ""),
     );
+    r.setKnowledgeBases(["kb-team"]);
     await r.refresh();
     return r;
 }
@@ -53,6 +55,30 @@ describe("historySource", () => {
         expect(historySource(r, "sync", "kb/a.md")).toEqual({
             git: r.sync,
             path: null,
+        });
+    });
+
+    it("lists a whole knowledge base in its mode", async () => {
+        const r = await repos();
+
+        expect(historySource(r, "kb:kb-team", "confluence/a.md")).toEqual({
+            git: r.kb("kb-team"),
+            path: null,
+        });
+    });
+
+    it("lists nothing for a knowledge base that is gone", async () => {
+        const r = await repos();
+
+        expect(historySource(r, "kb:old", "kb-team/a.md")).toBeNull();
+    });
+
+    it("follows a note in a knowledge base in its repository", async () => {
+        const r = await repos();
+
+        expect(historySource(r, "note", "kb-team/a.md")).toEqual({
+            git: r.kb("kb-team"),
+            path: "kb-team/a.md",
         });
     });
 

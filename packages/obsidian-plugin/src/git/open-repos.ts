@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// Builds the vault's two repository controllers (repos.ts) over Obsidian: git
+// Builds the vault's repository controllers (repos.ts) over Obsidian: git
 // runs in the vault folder on disk, files go through the vault adapter, and
 // failures show as notices. Obsidian glue only.
 
@@ -11,7 +11,7 @@ import { type App, FileSystemAdapter, Notice } from "obsidian";
 import { NodeFileSystem } from "../adapters/fs-node.ts";
 import { NodeGitExec } from "../adapters/git.ts";
 import { GitController } from "./controller.ts";
-import type { RepoId } from "./history.ts";
+import { kbRepoId, type RepoId } from "./history.ts";
 import { GitRepos, type RepoFiles } from "./repos.ts";
 
 /** RepoHooks is what the controllers read from and report to the plugin. */
@@ -24,7 +24,10 @@ export interface RepoHooks {
     record: (repo: RepoId, message: string) => void;
 }
 
-/** openRepos builds the vault and sync controllers for `app`'s vault. */
+/**
+ * openRepos builds the vault and sync controllers for `app`'s vault; the
+ * knowledge bases' controllers come with {@link GitRepos.setKnowledgeBases}.
+ */
 export function openRepos(app: App, hooks: RepoHooks): GitRepos {
     const adapter = app.vault.adapter;
     const base =
@@ -66,5 +69,6 @@ export function openRepos(app: App, hooks: RepoHooks): GitRepos {
             return folder === "" ? null : folder;
         }),
         files,
+        (name) => controller(kbRepoId(name), () => name),
     );
 }

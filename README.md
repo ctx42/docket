@@ -267,12 +267,14 @@ stream live in the panel. The same actions are available as commands (search
 ### Git and History tabs
 
 The plugin keeps the vault in **two git repositories**, so your own notes and
-the pages docket syncs never share a history:
+the pages docket syncs never share a history. Each git knowledge base adds its
+own clone:
 
-| Repository     | Root            | Holds                                      |
-|----------------|-----------------|--------------------------------------------|
-| **Vault**      | the vault       | your own notes; it ignores the sync folder |
-| **Confluence** | the sync folder | the pages docket pulls and pushes          |
+| Repository       | Root                 | Holds                                                          |
+|------------------|----------------------|----------------------------------------------------------------|
+| **Vault**        | the vault            | your own notes; it ignores the sync and knowledge-base folders |
+| **Confluence**   | the sync folder      | the pages docket pulls and pushes                              |
+| a knowledge base | its top-level folder | the knowledge base cloned from its git URL                     |
 
 **First-run setup.** After you connect to Confluence, the Sync tab asks for the
 **sync folder**: one top-level folder (a name without `/`, `confluence` by
@@ -291,13 +293,16 @@ button on the Git tab, never on its own when the plugin loads. Once set, the
 sync folder cannot be changed in the settings. To change it, disable the
 plugin, edit `syncRoot` in its `data.json`, and move the folder by hand.
 
-**Git tab.** It has a **Vault** and a **Confluence** sub-tab. Each one shows its
-repository's state, its changed files (kind, name, folder), a message box with
-your recent messages for that repository, and a **Commit** button for the
-ticked files. Docket never commits on its own: a pull or a push only changes
-files, and you commit them when you choose. The Vault sub-tab also has **Pull**
-and **Push** buttons, with how many commits are behind and ahead of the
-upstream branch:
+**Git tab.** It has a **Vault** and a **Confluence** sub-tab, and one more for
+the git knowledge bases when you have any. That last button names the
+knowledge base you picked last; with more than one, it opens a menu of them,
+each with its number of changes. Each sub-tab shows its repository's state,
+its changed files (kind, name, folder), a message box with your recent
+messages for that repository, and a **Commit** button for the ticked files.
+Docket never commits on its own: a pull or a push only changes files, and you
+commit them when you choose. The Vault sub-tab and each knowledge base also
+have **Pull** and **Push** buttons, with how many commits are behind and ahead
+of the upstream branch; a knowledge base also shows its branch:
 
 - **Pull** runs `git pull --rebase --autostash`. If the rebase conflicts,
   docket aborts it, so nothing changes, and shows git's message and the files
@@ -309,9 +314,9 @@ upstream branch:
 The Confluence repository is local only: it has no Pull or Push.
 
 **History tab.** Switch between **Note** (the open note's commits, from the
-repository that holds it, across renames), **Vault**, and **Confluence** (all
-commits of that repository). In Note mode, click a commit to compare the
-note's change bars with it.
+repository that holds it, across renames), **Vault**, **Confluence**, and a
+knowledge base (all commits of that repository). In Note mode, click a commit
+to compare the note's change bars with it.
 
 **Without git.** If docket cannot find git, setup creates only the sync folder,
 and pulling and pushing pages work as usual. Set the git path in the settings

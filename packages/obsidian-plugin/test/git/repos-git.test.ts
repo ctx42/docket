@@ -81,6 +81,7 @@ describe.skipIf(!hasGit)("GitRepos over real git", () => {
             ctl(() => "", "vault"),
             ctl(() => (syncRoot === "" ? null : syncRoot), "sync"),
             files,
+            (name) => ctl(() => name, `kb:${name}`),
         );
     };
     const git = (cwd: string, ...args: string[]): string =>
@@ -327,6 +328,28 @@ describe.skipIf(!hasGit)("GitRepos over real git", () => {
             expect(log.map((e) => e.path)).toEqual(["confluence/page.md"]);
             expect(await r.sync.baseText("confluence/page.md")).toBe("v1\n");
             expect(r.forPath("confluence/page.md")).toBe(r.sync);
+        });
+
+        it("land in a knowledge base's own clone, by vault path", async () => {
+            const r = repos();
+            await r.setupSync();
+            const kb = join(vault, "kb");
+            await mkdir(kb);
+            git(kb, "init", "-q", "-b", "main");
+            configure(kb);
+            await writeFile(join(kb, "alarms.md"), "a\n");
+            const [added] = r.setKnowledgeBases(["kb"]);
+            await added?.refresh();
+            const base = r.kb("kb");
+
+            expect(base?.changes.map((c) => c.path)).toEqual(["kb/alarms.md"]);
+            expect(base?.branch).toBe("main");
+            expect(await base?.commit(base.changes, "docs: alarms")).toBe(true);
+            expect(subjects(kb)).toEqual(["docs: alarms"]);
+            expect(subjects(vault)).toEqual([]);
+            expect(r.forPath("kb/alarms.md")).toBe(base);
+            expect(await base?.baseText("kb/alarms.md")).toBe("a\n");
+            expect(recorded).toEqual(["kb:kb:docs: alarms"]);
         });
     });
 });

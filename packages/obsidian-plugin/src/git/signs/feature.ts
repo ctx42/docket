@@ -71,17 +71,24 @@ export class SignsFeature {
         p.registerEvent(ws.on("file-open", () => this.refreshAll()));
         p.registerEvent(ws.on("active-leaf-change", () => this.refreshAll()));
         p.registerEvent(p.app.vault.on("rename", () => this.refreshAll()));
-        for (const git of this.repos.all()) {
-            p.register(git.onCommitted(() => this.refreshIn(git)));
-            let kind = git.state.kind;
-            p.register(
-                git.watch(() => {
+        p.register(
+            this.repos.each((git) => {
+                let kind = git.state.kind;
+                const offCommit = git.onCommitted(() => this.refreshIn(git));
+                const offWatch = git.watch(() => {
                     if (git.state.kind === kind) return;
                     kind = git.state.kind;
                     this.refreshIn(git);
-                }),
-            );
-        }
+                });
+                return () => {
+                    offCommit();
+                    offWatch();
+                };
+            }),
+        );
+        // A knowledge base added or removed changes which repository owns
+        // the notes in its folder.
+        p.register(this.repos.onChange(() => this.refreshAll()));
         p.registerInterval(
             window.setInterval(() => this.refreshActive(), INTERVAL_MS),
         );

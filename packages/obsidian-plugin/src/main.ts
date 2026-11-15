@@ -15,14 +15,10 @@ import {
     TFolder,
 } from "obsidian";
 import { loadDeviceToken, writePointer, writeToken } from "./device-state.ts";
-import {
-    capHistory,
-    HISTORY_CAP,
-    type RepoId,
-    recordMessage,
-} from "./git/history.ts";
+import { CommitHistory, HISTORY_CAP, type RepoId } from "./git/history.ts";
 import { addIgnoreItem } from "./git/ignore-menu.ts";
 import { openRepos } from "./git/open-repos.ts";
+import { gitKbNames } from "./git/repos.ts";
 import { SignsFeature } from "./git/signs/feature.ts";
 import { ICON_ID, ICON_SVG } from "./icon.ts";
 import { applyTerminalIcon, type LeanRegistry } from "./lean-terminal.ts";
@@ -111,7 +107,11 @@ export default class docketPlugin extends Plugin {
     /** Whether this device shows the editor change bars (see setDiffSigns). */
     diffSigns = true;
     /** This device's committed messages per repository, most recent first. */
-    commitHistory: Record<RepoId, string[]> = { vault: [], sync: [] };
+    readonly commitHistory = new CommitHistory(
+        (repo) => loadCommitHistory(this, repo),
+        (repo, list) => saveCommitHistory(this, repo, list),
+        HISTORY_CAP,
+    );
     /** How many commit messages this device keeps (see setHistoryCap). */
     historyCap = HISTORY_CAP;
     /** Whether this device runs the MCP doc server (see setMcpEnabled). */
@@ -149,13 +149,9 @@ export default class docketPlugin extends Plugin {
         this.gitPath = loadGitPath(this);
         this.diffSigns = loadDiffSigns(this);
         this.historyCap = loadHistoryCap(this);
-        this.commitHistory = {
-            vault: capHistory(
-                loadCommitHistory(this, "vault"),
-                this.historyCap,
-            ),
-            sync: capHistory(loadCommitHistory(this, "sync"), this.historyCap),
-        };
+        this.commitHistory.setCap(this.historyCap);
+        // The first refresh comes with the layout (watchGit).
+        this.repos.setKnowledgeBases(gitKbNames(this.settings.knowledgeBases));
         this.mcpEnabled = loadMcpEnabled(this);
 
         this.addSettingTab(new docketSettingTab(this.app, this));
@@ -220,7 +216,19 @@ export default class docketPlugin extends Plugin {
     /** persistSettings writes the current shareable settings to `data.json`. */
     async persistSettings(): Promise<void> {
         await saveSettings(this, this.settings);
+        this.applyKnowledgeBases();
         this.controller.touch();
+    }
+
+    /**
+     * applyKnowledgeBases gives every git knowledge base in the settings its
+     * repository and reads the new ones.
+     */
+    private applyKnowledgeBases(): void {
+        const added = this.repos.setKnowledgeBases(
+            gitKbNames(this.settings.knowledgeBases),
+        );
+        for (const git of added) void git.refresh();
     }
 
     /**
@@ -300,12 +308,7 @@ export default class docketPlugin extends Plugin {
 
     /** recordCommitMessage puts a message first in `repo`'s history. */
     recordCommitMessage(repo: RepoId, message: string): void {
-        this.commitHistory[repo] = recordMessage(
-            this.commitHistory[repo],
-            message,
-            this.historyCap,
-        );
-        saveCommitHistory(this, repo, this.commitHistory[repo]);
+        this.commitHistory.record(repo, message);
     }
 
     /**
@@ -315,13 +318,7 @@ export default class docketPlugin extends Plugin {
     setHistoryCap(cap: number): void {
         this.historyCap = cap;
         saveHistoryCap(this, cap);
-        for (const repo of ["vault", "sync"] as const) {
-            this.commitHistory[repo] = capHistory(
-                this.commitHistory[repo],
-                cap,
-            );
-            saveCommitHistory(this, repo, this.commitHistory[repo]);
-        }
+        this.commitHistory.setCap(cap);
     }
 
     /** setMcpEnabled switches the MCP doc server on or off on this device. */

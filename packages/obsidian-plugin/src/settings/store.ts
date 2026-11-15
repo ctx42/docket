@@ -139,18 +139,16 @@ export function saveMcpEnabled(plugin: Plugin, on: boolean): void {
 
 /**
  * COMMIT_HISTORY_KEY is the localStorage key of this device's vault-repository
- * commit messages; the sync repository's key adds {@link SYNC_HISTORY_SUFFIX}.
+ * commit messages; the sync repository's key adds `-sync`, and a knowledge
+ * base's adds `-` and its id (`-kb:<folder>`).
  */
 export const COMMIT_HISTORY_KEY = "docket-commit-history";
-
-/** SYNC_HISTORY_SUFFIX ends the sync repository's commit-message key. */
-const SYNC_HISTORY_SUFFIX = "-sync";
 
 /** historyKey is the localStorage key of a repository's commit messages. */
 function historyKey(repo: RepoId): string {
     return repo === "vault"
         ? COMMIT_HISTORY_KEY
-        : COMMIT_HISTORY_KEY + SYNC_HISTORY_SUFFIX;
+        : `${COMMIT_HISTORY_KEY}-${repo}`;
 }
 
 /**

@@ -1054,8 +1054,9 @@ div.docket-review-row .docket-review-main {
     pointer-events: none;
 }
 
-/* Git tab: a Vault | Confluence switch (styled as the History toggle), Pull and
-   Push for the vault, and one commit form over a flat change list. */
+/* Git tab: a Vault | Confluence | <knowledge base> switch (styled as the
+   History toggle), Pull and Push for the vault and knowledge bases, and one
+   commit form over a flat change list. A long knowledge-base name is cut. */
 .docket-git-remote {
     display: flex;
     align-items: center;
@@ -1153,6 +1154,57 @@ div.docket-review-row .docket-review-main {
 }
 .docket-git-commit {
     align-self: flex-start;
+}
+.docket-git-kb {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+.docket-git-kb .docket-git-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.docket-git-chevron {
+    display: inline-flex;
+    color: var(--text-faint);
+}
+.docket-git-chevron .svg-icon {
+    width: var(--icon-xs);
+    height: var(--icon-xs);
+}
+.docket-git-branch {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    font-size: var(--font-ui-smaller);
+}
+.docket-git-branch .svg-icon {
+    width: var(--icon-xs);
+    height: var(--icon-xs);
+}
+.docket-git-menu-row {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-3);
+    min-width: 12em;
+}
+.docket-git-menu-name {
+    max-width: 24em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.docket-git-menu-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    margin-left: auto;
+    color: var(--text-faint);
+    font-size: var(--font-ui-smaller);
+}
+.docket-git-menu-meta .docket-git-badge {
+    margin-left: 0;
 }
 
 /* History tab. */
