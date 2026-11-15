@@ -463,6 +463,23 @@ describe("GitRepo.push", () => {
     });
 });
 
+describe("GitRepo.branch", () => {
+    it("names the checked-out branch", async () => {
+        const git = new StubGitExec().on("symbolic-ref", {
+            stdout: "main\n",
+        });
+
+        expect(await new GitRepo(git).branch()).toBe("main");
+        expect(git.cmds()).toEqual(["symbolic-ref --short -q HEAD"]);
+    });
+
+    it("is empty on a detached HEAD", async () => {
+        const git = new StubGitExec().on("symbolic-ref", { code: 1 });
+
+        expect(await new GitRepo(git).branch()).toBe("");
+    });
+});
+
 describe("GitRepo.aheadBehind", () => {
     it("counts the commits on each side of the upstream", async () => {
         const git = new StubGitExec().on("rev-list", { stdout: "2\t3\n" });

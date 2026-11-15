@@ -3,9 +3,10 @@
 
 // A vault's git repository, driven through the {@link GitExec} port. Beyond
 // local operations it pulls (rebasing, with an autostash) and pushes the
-// current branch against its upstream; there is no remote, branch, or
-// credential handling here, and no sync code path calls into this module —
-// docket's pull and push leave their file changes for the user to commit.
+// current branch against its upstream and names that branch; there is no
+// remote, branch-switching, or credential handling here, and no sync code
+// path calls into this module — docket's pull and push leave their file
+// changes for the user to commit.
 //
 // A commit takes whole working-tree files and leaves the rest of the index
 // alone. `git commit --only` would do that for tracked paths, but it refuses an
@@ -319,6 +320,12 @@ export class GitRepo {
     /** push runs `git push`; a rejected push throws {@link GitError}. */
     async push(): Promise<void> {
         await this.ok(["push"], { env: REMOTE_ENV });
+    }
+
+    /** branch names the checked-out branch, or `""` on a detached HEAD. */
+    async branch(): Promise<string> {
+        const out = await this.run(["symbolic-ref", "--short", "-q", "HEAD"]);
+        return out.code === 0 ? out.stdout.trim() : "";
     }
 
     /**
