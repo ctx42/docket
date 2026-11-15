@@ -412,7 +412,10 @@ const rows = suites.flatMap((s) =>
     s.cases.map((cs, i) => [`${s.name}/${cs.name}`, cs, s.golden[i]] as const),
 );
 
-describe("REST routes against Go", () => {
+// A case replays a whole recorded session in one test; rest-gaps/gaps sends
+// three 1 MiB bodies, and indexing one 1 MiB gap takes ~250 ms alone. That
+// passes the 5 s default under coverage on a loaded machine.
+describe("REST routes against Go", { timeout: 30_000 }, () => {
     it.each(rows)("%s matches the Go server", async (_name, cs, want) => {
         // --- Given ---
         const { deps } = await bookshop({
