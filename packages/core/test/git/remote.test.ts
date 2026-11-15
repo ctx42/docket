@@ -8,7 +8,6 @@ import {
     cloneRepo,
     lsRemote,
     ProgressReader,
-    pullFastForward,
     RemoteError,
     remoteProblem,
 } from "../../src/git/remote.ts";
@@ -152,30 +151,6 @@ describe("cloneRepo", () => {
         expect(git.calls[0]?.cmd).toBe(`clone --progress -- ${URL} kb`);
         expect(git.calls[0]?.options?.signal).toBe(ctl.signal);
         expect(seen.at(-1)).toBe("Receiving objects 62% · 1.20 MiB");
-    });
-});
-
-describe("pullFastForward", () => {
-    it("pulls in the folder, fast-forward only", async () => {
-        const git = new StubGitExec();
-
-        await pullFastForward(git, "kb-anna");
-
-        expect(git.calls.map((c) => c.cmd)).toEqual([
-            "-C kb-anna pull --ff-only",
-        ]);
-        expect(git.calls[0]?.options?.env).toEqual(BATCH_ENV);
-    });
-
-    it("throws a RemoteError when the pull fails", async () => {
-        const git = new StubGitExec().on("-C kb pull", {
-            code: 128,
-            stderr: "fatal: Not possible to fast-forward, aborting.",
-        });
-
-        const have = await pullFastForward(git, "kb").catch((e) => e);
-
-        expect((have as RemoteError).problem).toBe("other");
     });
 });
 

@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT
 
 // The git operations that talk to a remote for knowledge bases: listing a
-// repository's branches, cloning it into a vault folder, fast-forward pulls,
-// and reading where an existing clone came from. They run git without prompts — SSH in batch mode, terminal prompts
-// off — so a missing key or an unknown host fails at once instead of waiting
-// for input nobody can give, and a failure says which of those it was.
+// repository's branches, cloning it into a vault folder with progress, and
+// reading where an existing clone came from. They run git without prompts —
+// SSH in batch mode, terminal prompts off — so a missing key or an unknown
+// host fails at once instead of waiting for input nobody can give, and a
+// failure says which of those it was.
 
 import type {
     GitAbort,
@@ -172,17 +173,6 @@ export class ProgressReader {
         }
         return last;
     }
-}
-
-/**
- * pullFastForward pulls the repository in `dir`, refusing to merge: it fails
- * with {@link RemoteError} when local commits and the remote have split.
- */
-export async function pullFastForward(
-    exec: GitExec,
-    dir: string,
-): Promise<void> {
-    await remote(exec, ["-C", dir, "pull", "--ff-only"]);
 }
 
 /** CloneInfo is what an existing clone says about where it came from. */
