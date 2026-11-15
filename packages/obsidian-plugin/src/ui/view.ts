@@ -132,6 +132,8 @@ export class docketView extends ItemView {
             }),
             // A knowledge base added or removed changes the Git tab's menu.
             repos.onChange(() => this.schedule()),
+            // A knowledge base's check changes its buttons in the Git tab.
+            this.plugin.kbWatch.subscribe(() => this.schedule()),
         ];
         this.unsubscribeMcp = this.plugin.mcp.subscribe(() => this.schedule());
         this.unsubscribeMcpLog = this.plugin.mcp.log.subscribe(() => {

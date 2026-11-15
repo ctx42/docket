@@ -15,6 +15,7 @@ import {
 } from "@docket/core";
 import type { Plugin } from "obsidian";
 import { HISTORY_CAP, parseHistoryCap, type RepoId } from "../git/history.ts";
+import { type RoleRecord, readRoles } from "../git/kb-role.ts";
 
 /** TOKEN_KEY is the per-vault localStorage key the API token is stored under. */
 export const TOKEN_KEY = "docket-token";
@@ -192,4 +193,23 @@ export function saveHistoryCap(plugin: Plugin, cap: number): void {
         HISTORY_CAP_KEY,
         cap === HISTORY_CAP ? null : String(cap),
     );
+}
+
+/**
+ * KB_ROLES_KEY is the localStorage key of this device's knowledge-base roles,
+ * which belong to the person, not to the vault the settings sync.
+ */
+export const KB_ROLES_KEY = "docket-kb-roles";
+
+/** loadKbRoles reads this device's knowledge-base roles by folder name. */
+export function loadKbRoles(plugin: Plugin): Record<string, RoleRecord> {
+    return readRoles(plugin.app.loadLocalStorage(KB_ROLES_KEY));
+}
+
+/** saveKbRoles records this device's knowledge-base roles. */
+export function saveKbRoles(
+    plugin: Plugin,
+    roles: Record<string, RoleRecord>,
+): void {
+    plugin.app.saveLocalStorage(KB_ROLES_KEY, roles);
 }

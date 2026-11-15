@@ -14,9 +14,11 @@ import {
     TFile,
     TFolder,
 } from "obsidian";
+import { NodeGitExec } from "./adapters/git.ts";
 import { loadDeviceToken, writePointer, writeToken } from "./device-state.ts";
 import { CommitHistory, HISTORY_CAP, type RepoId } from "./git/history.ts";
 import { addIgnoreItem } from "./git/ignore-menu.ts";
+import { KbWatch } from "./git/kb-watch.ts";
 import { openRepos } from "./git/open-repos.ts";
 import { gitKbNames } from "./git/repos.ts";
 import { SignsFeature } from "./git/signs/feature.ts";
@@ -34,6 +36,7 @@ import {
 import { indentViewPlugin } from "./render/indent-livepreview.ts";
 import { indentPostProcessor } from "./render/indent-reading.ts";
 import { resolveCacheRoot } from "./runtime.ts";
+import { vaultBasePath } from "./settings/fields.ts";
 import { DEFAULT_SETTINGS, type docketSettings } from "./settings/model.ts";
 import {
     loadCommitHistory,
@@ -41,6 +44,7 @@ import {
     loadGitPath,
     loadHideProps,
     loadHistoryCap,
+    loadKbRoles,
     loadMcpEnabled,
     loadSettings,
     loadTerminalIconSet,
@@ -50,6 +54,7 @@ import {
     saveGitPath,
     saveHideProps,
     saveHistoryCap,
+    saveKbRoles,
     saveMcpEnabled,
     saveSettings,
     saveTerminalIconSet,
@@ -123,6 +128,24 @@ export default class docketPlugin extends Plugin {
         gitPath: () => this.gitPath,
         syncFolder: () => syncFolder(this.settings.syncRoot),
         record: (repo, m) => this.recordCommitMessage(repo, m),
+    });
+    /** The git knowledge bases' roles, pins, and checks behind their cards. */
+    readonly kbWatch = new KbWatch({
+        exec: new NodeGitExec(
+            () => this.gitPath,
+            vaultBasePath(this.app) || ".",
+        ),
+        repos: this.repos,
+        knowledgeBases: () => this.settings.knowledgeBases,
+        setPin: (name, pin) => this.setKbPin(name, pin),
+        folderExists: (path) => this.app.vault.adapter.exists(path),
+        loadRoles: () => loadKbRoles(this),
+        saveRoles: (roles) => saveKbRoles(this, roles),
+        openUrl: (url) => {
+            window.open(url);
+        },
+        now: () => Date.now(),
+        today: () => new Date(),
     });
     /** What the change bars compare against: HEAD, Confluence, or a commit. */
     readonly barBase = new BarBaseFeature(this);
@@ -218,6 +241,17 @@ export default class docketPlugin extends Plugin {
         await saveSettings(this, this.settings);
         this.applyKnowledgeBases();
         this.controller.touch();
+    }
+
+    /** setKbPin pins the knowledge base `name` to `pin` and saves the settings. */
+    private async setKbPin(name: string, pin: string): Promise<void> {
+        this.settings = {
+            ...this.settings,
+            knowledgeBases: this.settings.knowledgeBases.map((kb) =>
+                kb.name === name ? { ...kb, pin } : kb,
+            ),
+        };
+        await this.persistSettings();
     }
 
     /**

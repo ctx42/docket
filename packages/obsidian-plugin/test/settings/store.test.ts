@@ -8,11 +8,13 @@ import { DEFAULT_SETTINGS } from "../../src/settings/model.ts";
 import {
     COMMIT_HISTORY_KEY,
     HISTORY_CAP_KEY,
+    KB_ROLES_KEY,
     loadCommitHistory,
     loadDiffSigns,
     loadGitPath,
     loadHideProps,
     loadHistoryCap,
+    loadKbRoles,
     loadMcpEnabled,
     loadSettings,
     loadTerminalIconSet,
@@ -23,6 +25,7 @@ import {
     saveGitPath,
     saveHideProps,
     saveHistoryCap,
+    saveKbRoles,
     saveMcpEnabled,
     saveSettings,
     saveTerminalIconSet,
@@ -231,5 +234,21 @@ describe("MCP server switch", () => {
         expect(Object.keys(have).sort()).toEqual(
             Object.keys(DEFAULT_SETTINGS).sort(),
         );
+    });
+});
+
+describe("knowledge-base roles", () => {
+    it("round-trip on this device and clean what they read", () => {
+        const plugin = fakePlugin();
+        const kb = { role: "own" as const, protected: true, checkedAt: 4 };
+
+        const empty = loadKbRoles(plugin);
+        saveKbRoles(plugin, { kb });
+        const have = loadKbRoles(plugin);
+        plugin.app.saveLocalStorage(KB_ROLES_KEY, { x: { role: "boss" } });
+
+        expect(empty).toEqual({});
+        expect(have).toEqual({ kb });
+        expect(loadKbRoles(plugin)).toEqual({});
     });
 });

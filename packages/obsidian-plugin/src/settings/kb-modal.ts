@@ -3,13 +3,12 @@
 
 // The "Add knowledge base" dialog: an SSH URL checked with `git ls-remote` as
 // it is typed, the vault folder proposed from it, the branch to clone, and
-// whether the doc server serves it. "Clone and add" clones into the folder and
-// resolves the new entry; a failure stays in the dialog as plain advice. DOM
+// whether the doc server serves it. "Add and clone" resolves the new entry;
+// its settings card then clones it, with progress and Cancel. DOM
 // glue; the logic is core `config/knowledge.ts`, core `git/remote.ts`, and
 // knowledge.ts.
 
 import {
-    cloneRepo,
     type GitExec,
     type KnowledgeBase,
     knowledgeBaseProblem,
@@ -31,7 +30,7 @@ export interface AddedKnowledgeBase {
 }
 
 /**
- * addKnowledgeBase opens the dialog and resolves the cloned entry, or null
+ * addKnowledgeBase opens the dialog and resolves the entry to clone, or null
  * when the user cancels. `exec` runs git at the vault root; `taken` holds the
  * top-level names the folder cannot use; `existing` and `syncFolder` feed the
  * entry check.
@@ -73,8 +72,6 @@ class KnowledgeBaseModal extends Modal {
     /** seq numbers URL checks, so a slow answer for an old URL is dropped. */
     private seq = 0;
     private timer = 0;
-    private cloning = false;
-    private closed = false;
     private done = false;
 
     private statusEl: HTMLElement | null = null;
@@ -149,9 +146,9 @@ class KnowledgeBaseModal extends Modal {
             )
             .addButton((b) => {
                 this.addBtn = b.buttonEl;
-                b.setButtonText("Clone and add")
+                b.setButtonText("Add and clone")
                     .setCta()
-                    .onClick(() => void this.clone());
+                    .onClick(() => this.add());
             });
         this.refresh();
     }
@@ -241,8 +238,7 @@ class KnowledgeBaseModal extends Modal {
                 status.createSpan({ text });
             };
             const c = this.check;
-            if (this.cloning) show("loader", "is-pending", "Cloning…");
-            else if (c.kind === "checking") {
+            if (c.kind === "checking") {
                 show("loader", "is-pending", "Checking with your SSH key…");
             } else if (c.kind === "ok") {
                 const n = c.info.branches.length;
@@ -263,33 +259,14 @@ class KnowledgeBaseModal extends Modal {
             this.branchSelect.disabled = this.check.kind !== "ok";
         }
         if (this.addBtn !== null) {
-            this.addBtn.disabled =
-                this.cloning || this.check.kind !== "ok" || problem !== "";
+            this.addBtn.disabled = this.check.kind !== "ok" || problem !== "";
         }
     }
 
-    /** clone clones the repository and resolves the entry, or shows why not. */
-    private async clone(): Promise<void> {
-        if (this.cloning || this.check.kind !== "ok" || this.problem() !== "") {
-            return;
-        }
-        const kb = this.entry();
-        this.cloning = true;
-        this.refresh();
-        try {
-            await cloneRepo(this.exec, kb.url, kb.name, kb.branch);
-        } catch (err) {
-            this.cloning = false;
-            if (this.closed) {
-                this.finish(null);
-                return;
-            }
-            this.check = { kind: "failed", advice: remoteAdvice(err) };
-            this.refresh();
-            return;
-        }
-        this.cloning = false;
-        this.finish({ kb, serve: this.serve });
+    /** add resolves the entry the fields describe, once it can be cloned. */
+    private add(): void {
+        if (this.check.kind !== "ok" || this.problem() !== "") return;
+        this.finish({ kb: this.entry(), serve: this.serve });
         this.close();
     }
 
@@ -300,16 +277,11 @@ class KnowledgeBaseModal extends Modal {
         }
     }
 
-    /**
-     * onClose resolves null — unless a clone is running: that one still
-     * resolves its entry when it finishes, so a cloned folder is never left
-     * unregistered.
-     */
+    /** onClose resolves null unless the entry was added. */
     override onClose(): void {
-        this.closed = true;
         window.clearTimeout(this.timer);
         this.seq++;
         this.contentEl.empty();
-        if (!this.cloning) this.finish(null);
+        this.finish(null);
     }
 }

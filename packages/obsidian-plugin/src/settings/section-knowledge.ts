@@ -1,31 +1,34 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-// The knowledge base cards under the Confluence card in the Sources section:
-// one per git repository docket clones into the vault, with Pull (or Clone
-// when its folder is missing, e.g. after an import), and one per local folder;
-// each with Remove. Adding a git one opens kb-modal.ts, a local one
-// folder-kb-modal.ts; then the folder is registered: a cloned folder gets an
-// entry in the vault repository's ignore block, and, when asked, either kind
-// goes into the doc server's `sources`. DOM glue; the logic is core and
-// knowledge.ts.
+// The knowledge base cards under the Confluence card in the Sources section.
+// A git one shows its state as the plugin's KbWatch sees it (design 06):
+// clone progress, the role (own, protected, read with its pin), what to push
+// and pull, what a pinned update would change, conflicts, offline; and the
+// buttons for it (kb-card.ts decides which). A local folder's card says its
+// history is the vault repository's. Each card has Remove. Adding a git one
+// opens kb-modal.ts and its card clones it; a local one folder-kb-modal.ts.
+// Then the folder is registered: a cloned folder gets an entry in the vault
+// repository's ignore block, and, when asked, either kind goes into the doc
+// server's `sources`. DOM glue; the logic is core, kb-watch.ts, kb-card.ts,
+// and knowledge.ts.
 
 import {
     addIgnoreEntry,
     type CloneInfo,
     cloneInfo,
-    cloneRepo,
     type GitExec,
     ignorePattern,
     type KnowledgeBase,
-    pullFastForward,
     syncFolder,
 } from "@docket/core";
 import { Notice, setIcon, setTooltip, TFolder } from "obsidian";
 import { NodeGitExec } from "../adapters/git.ts";
+import { type ActionId, type KbStatus, kbCardView } from "../git/kb-card.ts";
 import { DEFAULT_CONFIG_PATH } from "../mcp/config.ts";
 import { type SettingsCtx, vaultBasePath } from "./fields.ts";
 import { addLocalFolder } from "./folder-kb-modal.ts";
+import { runKbAction } from "./kb-actions.ts";
 import { addKnowledgeBase } from "./kb-modal.ts";
 import {
     addSource,
@@ -40,15 +43,26 @@ const NO_CLONE: CloneInfo = { url: "", branch: "" };
 /** KnowledgeSection draws and manages the knowledge base cards. */
 export class KnowledgeSection {
     private listEl: HTMLElement | null = null;
-    /** busy holds the names of knowledge bases with a clone or pull running. */
-    private readonly busy = new Set<string>();
+    /** serve holds, per new git knowledge base, whether its clone joins `sources`. */
+    private readonly serve = new Map<string, boolean>();
 
     constructor(private readonly ctx: SettingsCtx) {}
 
     /** render draws the cards into `el`. */
     render(el: HTMLElement): void {
-        this.listEl = el.createDiv({ cls: "docket-kb-list" });
+        const list = el.createDiv({ cls: "docket-kb-list" });
+        this.listEl = list;
+        const watch = this.ctx.plugin.kbWatch;
+        // The cards follow the watch until the settings tab drops them.
+        const stop = watch.subscribe(() => {
+            if (!list.isConnected) {
+                stop();
+                return;
+            }
+            this.redraw();
+        });
         this.redraw();
+        void watch.checkAll();
     }
 
     /**
@@ -136,9 +150,9 @@ export class KnowledgeSection {
             takenNames(s, top),
         );
         if (added === null) return;
+        this.serve.set(added.kb.name, added.serve);
         this.save([...plugin.settings.knowledgeBases, added.kb]);
-        await this.register(added.kb, added.serve);
-        new Notice(`docket: cloned ${added.kb.name}`);
+        await this.clone(added.kb);
     }
 
     /** redraw draws one card per knowledge base. */
@@ -157,6 +171,13 @@ export class KnowledgeSection {
             this.folderCard(el, kb);
             return;
         }
+        const s = this.ctx.plugin.kbWatch.status(kb.name);
+        if (s !== undefined) this.gitCard(el, kb, s);
+    }
+
+    /** gitCard draws a git knowledge base's card from its status. */
+    private gitCard(el: HTMLElement, kb: KnowledgeBase, s: KbStatus): void {
+        const v = kbCardView(s);
         const card = el.createDiv({ cls: "docket-source" });
         const head = card.createDiv({ cls: "docket-source-head" });
         setIcon(
@@ -167,36 +188,80 @@ export class KnowledgeSection {
         const name = title.createDiv({ cls: "docket-source-name" });
         name.createSpan({ text: kb.name });
         name.createSpan({ cls: "docket-badge is-orange", text: "Git" });
+        for (const p of v.pills) {
+            const pill = name.createSpan({
+                cls: `docket-badge docket-kb-pill is-${p.tone}`,
+            });
+            setIcon(pill.createSpan({ cls: "docket-kb-pill-icon" }), p.icon);
+            pill.createSpan({ text: p.text });
+        }
         const sub = title.createDiv({ cls: "docket-source-sub is-one-line" });
         const where = sub.createSpan({
             cls: "docket-ellipsis docket-mono",
-            text: `${kb.url} · ${kb.branch === "" ? "default branch" : kb.branch}`,
+            text: kb.url,
         });
         setTooltip(where, kb.url);
         const state = title.createDiv({ cls: "docket-source-sub" });
-
+        state.setText(v.line);
+        if (v.warn) state.addClass("docket-source-warn");
+        if (v.progress !== null) {
+            const bar = title.createDiv({ cls: "docket-kb-progress" });
+            bar.createDiv().style.width = `${v.progress}%`;
+        }
         const acts = head.createDiv({ cls: "docket-source-actions" });
-        const busy = this.busy.has(kb.name);
-        void this.folderExists(kb.name).then((exists) => {
-            if (!exists) {
-                state.addClass("docket-source-warn");
-                state.setText("Folder missing");
-            }
+        for (const a of v.actions) {
             const b = acts.createEl("button", {
-                text: busy ? "Working…" : exists ? "Pull" : "Clone",
+                cls: a.main ? "mod-cta" : "",
             });
-            b.disabled = busy;
-            setTooltip(
-                b,
-                exists
-                    ? "Fast-forward to the remote branch"
-                    : `Clone into ${kb.name}/`,
-            );
-            b.addEventListener("click", () => {
-                void (exists ? this.pull(kb) : this.clone(kb));
+            setIcon(b.createSpan({ cls: "docket-kb-btn-icon" }), a.icon);
+            b.createSpan({ text: a.label });
+            b.disabled = a.disabled;
+            b.addEventListener("click", () => void this.act(kb, a.id));
+        }
+        if (s.clone.kind !== "running") this.removeButton(acts, kb);
+        if (v.update !== null) {
+            const u = v.update;
+            const row = card.createDiv({ cls: "docket-kb-update-row" });
+            row.createSpan({ cls: "docket-muted", text: "If you update:" });
+            row.createSpan({
+                cls: "docket-kb-changed",
+                text: `~ ${u.changed.length} changed`,
             });
-            this.removeButton(acts, kb);
-        });
+            row.createSpan({
+                cls: "docket-kb-added",
+                text: `+ ${u.added.length} added`,
+            });
+            row.createSpan({
+                cls: "docket-kb-removed",
+                text: `− ${u.removed.length} removed`,
+            });
+            const names = [...u.changed, ...u.added, ...u.removed];
+            row.createSpan({
+                cls: "docket-muted docket-ellipsis",
+                text: `· ${names.slice(0, 3).join(", ")}${names.length > 3 ? ", …" : ""}`,
+            });
+        }
+    }
+
+    /** act runs a card button's action for the knowledge base `kb`. */
+    private async act(kb: KnowledgeBase, id: ActionId): Promise<void> {
+        if (id === "clone") {
+            await this.clone(kb);
+            return;
+        }
+        await runKbAction(this.ctx.app, this.ctx.plugin, kb.name, id);
+    }
+
+    /**
+     * clone clones the knowledge base `kb` in its card and, once it is
+     * there, registers it.
+     */
+    private async clone(kb: KnowledgeBase): Promise<void> {
+        if (!(await this.ctx.plugin.kbWatch.clone(kb.name))) return;
+        await this.register(kb, this.serve.get(kb.name) ?? true);
+        this.serve.delete(kb.name);
+        new Notice(`docket: cloned ${kb.name}`);
+        await this.ctx.plugin.kbWatch.check(kb.name);
     }
 
     /**
@@ -255,42 +320,6 @@ export class KnowledgeSection {
         }
         await this.register(kb, true);
         this.redraw();
-    }
-
-    /** pull fast-forwards a knowledge base and says how it went. */
-    private async pull(kb: KnowledgeBase): Promise<void> {
-        await this.run(kb, async (exec) => {
-            await pullFastForward(exec, kb.name);
-            new Notice(`docket: pulled ${kb.name}`);
-        });
-    }
-
-    /** clone clones a registered knowledge base whose folder is missing. */
-    private async clone(kb: KnowledgeBase): Promise<void> {
-        await this.run(kb, async (exec) => {
-            await cloneRepo(exec, kb.url, kb.name, kb.branch);
-            await this.register(kb, true);
-            new Notice(`docket: cloned ${kb.name}`);
-        });
-    }
-
-    /** run runs a git operation for `kb`, one at a time, reporting a failure. */
-    private async run(
-        kb: KnowledgeBase,
-        op: (exec: GitExec) => Promise<void>,
-    ): Promise<void> {
-        const exec = this.exec();
-        if (exec === null || this.busy.has(kb.name)) return;
-        this.busy.add(kb.name);
-        this.redraw();
-        try {
-            await op(exec);
-        } catch (err) {
-            new Notice(`docket: ${kb.name}: ${remoteAdvice(err)}`, 10000);
-        } finally {
-            this.busy.delete(kb.name);
-            this.redraw();
-        }
     }
 
     /** remove stops tracking a knowledge base; its folder stays. */

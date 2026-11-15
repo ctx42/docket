@@ -148,6 +148,85 @@
     background: rgba(var(--color-orange-rgb), 0.15);
     color: var(--color-orange);
 }
+/* Knowledge-base card states (design 06): role pills, clone progress, the
+   buttons' icons, and what a pinned update would change. */
+.docket-kb-pill {
+    gap: var(--size-2-1);
+}
+.docket-kb-pill-icon {
+    display: inline-flex;
+}
+.docket-kb-pill-icon .svg-icon {
+    width: var(--icon-xs);
+    height: var(--icon-xs);
+}
+.docket-badge.is-green {
+    background: rgba(var(--color-green-rgb), 0.15);
+    color: var(--color-green);
+}
+.docket-badge.is-accent {
+    background: hsla(var(--interactive-accent-hsl), 0.15);
+    color: var(--text-accent);
+}
+.docket-badge.is-red {
+    background: rgba(var(--color-red-rgb), 0.15);
+    color: var(--color-red);
+}
+.docket-kb-progress {
+    width: min(100%, 22em);
+    height: 4px;
+    margin-top: var(--size-2-2);
+    border-radius: 2px;
+    background: var(--background-modifier-border);
+    overflow: hidden;
+}
+.docket-kb-progress > div {
+    height: 100%;
+    background: var(--interactive-accent);
+}
+.docket-source-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2-2);
+}
+.docket-kb-btn-icon {
+    display: inline-flex;
+}
+.docket-kb-btn-icon .svg-icon {
+    width: var(--icon-xs);
+    height: var(--icon-xs);
+}
+.docket-kb-update-row {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    min-width: 0;
+    padding: var(--size-4-2) var(--size-4-3);
+    border-top: var(--border-width) solid var(--background-modifier-border);
+    font-size: var(--font-ui-smaller);
+    white-space: nowrap;
+}
+.docket-kb-changed {
+    color: var(--color-orange);
+}
+.docket-kb-added {
+    color: var(--color-green);
+}
+.docket-kb-removed {
+    color: var(--color-red);
+}
+.docket-kb-message {
+    margin-bottom: var(--size-4-2);
+}
+.docket-kb-resolve-row {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-3);
+    padding: var(--size-2-2) 0;
+}
+.docket-kb-resolve-row button {
+    margin-left: auto;
+}
 .docket-source-icon.is-git {
     background: rgba(var(--color-orange-rgb), 0.15);
     color: var(--color-orange);

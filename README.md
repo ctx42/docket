@@ -300,9 +300,10 @@ each with its number of changes. Each sub-tab shows its repository's state,
 its changed files (kind, name, folder), a message box with your recent
 messages for that repository, and a **Commit** button for the ticked files.
 Docket never commits on its own: a pull or a push only changes files, and you
-commit them when you choose. The Vault sub-tab and each knowledge base also
-have **Pull** and **Push** buttons, with how many commits are behind and ahead
-of the upstream branch; a knowledge base also shows its branch:
+commit them when you choose. The Vault sub-tab also has **Pull** and **Push**
+buttons, with how many commits are behind and ahead of the upstream branch. A
+knowledge base shows its branch and the buttons its settings card has (see
+below), less the commit, which the form does:
 
 - **Pull** runs `git pull --rebase --autostash`. If the rebase conflicts,
   docket aborts it, so nothing changes, and shows git's message and the files
@@ -312,6 +313,32 @@ of the upstream branch; a knowledge base also shows its branch:
 - **Push** runs `git push` and shows git's message if it fails.
 
 The Confluence repository is local only: it has no Pull or Push.
+
+**Git knowledge bases.** Each one has a card under **Sources** in the settings.
+The card clones the repository itself, with its progress and a **Cancel**
+button, so the rest of the settings stays usable. When the settings open,
+docket fetches each knowledge base and asks the server, with a test push that
+sends nothing, whether you may write to it. The answer is your **role**,
+which this device remembers:
+
+- **own**: you may push. The card counts what there is to push and pull and
+  offers **Pull** and **Push**, or **Commit & push** when notes changed.
+- **own, main protected**: the first push the server refuses for a branch
+  rule teaches docket that the branch is protected. **Propose…** then pushes
+  your commits to a new branch, `docket/<your-name>-<date>-<time>`, and opens
+  the page where GitHub, Bitbucket, or GitLab creates a pull request from it.
+- **read**: you may only read. Docket pins the knowledge base to a commit,
+  so what you read never changes under you. The pin is saved in the shared
+  settings (`data.json` and `docket.yaml`), so every device and every
+  teammate who imports the config reads the same commit. When the branch
+  moves on, the card says how many notes an update would change, add, or
+  remove; **Review & update pin** lists them and moves the pin only when you
+  accept. A device that is behind the shared pin offers **Move to pin**.
+
+When the server cannot be reached, the card says so, keeps the last known
+role, and offers **Retry**. When a pull leaves conflicts, the card names the
+files and **Resolve…** lists them: open each one, remove the conflict
+markers, and mark it resolved.
 
 **History tab.** Switch between **Note** (the open note's commits, from the
 repository that holds it, across renames), **Vault**, **Confluence**, and a

@@ -5,16 +5,18 @@
 // the vault's repositories (repos.ts), each with its own state message, change
 // list, unticked files, message draft, and commit form over a flat change list
 // with per-file checkboxes. The knowledge-base button names the base picked
-// last; its menu picks another (repo-choice.ts). The Vault side and every
-// knowledge base add Pull and Push with the ahead and behind counts; a
-// knowledge base shows its branch, and the Vault side the obsidian-git guard
-// banner. Nothing commits on its own, and the tab never runs git itself — the
-// controllers do. DOM shell; the logic is core's `git/` modules, repos.ts,
-// repo-choice.ts, history.ts, and guard.ts.
+// last; its menu picks another (repo-choice.ts). The Vault side adds Pull and
+// Push with the ahead and behind counts and the obsidian-git guard banner; a
+// knowledge base shows its branch and the buttons its settings card has
+// (kb-card.ts, kb-actions.ts), less the commit. Nothing commits on its own,
+// and the tab never runs git itself — the controllers do. DOM shell; the
+// logic is core's `git/` modules, repos.ts, repo-choice.ts, history.ts, and
+// guard.ts.
 
 import { type GitChange, KIND_TEXT, posixBase, posixDir } from "@docket/core";
 import { Notice, setIcon, TFile } from "obsidian";
 import type docketPlugin from "../main.ts";
+import { runKbAction } from "../settings/kb-actions.ts";
 import type { GitController } from "./controller.ts";
 import {
     autoCommits,
@@ -23,6 +25,7 @@ import {
     stopAutoCommit,
 } from "./guard.ts";
 import { firstLine, kbName, kbRepoId, type RepoId } from "./history.ts";
+import { kbCardView } from "./kb-card.ts";
 import { kbButton, switchButton } from "./kb-switch.ts";
 import { type Choice, settleChoice } from "./repo-choice.ts";
 
@@ -46,6 +49,8 @@ export class GitTab {
     /** The repository shown and the knowledge base the switch names. */
     private choice: Choice<"vault" | "sync"> = { repo: "vault", kb: null };
     private readonly panes = new Map<RepoId, Pane>();
+    /** The knowledge bases checked since the tab was made. */
+    private readonly checked = new Set<string>();
 
     constructor(
         private readonly plugin: docketPlugin,
@@ -165,8 +170,9 @@ export class GitTab {
                 break;
         }
         if (this.repo === "vault") this.renderGuard(root);
-        if (kb !== null) this.renderBranch(root);
-        if (this.repo !== "sync") this.renderRemote(root);
+        if (kb !== null) this.renderKb(root, kb);
+        else if (this.repo === "vault") this.renderRemote(root);
+        this.renderOutcome(root);
         this.renderChanges(root);
     }
 
@@ -203,12 +209,43 @@ export class GitTab {
         this.rerender();
     }
 
-    /** renderBranch names the checked-out branch of the knowledge base shown. */
-    private renderBranch(root: HTMLElement): void {
+    /**
+     * renderKb draws the knowledge base's branch and state line and its
+     * buttons, as its settings card has them less the commit, which the
+     * form below does: Pull and Push, Propose on a protected branch or a
+     * read base, Review & update pin, Resolve, Retry. The first time a base
+     * shows, it is checked.
+     */
+    private renderKb(root: HTMLElement, name: string): void {
+        const watch = this.plugin.kbWatch;
+        if (!this.checked.has(name)) {
+            this.checked.add(name);
+            void watch.check(name);
+        }
+        const s = watch.status(name);
         const row = root.createDiv({ cls: "docket-muted docket-git-branch" });
         setIcon(row.createSpan(), "git-branch");
         const branch = this.git.branch;
         row.createSpan({ text: branch === "" ? "detached HEAD" : branch });
+        if (s === undefined) return;
+        const v = kbCardView({ ...s, edited: 0 });
+        if (v.line !== "" && !v.line.startsWith(`${s.branch} ·`)) {
+            row.createSpan({ text: `· ${v.line}` });
+        } else if (v.line.startsWith(`${s.branch} ·`)) {
+            row.createSpan({ text: v.line.slice(s.branch.length) });
+        }
+        if (v.warn) row.addClass("docket-source-warn");
+        if (v.actions.length === 0) return;
+        const acts = root.createDiv({ cls: "docket-git-remote" });
+        for (const a of v.actions) {
+            const b = acts.createEl("button", {
+                cls: a.main ? "mod-cta" : "",
+                text: a.label,
+            });
+            b.disabled = a.disabled || this.git.busy;
+            b.onclick = () =>
+                void runKbAction(this.plugin.app, this.plugin, name, a.id);
+        }
     }
 
     /**
@@ -225,10 +262,7 @@ export class GitTab {
         btn.onclick = () => this.plugin.openSettings();
     }
 
-    /**
-     * renderRemote draws Pull and Push with the ahead and behind counts, and
-     * how the last of them went wrong.
-     */
+    /** renderRemote draws the vault's Pull and Push with the ahead and behind counts. */
     private renderRemote(root: HTMLElement): void {
         const git = this.git;
         const row = root.createDiv({ cls: "docket-git-remote" });
@@ -251,7 +285,11 @@ export class GitTab {
                 text: "No upstream branch",
             });
         }
-        const r = git.remote;
+    }
+
+    /** renderOutcome says how the last pull or push went wrong. */
+    private renderOutcome(root: HTMLElement): void {
+        const r = this.git.remote;
         if (r === null) return;
         const files = "files" in r ? r.files : [];
         let text: string;
