@@ -41,8 +41,8 @@ export interface PortableConfig {
 
 /**
  * PortableKnowledgeBase is a knowledge base as the config lists it: a git
- * entry by name, URL, and branch (no `kind`); a local folder by name and
- * `kind: folder`.
+ * entry by name, URL, branch, and pin (no `kind`); a local folder by name
+ * and `kind: folder`.
  */
 export interface PortableKnowledgeBase {
     name: string;
@@ -51,6 +51,8 @@ export interface PortableKnowledgeBase {
     url?: string;
     /** Left out for the remote's default branch. */
     branch?: string;
+    /** The pinned commit; left out when not pinned. */
+    pin?: string;
 }
 
 /**
@@ -76,6 +78,7 @@ function portableKb(kb: KnowledgeBase): PortableKnowledgeBase {
     if (kb.kind === "folder") return { name: kb.name, kind: "folder" };
     const out: PortableKnowledgeBase = { name: kb.name, url: kb.url };
     if (kb.branch !== "") out.branch = kb.branch;
+    if (kb.pin !== undefined) out.pin = kb.pin;
     return out;
 }
 

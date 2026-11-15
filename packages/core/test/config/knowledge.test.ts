@@ -149,6 +149,22 @@ describe("readKnowledgeBases", () => {
         ]);
     });
 
+    it("keeps a git entry's pin when it is a full commit hash", () => {
+        const pin = "a".repeat(40);
+
+        const have = readKnowledgeBases([
+            { name: "kb", url: "u", pin },
+            { name: "kb2", url: "u", pin: "main" },
+            { kind: "folder", name: "notes", pin },
+        ]);
+
+        expect(have).toEqual([
+            { kind: "git", name: "kb", url: "u", branch: "", pin },
+            { kind: "git", name: "kb2", url: "u", branch: "" },
+            dir("notes"),
+        ]);
+    });
+
     it("reads a local folder, dropping any URL and branch", () => {
         const have = readKnowledgeBases([
             { kind: "folder", name: "notes" },

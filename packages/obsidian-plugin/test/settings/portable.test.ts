@@ -82,6 +82,19 @@ describe("toPortableConfig", () => {
         ]);
     });
 
+    it("lists a pinned knowledge base with its pin", () => {
+        const pin = "c".repeat(40);
+        const out = toPortableConfig(
+            settings({
+                knowledgeBases: [
+                    { kind: "git", name: "kb", url: "u", branch: "", pin },
+                ],
+            }),
+        );
+
+        expect(out.knowledge_bases).toEqual([{ name: "kb", url: "u", pin }]);
+    });
+
     it("lists a local folder by name and kind only", () => {
         const out = toPortableConfig(
             settings({
@@ -249,6 +262,18 @@ describe("applyImportedMaps knowledge bases", () => {
         ]);
         expect(have.addedKnowledgeBases).toBe(1);
         expect(have.skippedKnowledgeBases).toEqual([]);
+    });
+
+    it("adds a knowledge base with the pin the file gives", () => {
+        const pin = "d".repeat(40);
+
+        const have = applyImportedMaps(settings(), {
+            knowledge_bases: [{ name: "kb-anna", url: "u", pin }],
+        });
+
+        expect(have.settings.knowledgeBases).toEqual([
+            { kind: "git", name: "kb-anna", url: "u", branch: "", pin },
+        ]);
     });
 
     it("keeps an existing entry whose name the file reuses", () => {

@@ -25,7 +25,16 @@ export interface KnowledgeBase {
     url: string;
     /** A git entry's branch, `""` for the remote's default; `""` for a folder. */
     branch: string;
+    /**
+     * The commit a git entry is pinned to when this person can only read it:
+     * the vault's clones stay there until someone accepts an update. Absent
+     * when not pinned.
+     */
+    pin?: string;
 }
+
+/** PIN matches a pin: a full commit hash. */
+const PIN = /^[0-9a-f]{40}([0-9a-f]{24})?$/;
 
 /** RepoOfUrl is the owner and repository name a clone URL names. */
 export interface RepoOfUrl {
@@ -133,13 +142,16 @@ export function readKnowledgeBases(v: unknown): KnowledgeBase[] {
             name,
             url,
             branch,
+            pin,
         } = e as Record<string, unknown>;
         if (typeof name !== "string") continue;
         if (kind === "folder") {
             out.push({ kind, name, url: "", branch: "" });
         } else if (kind === "git" && typeof url === "string") {
             const b = typeof branch === "string" ? branch : "";
-            out.push({ kind, name, url, branch: b });
+            const kb: KnowledgeBase = { kind, name, url, branch: b };
+            if (typeof pin === "string" && PIN.test(pin)) kb.pin = pin;
+            out.push(kb);
         }
     }
     return out;
