@@ -120,6 +120,34 @@ describe("GitController remote operations", () => {
         expect(c.counts).toEqual({ ahead: 1, behind: 2 });
     });
 
+    it("reads the branch on refresh", async () => {
+        const c = controller(
+            "",
+            ready().on("symbolic-ref", { stdout: "main\n" }),
+        );
+
+        await c.refresh();
+
+        expect(c.branch).toBe("main");
+    });
+
+    it("has no branch before a refresh or outside a repository", async () => {
+        const git = new StubGitExec()
+            .on("rev-parse --show-prefix", {
+                code: 128,
+                stderr: "fatal: not a git repository\n",
+            })
+            .on("symbolic-ref", { stdout: "main\n" });
+        const c = controller("", git);
+        const before = c.branch;
+
+        await c.refresh();
+
+        expect(before).toBe("");
+        expect(c.state.kind).toBe("no-repo");
+        expect(c.branch).toBe("");
+    });
+
     it("records a pull's conflict and clears it after a clean pull", async () => {
         const git = ready()
             .on("pull", { code: 1, stderr: "error: could not apply x\n" })

@@ -84,6 +84,7 @@ export class GitController {
     private lastCommitError = "";
     private lastRemote: RemoteOutcome | null = null;
     private aheadBehind: AheadBehind | null = null;
+    private branchName = "";
     private readonly listeners = new Set<() => void>();
     private readonly watchers = new Set<() => void>();
     private readonly committed = new Set<() => void>();
@@ -168,6 +169,11 @@ export class GitController {
         return this.aheadBehind;
     }
 
+    /** branch is the checked-out branch, `""` on a detached HEAD or when not ready. */
+    get branch(): string {
+        return this.branchName;
+    }
+
     /**
      * changed schedules a debounced refresh after a vault event; nothing runs
      * while no panel is listening (it refreshes on opening).
@@ -201,6 +207,7 @@ export class GitController {
                 this.repoState = { kind: "no-folder" };
                 this.changeList = [];
                 this.aheadBehind = null;
+                this.branchName = "";
                 this.refreshError = "";
                 this.emit();
                 return;
@@ -209,6 +216,7 @@ export class GitController {
             const ready = this.repoState.kind === "ready";
             this.changeList = ready ? await repo.status() : [];
             this.aheadBehind = ready ? await repo.aheadBehind() : null;
+            this.branchName = ready ? await repo.branch() : "";
             this.refreshError = "";
         } catch (err) {
             this.refreshError = message(err);
