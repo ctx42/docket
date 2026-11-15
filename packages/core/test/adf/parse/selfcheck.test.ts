@@ -18,6 +18,7 @@ import {
     hoistEdgeSpaces,
     inlineString,
     type MdCtx,
+    tidyInline,
 } from "../../../src/adf/render/markdown.ts";
 import type { Node } from "../../../src/models/adf.ts";
 
@@ -467,8 +468,8 @@ describe("parseInline robustness (fuzz seeds)", () => {
         it(`does not break the round-trip invariant on ${JSON.stringify(s)}`, () => {
             const nodes = parseInline(s, pc);
             // A run reported round-trippable must re-render to a run with the same
-            // signature — the invariant push relies on. The run is signed with
-            // its edge spaces hoisted, as the render emits it.
+            // signature — the invariant push relies on. The run is signed
+            // tidied, as the render emits it.
             if (inlineRoundTrips(nodes, ctx, pc)) {
                 const rendered = inlineString(
                     { type: "paragraph", content: nodes },
@@ -477,7 +478,7 @@ describe("parseInline robustness (fuzz seeds)", () => {
                 const reparsed = parseInline(rendered, pc);
                 expect(
                     sigEqual(
-                        inlineSig(hoistEdgeSpaces(nodes), null),
+                        inlineSig(tidyInline(nodes), null),
                         inlineSig(reparsed, null),
                     ),
                 ).toBe(true);

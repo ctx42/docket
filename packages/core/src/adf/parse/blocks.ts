@@ -157,6 +157,11 @@ export function normalizeInlineText(s: string): string {
                 emit(c + next);
                 i += 2;
             } else {
+                // A `\` that ends a line is a hard break: the space before it
+                // is layout, like a trailing space, so `a \` keys as `a\`.
+                if (next === "" || next === "\n" || next === "\r") {
+                    pendingSpace = false;
+                }
                 emit(c);
                 i++;
             }

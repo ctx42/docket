@@ -277,7 +277,8 @@ const flanked = new Set(["strong", "em", "strike"]);
  * those the renderer emits: a run of unlinked text nodes (see
  * {@link renderTextRun}) or a run sharing one link (see
  * {@link renderLinkRun}), so a mark open across nodes keeps its interior
- * whitespace. Every other mark, and every non-text node,
+ * whitespace. A hoisted space next to one already outside the mark merges into
+ * it (see {@link mergeSpace}). Every other mark, and every non-text node,
  * stays as it is; the result displays identically on Confluence. Content
  * needing no change is returned as is.
  */
@@ -348,7 +349,11 @@ function hoistOnce(nodes: Node[]): Node[] | null {
             .filter((c) => flanked.has(c));
         const lead = text.length - text.trimStart().length;
         if (opening.length > 0 && lead > 0) {
-            const parts = splitText(nod, lead, opening, true);
+            const parts = mergeSpace(
+                splitText(nod, lead, opening, true),
+                nodes[i - 1],
+                true,
+            );
             return [...nodes.slice(0, i), ...parts, ...nodes.slice(i + 1)];
         }
         const after = nodes[i + 1];
@@ -358,7 +363,11 @@ function hoistOnce(nodes: Node[]): Node[] | null {
             .filter((c) => flanked.has(c));
         const trail = text.length - text.trimEnd().length;
         if (closing.length > 0 && trail > 0) {
-            const parts = splitText(nod, trail, closing, false);
+            const parts = mergeSpace(
+                splitText(nod, trail, closing, false),
+                after,
+                false,
+            );
             return [...nodes.slice(0, i), ...parts, ...nodes.slice(i + 1)];
         }
         open = want;
@@ -396,6 +405,116 @@ function splitText(
         text: lead ? text.slice(n) : text.slice(0, -n),
     };
     return lead ? [space, rest] : [rest, space];
+}
+
+/**
+ * spaceMarks holds the marks under which spaces render as bare spaces once
+ * hoisted: the flanked marks, a shared link (its label holds them), and an
+ * inline comment, which renders no delimiter.
+ */
+const spaceMarks = new Set(["strong", "em", "strike", "link", "annotation"]);
+
+/**
+ * mergeSpace returns the pieces of a {@link splitText} split without the
+ * split-off whitespace piece (first when lead, else last) when the neighbor on
+ * its outer side already borders it with a space. Hoisting `"UI-1: "` bold
+ * before `" bar"` would otherwise render `**UI-1:**  bar`, a double space.
+ * Both the piece and the neighbor must be spaces and tabs under
+ * {@link spaceMarks} only, so no visible content is dropped.
+ */
+function mergeSpace(
+    parts: Node[],
+    neighbor: Node | undefined,
+    lead: boolean,
+): Node[] {
+    const space = (lead ? parts[0] : parts.at(-1)) as Node;
+    if (
+        neighbor?.type !== "text" ||
+        !marksIn(space, spaceMarks) ||
+        !marksIn(neighbor, spaceMarks) ||
+        !/^[ \t]+$/.test(space.text ?? "")
+    ) {
+        return parts;
+    }
+    const edge = lead ? /[ \t]$/ : /^[ \t]/;
+    if (!edge.test(neighbor.text ?? "")) {
+        return parts;
+    }
+    return lead ? parts.slice(1) : parts.slice(0, -1);
+}
+
+/** marksIn reports whether every mark on nod has a type in types. */
+function marksIn(nod: Node, types: Set<string>): boolean {
+    return (nod.marks ?? []).every((m) => types.has(m.type));
+}
+
+/**
+ * bareMarks holds the marks under which a text node renders its spaces as is,
+ * with no delimiter after them: only an inline comment.
+ */
+const bareMarks = new Set(["annotation"]);
+
+/**
+ * tidyInline returns inline content the way the render shows it: whitespace
+ * hoisted out of flanked marks ({@link hoistEdgeSpaces}), then the spaces and
+ * tabs at both ends of every hardBreak-delimited segment dropped. Markdown
+ * shows neither, and a pull that wrote them would put back on every run the
+ * spaces an author removed. Only bare text is trimmed (see {@link bareMarks}):
+ * a code span, a link label, or an HTML-tag mark keeps its spaces. Content
+ * needing no change is returned as is.
+ */
+export function tidyInline(content: Node[]): Node[] {
+    const hoisted = hoistEdgeSpaces(content);
+    const out: Node[] = [];
+    let seg: Node[] = [];
+    let changed = false;
+    const cut = (): void => {
+        const next = trimEdge(trimEdge(seg, true), false);
+        changed ||= next !== seg;
+        out.push(...next);
+        seg = [];
+    };
+    for (const child of hoisted) {
+        if (child.type === "hardBreak") {
+            cut();
+            out.push(child);
+            continue;
+        }
+        seg.push(child);
+    }
+    cut();
+    return changed ? out : hoisted;
+}
+
+/**
+ * trimEdge returns seg with the spaces and tabs at its start (lead) or end
+ * removed from bare text nodes, dropping a node left empty; seg itself when
+ * there is nothing to remove.
+ */
+function trimEdge(seg: Node[], lead: boolean): Node[] {
+    const out = [...seg];
+    for (;;) {
+        const i = lead ? 0 : out.length - 1;
+        const nod = out[i];
+        if (nod?.type !== "text" || !marksIn(nod, bareMarks)) {
+            break;
+        }
+        const text = nod.text ?? "";
+        const kept = lead
+            ? text.replace(/^[ \t]+/, "")
+            : text.replace(/[ \t]+$/, "");
+        if (kept === text) {
+            break;
+        }
+        if (kept !== "") {
+            out[i] = { ...nod, text: kept };
+            break;
+        }
+        out.splice(i, 1);
+    }
+    return out.length === seg.length && out.every((n, i) => n === seg[i])
+        ? seg
+        : out;
 }
 
 /**
@@ -1083,8 +1202,8 @@ export function inlineString(nod: Node, ctx: MdCtx): string {
  * hardBreak-delimited segment, with no wrapping; a node with no hardBreak yields
  * a single segment. Consecutive plain text nodes, and consecutive text nodes
  * sharing one link, render as one run so a formatting mark shared across the
- * boundary, or the link, is emitted once. Edge whitespace
- * is moved out of flanked marks first ({@link hoistEdgeSpaces}).
+ * boundary, or the link, is emitted once. Stray whitespace is tidied first
+ * ({@link tidyInline}), so no segment starts or ends with a space.
  */
 export function inlineSegments(nod: Node, ctx: MdCtx): string[] {
     const segments: string[] = [];
@@ -1107,7 +1226,7 @@ export function inlineSegments(nod: Node, ctx: MdCtx): string[] {
         segments.push(b);
         b = "";
     };
-    for (const child of hoistEdgeSpaces(nod.content ?? [])) {
+    for (const child of tidyInline(nod.content ?? [])) {
         if (child.type === "hardBreak") {
             cut();
         } else if (child.type === "text") {

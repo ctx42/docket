@@ -1299,15 +1299,14 @@ describe("put nested (lists and panels)", () => {
 
     it("keeps the space a hard break sits behind when the text is edited", () => {
         // Confluence stores the space before a `\` hard break as a trailing
-        // space on the text node, and the render emits it verbatim. Dropping it
-        // on the reparse re-renders the block one space short and PutGet refuses
-        // the edit.
+        // space on the text node. The render drops it, so an edit that still
+        // spells it must neither be refused nor lose it from the page.
         const base = newADF(`{ "adf": { "type": "doc", "content": [
            { "type": "paragraph", "attrs": { "localId": "p1" }, "content": [
               { "type": "text", "text": "alpha. " },
               { "type": "hardBreak" },
               { "type": "text", "text": "beta." } ] } ] } }`);
-        expect(renderBody(base)).toBe("alpha. \\\nbeta.");
+        expect(renderBody(base)).toBe("alpha.\\\nbeta.");
         const out = put(base, "ALPHA. \\\nbeta.", null, null, null);
         const p1 = out.doc.content?.[0];
         expect(p1?.content?.[0]?.text).toBe("ALPHA. ");
@@ -1325,10 +1324,14 @@ describe("put nested (lists and panels)", () => {
                 { "type": "hardBreak" },
                 { "type": "text", "text": "do: that." } ] } ] } ] } }`);
         const body = renderBody(base);
-        expect(body).toBe(
-            "> [!EXPAND] Example\n> don't: this. \\\n> do: that.",
+        expect(body).toBe("> [!EXPAND] Example\n> don't: this.\\\n> do: that.");
+        const out = put(
+            base,
+            body.replace("this.", "THIS. "),
+            null,
+            null,
+            null,
         );
-        const out = put(base, body.replace("this", "THIS"), null, null, null);
         const para = out.doc.content?.[0]?.content?.[0];
         expect(para?.content?.[0]?.text).toBe("don't: THIS. ");
         expect(para?.content?.[1]?.type).toBe("hardBreak");
@@ -2909,4 +2912,94 @@ describe("put header cells holding bold", () => {
                 ?.content?.[0]?.marks ?? [];
         expect(marks.map((m) => m.type).sort()).toEqual(["strike", "strong"]);
     });
+});
+
+describe("put on a page with stray spaces", () => {
+    // Confluence text often carries stray spaces the render drops. The clean
+    // render must read as no change, an old render that still holds the spaces
+    // too, and the block must stay editable.
+    const cases: Array<{
+        name: string;
+        node: string;
+        want: string;
+        old: string;
+        edit: [string, string];
+    }> = [
+        {
+            name: "a paragraph with a trailing space",
+            node: `{ "type": "paragraph", "attrs": { "localId": "p" },
+               "content": [ { "type": "text", "text": "foo " } ] }`,
+            want: "foo",
+            old: "foo ",
+            edit: ["foo", "fox"],
+        },
+        {
+            name: "a hard-break segment with a trailing space",
+            node: `{ "type": "paragraph", "attrs": { "localId": "p" },
+               "content": [ { "type": "text", "text": "foo " },
+                 { "type": "hardBreak" }, { "type": "text", "text": "bar" } ] }`,
+            want: "foo\\\nbar",
+            old: "foo \\\nbar",
+            edit: ["bar", "baz"],
+        },
+        {
+            name: "a bold label followed by a space",
+            node: `{ "type": "paragraph", "attrs": { "localId": "p" },
+               "content": [
+                 { "type": "text", "text": "UI-1: ",
+                   "marks": [ { "type": "strong" } ] },
+                 { "type": "text", "text": " bar" } ] }`,
+            want: "**UI-1:** bar",
+            old: "**UI-1:**  bar",
+            edit: ["bar", "baz"],
+        },
+        {
+            name: "a heading with trailing spaces",
+            node: `{ "type": "heading",
+               "attrs": { "level": 2, "localId": "h" },
+               "content": [ { "type": "text", "text": "Glossary  " } ] }`,
+            want: "## Glossary",
+            old: "## Glossary  ",
+            edit: ["Glossary", "Terms"],
+        },
+    ];
+
+    for (const tc of cases) {
+        const base = (): ADF =>
+            newADF(`{ "adf": { "type": "doc", "content": [ ${tc.node} ] } }`);
+
+        it(`renders ${tc.name} clean`, () => {
+            const have = renderBody(base());
+
+            expect(have).toBe(tc.want);
+        });
+
+        it(`keeps ${tc.name} unchanged on a clean body`, () => {
+            const adf = base();
+
+            const have = put(adf, renderBody(adf), null, null, null);
+
+            expect(json(have)).toBe(json(adf));
+        });
+
+        it(`keeps ${tc.name} unchanged on an old body`, () => {
+            const adf = base();
+
+            const have = put(adf, tc.old, null, null, null);
+
+            expect(json(have)).toBe(json(adf));
+        });
+
+        it(`edits ${tc.name}`, () => {
+            const adf = base();
+            const want = tc.want.replace(tc.edit[0], tc.edit[1]);
+
+            const have = put(adf, want, null, null, null);
+
+            expect(renderBody(have)).toBe(want);
+            expect(attrStr(have.doc.content?.[0]?.attrs, "localId")).toBe(
+                attrStr(adf.doc.content?.[0]?.attrs, "localId"),
+            );
+        });
+    }
 });

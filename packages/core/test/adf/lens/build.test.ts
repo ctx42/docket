@@ -43,7 +43,12 @@ const insert = (body: string): ADF =>
     put(newADF(emptyDoc), body, null, null, null);
 
 describe("put insert round-trip (tabular)", () => {
-    const cases: Array<{ name: string; body: string; wantType: string }> = [
+    const cases: Array<{
+        name: string;
+        body: string;
+        wantType: string;
+        want?: string;
+    }> = [
         {
             name: "code block with language",
             body: "```go\nx := 1\n```",
@@ -114,12 +119,13 @@ describe("put insert round-trip (tabular)", () => {
         },
         { name: "thematic break", body: "---", wantType: "rule" },
         // A hard break renders as the segment's text followed by `\`, so the
-        // space before the `\` is a trailing space on the ADF text node. Both
-        // spellings must come back byte-identically or PutGet refuses the insert.
+        // space before the `\` is a trailing space on the ADF text node. The
+        // render drops it, and PutGet must not refuse the insert for that.
         {
             name: "paragraph with a spaced hard break",
             body: "first line. \\\nsecond line.",
             wantType: "paragraph",
+            want: "first line.\\\nsecond line.",
         },
         {
             name: "paragraph with an unspaced hard break",
@@ -130,13 +136,14 @@ describe("put insert round-trip (tabular)", () => {
             name: "expand with a spaced hard break",
             body: "> [!EXPAND] Example\n> **Don't:** this. \\\n> **Do:** that.",
             wantType: "expand",
+            want: "> [!EXPAND] Example\n> **Don't:** this.\\\n> **Do:** that.",
         },
     ];
 
     for (const tc of cases) {
         it(tc.name, () => {
             const out = insert(tc.body);
-            expect(renderBody(out)).toBe(tc.body);
+            expect(renderBody(out)).toBe(tc.want ?? tc.body);
             expect(out.doc.content?.[0]?.type).toBe(tc.wantType);
         });
     }

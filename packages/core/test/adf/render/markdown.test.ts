@@ -8,8 +8,10 @@
 
 import { describe, expect, it } from "vitest";
 import {
+    cellText,
     hoistDocEdgeSpaces,
     inlineString,
+    renderBlock,
     renderText,
     renderTextRun,
 } from "../../../src/adf/render/markdown.ts";
@@ -391,5 +393,186 @@ describe("hoistDocEdgeSpaces", () => {
 
         expect(have).toBe(false);
         expect(doc).toEqual(want);
+    });
+
+    it("merges a hoisted space into the space next to it", () => {
+        const doc: Node = {
+            type: "doc",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        {
+                            type: "text",
+                            text: "UI-1: ",
+                            marks: [{ type: "strong" }],
+                        },
+                        { type: "text", text: " bar" },
+                    ],
+                },
+            ],
+        };
+
+        const have = hoistDocEdgeSpaces(doc);
+
+        expect(have).toBe(true);
+        expect(doc.content?.[0]?.content).toEqual([
+            { type: "text", text: "UI-1:", marks: [{ type: "strong" }] },
+            { type: "text", text: " bar" },
+        ]);
+    });
+});
+
+describe("stray spaces", () => {
+    const strong = { type: "strong" };
+    const em = { type: "em" };
+
+    const tt: Array<{ testN: string; nod: Node; want: string }> = [
+        {
+            testN: "a paragraph drops its trailing space",
+            nod: {
+                type: "paragraph",
+                content: [{ type: "text", text: "foo " }],
+            },
+            want: "foo",
+        },
+        {
+            testN: "a hard-break segment drops its trailing space",
+            nod: {
+                type: "paragraph",
+                content: [
+                    { type: "text", text: "foo " },
+                    { type: "hardBreak" },
+                    { type: "text", text: "bar" },
+                ],
+            },
+            want: "foo\\\nbar",
+        },
+        {
+            testN: "a hoisted space merges with the next one",
+            nod: {
+                type: "paragraph",
+                content: [
+                    { type: "text", text: "UI-1: ", marks: [strong] },
+                    { type: "text", text: " bar" },
+                ],
+            },
+            want: "**UI-1:** bar",
+        },
+        {
+            testN: "a hoisted leading space merges with the one before",
+            nod: {
+                type: "paragraph",
+                content: [
+                    { type: "text", text: "foo " },
+                    { type: "text", text: " bar", marks: [em] },
+                ],
+            },
+            want: "foo *bar*",
+        },
+        {
+            testN: "a whitespace-only span next to a space vanishes",
+            nod: {
+                type: "paragraph",
+                content: [
+                    { type: "text", text: "a " },
+                    { type: "text", text: " ", marks: [strong] },
+                    { type: "text", text: "b" },
+                ],
+            },
+            want: "a b",
+        },
+        {
+            testN: "a heading drops its trailing spaces",
+            nod: {
+                type: "heading",
+                attrs: { level: 2 },
+                content: [{ type: "text", text: "Glossary  " }],
+            },
+            want: "## Glossary",
+        },
+        {
+            testN: "a heading drops its leading spaces",
+            nod: {
+                type: "heading",
+                attrs: { level: 2 },
+                content: [{ type: "text", text: "  Glossary" }],
+            },
+            want: "## Glossary",
+        },
+        {
+            testN: "a space hoisted out of a closing bold is dropped",
+            nod: {
+                type: "paragraph",
+                content: [
+                    { type: "text", text: "see " },
+                    { type: "text", text: "this ", marks: [strong] },
+                ],
+            },
+            want: "see **this**",
+        },
+        {
+            testN: "a segment after a hard break drops its leading space",
+            nod: {
+                type: "paragraph",
+                content: [
+                    { type: "text", text: "foo" },
+                    { type: "hardBreak" },
+                    { type: "text", text: " bar" },
+                ],
+            },
+            want: "foo\\\nbar",
+        },
+        {
+            testN: "a code span keeps its edge spaces",
+            nod: {
+                type: "paragraph",
+                content: [
+                    { type: "text", text: "run " },
+                    { type: "text", text: " x ", marks: [{ type: "code" }] },
+                ],
+            },
+            want: "run `  x  `",
+        },
+        {
+            testN: "a non-breaking space at the end is content",
+            nod: {
+                type: "paragraph",
+                content: [{ type: "text", text: "foo " }],
+            },
+            want: "foo ",
+        },
+    ];
+
+    for (const tc of tt) {
+        it(tc.testN, () => {
+            const have = renderBlock(tc.nod, {});
+
+            expect(have).toBe(tc.want);
+        });
+    }
+
+    it("a table cell drops the trailing space of each line", () => {
+        const cell: Node = {
+            type: "tableCell",
+            content: [
+                {
+                    type: "paragraph",
+                    content: [
+                        { type: "text", text: "foo " },
+                        { type: "hardBreak" },
+                        { type: "text", text: "bar " },
+                    ],
+                },
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "baz " }],
+                },
+            ],
+        };
+
+        const have = cellText(cell, {});
+
+        expect(have).toBe("foo<br>bar<br>baz");
     });
 });

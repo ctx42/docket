@@ -11,11 +11,11 @@ import { attrStr, type Node } from "../../models/adf.ts";
 import { type Links, localLink } from "../links.ts";
 import { renderDirective, rendersAsDirective } from "../render/directives.ts";
 import {
-    hoistEdgeSpaces,
     inlineString,
     linkHref,
     type MdCtx,
     markCode,
+    tidyInline,
 } from "../render/markdown.ts";
 import { type ParseCtx, parseInline } from "./inline.ts";
 
@@ -153,9 +153,10 @@ function tokEqual(a: InlineTok, b: InlineTok | undefined): boolean {
  * inlineRoundTrips reports whether an inline run survives a render→parse round
  * trip unchanged: its signature equals the signature of parsing its own render.
  * The run must be a single logical segment (no hardBreak); callers split on hard
- * breaks first. The run is signed after {@link hoistEdgeSpaces}, as the render
- * sees it, so whitespace a strong, em, or strike mark covers at its edge
- * compares equal to the same whitespace unmarked.
+ * breaks first. The run is signed after {@link tidyInline}, as the render sees
+ * it, so whitespace a strong, em, or strike mark covers at its edge compares
+ * equal to the same whitespace unmarked, and the stray spaces the render drops
+ * do not make the run read-only.
  */
 export function inlineRoundTrips(
     nodes: Node[],
@@ -165,7 +166,7 @@ export function inlineRoundTrips(
     const rendered = inlineString({ type: "paragraph", content: nodes }, ctx);
     const reparsed = parseInline(rendered, pc);
     return sigEqual(
-        inlineSig(hoistEdgeSpaces(nodes), ctx.links ?? null),
+        inlineSig(tidyInline(nodes), ctx.links ?? null),
         inlineSig(reparsed, ctx.links ?? null),
     );
 }

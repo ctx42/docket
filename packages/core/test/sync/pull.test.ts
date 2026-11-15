@@ -1422,6 +1422,67 @@ describe("Puller.pullPages", () => {
         expect(note).toContain("docket_page_version: 4");
     });
 
+    it("writes no stray spaces from the page text, on a merge either", async () => {
+        const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
+        const spaced = (last: string): unknown => ({
+            version: 1,
+            type: "doc",
+            content: [
+                {
+                    type: "heading",
+                    attrs: { level: 2 },
+                    content: [{ type: "text", text: "Glossary  " }],
+                },
+                {
+                    type: "paragraph",
+                    content: [
+                        {
+                            type: "text",
+                            text: "UI-1: ",
+                            marks: [{ type: "strong" }],
+                        },
+                        { type: "text", text: " alpha " },
+                        { type: "hardBreak" },
+                        { type: "text", text: "beta" },
+                    ],
+                },
+                {
+                    type: "paragraph",
+                    content: [{ type: "text", text: last }],
+                },
+            ],
+        });
+        const seed = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 3, spaced("gamma ")),
+        });
+        const { fs } = pullerFor(config, seed);
+        await pullerFor(config, seed, fs).puller.pullPages();
+        const pulled = await fs.readText("/vault/p.md");
+        await fs.write("/vault/p.md", pulled.replace("beta", "beta-local"));
+        const v4 = new StubHttpClient().on("GET", pageURL("123"), {
+            body: pageBody("123", 4, spaced("gamma-remote ")),
+        });
+        const { puller } = pullerFor(
+            config,
+            v4,
+            fs,
+            buildLinkIndex(config.syncRoot, config.pages, []),
+            new Map([["123", 4]]),
+        );
+
+        const out = await puller.pullPages();
+
+        expect(out.stats.conflict).toBe(0);
+        const have = await fs.readText("/vault/p.md");
+        expect(pulled).toContain(
+            "## Glossary\n\n**UI-1:** alpha\\\nbeta\n\ngamma\n",
+        );
+        expect(have).toContain(
+            "## Glossary\n\n**UI-1:** alpha\\\nbeta-local\n\ngamma-remote\n",
+        );
+        expect(have).not.toMatch(/ \n|\S {2}\S/);
+    });
+
     it("drops a stale heading_anchors key on re-pull of an unedited note", async () => {
         const config = testConfig({ "p.md": "/wiki/spaces/X/pages/123/Title" });
         const stub = new StubHttpClient().on("GET", pageURL("123"), {

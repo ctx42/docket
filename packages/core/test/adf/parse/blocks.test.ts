@@ -32,6 +32,16 @@ describe("normalizeBlock", () => {
         },
         { testN: "keeps a hard break marker", in: "a\\\nb", want: "a\\ b" },
         {
+            testN: "drops the space before a hard break",
+            in: "a \t\\\nb \\",
+            want: "a\\ b\\",
+        },
+        {
+            testN: "keeps the space before a mid-line backslash",
+            in: "a \\ b",
+            want: "a \\ b",
+        },
+        {
             testN: "canonicalizes a table, dropping padding and separator width",
             in: "| a | b |\n|-----|-----|\n| c | d |",
             want: "|a|b| |-| |c|d|",
