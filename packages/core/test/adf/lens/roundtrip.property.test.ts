@@ -33,8 +33,12 @@ function envInt(name: string, def: number): number {
 
 const RUNS = envInt("DOCKET_LENS_RUNS", 300);
 const SEED = envInt("DOCKET_LENS_SEED", 0);
-/** TIMEOUT scales the per-mode time budget with the case count. */
-const TIMEOUT = Math.max(5_000, RUNS * 5);
+/**
+ * TIMEOUT scales the per-mode time budget with the case count. A case takes
+ * about 1 ms alone but over 10 ms in the full suite under coverage on a
+ * loaded machine, so each one gets 100 ms.
+ */
+const TIMEOUT = Math.max(30_000, RUNS * 100);
 
 /** renderBody renders adf and returns its body without frontmatter. */
 function renderBody(adf: ADF): string {
