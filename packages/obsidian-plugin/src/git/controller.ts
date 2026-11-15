@@ -283,6 +283,21 @@ export class GitController {
         });
     }
 
+    /**
+     * markResolved tells git the conflicts in the files at vault `paths` are
+     * resolved, and drops them from the last pull's conflict; once none is
+     * left, the conflict is gone.
+     */
+    async markResolved(paths: readonly string[]): Promise<void> {
+        await this.operate(async (repo) => {
+            await repo.markResolved(paths);
+            const r = this.lastRemote;
+            if (r === null || r.kind === "failed") return;
+            const files = r.files.filter((f) => !paths.includes(f));
+            this.lastRemote = files.length === 0 ? null : { ...r, files };
+        });
+    }
+
     /** trackedUnder lists the tracked files at or under a vault path. */
     trackedUnder(path: string): Promise<string[]> {
         return this.queue(() => this.need().trackedUnder(path));

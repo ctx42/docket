@@ -148,6 +148,29 @@ describe("GitController remote operations", () => {
         expect(c.branch).toBe("");
     });
 
+    it("drops resolved files from a stash conflict, then the conflict", async () => {
+        const git = ready()
+            .on("pull", { stdout: "" })
+            .on("diff --name-only -z --diff-filter=U", {
+                stdout: "a.md\0b.md\0",
+            });
+        const c = controller("", git);
+        await c.pull();
+        const before = c.remote;
+
+        await c.markResolved(["a.md"]);
+        const partway = c.remote;
+        await c.markResolved(["b.md"]);
+
+        expect(before).toEqual({
+            kind: "stash-conflict",
+            files: ["a.md", "b.md"],
+        });
+        expect(git.cmds()).toContain("add -- a.md");
+        expect(partway).toEqual({ kind: "stash-conflict", files: ["b.md"] });
+        expect(c.remote).toBeNull();
+    });
+
     it("records a pull's conflict and clears it after a clean pull", async () => {
         const git = ready()
             .on("pull", { code: 1, stderr: "error: could not apply x\n" })

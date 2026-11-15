@@ -492,6 +492,20 @@ describe("GitRepo.push", () => {
     });
 });
 
+describe("GitRepo.markResolved", () => {
+    it("stages the files, as vault paths under the prefix", async () => {
+        const git = new StubGitExec();
+
+        await new GitRepo(git, undefined, "kb").markResolved([
+            "kb/a.md",
+            "kb/b c.md",
+        ]);
+
+        expect(git.cmds()).toEqual(["add -- a.md b c.md"]);
+        expect(git.calls[0]?.args.slice(-2)).toEqual(["a.md", "b c.md"]);
+    });
+});
+
 describe("GitRepo.branch", () => {
     it("names the checked-out branch", async () => {
         const git = new StubGitExec().on("symbolic-ref", {

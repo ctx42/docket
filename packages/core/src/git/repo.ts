@@ -232,6 +232,14 @@ export class GitRepo {
             .map((p) => this.vault(p));
     }
 
+    /**
+     * markResolved stages the files at vault `paths`, which tells git their
+     * conflicts are resolved.
+     */
+    async markResolved(paths: readonly string[]): Promise<void> {
+        await this.ok(["add", "--", ...paths.map((p) => this.local(p))]);
+    }
+
     /** untrack drops `path` (recursively) from the index, keeping the files. */
     async untrack(path: string): Promise<void> {
         await this.ok(["rm", "-r", "-q", "--cached", "--", this.local(path)]);
