@@ -366,15 +366,21 @@ export class GitRepo {
      * gives each commit the path the file had there.
      */
     async log(q: LogQuery): Promise<LogEntry[]> {
-        const args = [
-            "log",
-            "-z",
-            `--format=${LOG_FORMAT}`,
-            `--max-count=${q.limit}`,
-            `--skip=${q.skip}`,
-        ];
+        // With --follow, git's --skip also counts the commits that leave the
+        // file alone, so a path's page reads the commits before it and drops
+        // them; --max-count counts only the file's.
+        const args = ["log", "-z", `--format=${LOG_FORMAT}`];
+        const follow = q.path !== undefined;
         if (q.path !== undefined) {
-            args.push("--name-only", "--follow", "--", this.local(q.path));
+            args.push(
+                `--max-count=${q.skip + q.limit}`,
+                "--name-only",
+                "--follow",
+                "--",
+                this.local(q.path),
+            );
+        } else {
+            args.push(`--max-count=${q.limit}`, `--skip=${q.skip}`);
         }
         const out = await this.run(args);
         if (out.code !== 0) {
@@ -386,9 +392,10 @@ export class GitRepo {
             }
             throw new GitError(args, out);
         }
-        return parseLog(out.stdout).map((e) =>
+        const rows = parseLog(out.stdout).map((e) =>
             e.path === undefined ? e : { ...e, path: this.vault(e.path) },
         );
+        return follow ? rows.slice(q.skip) : rows;
     }
 
     /**

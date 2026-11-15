@@ -330,6 +330,31 @@ describe.skipIf(!hasGit)("GitRepos over real git", () => {
             expect(r.forPath("confluence/page.md")).toBe(r.sync);
         });
 
+        it("page a note's history past commits that leave it alone", async () => {
+            const r = repos();
+            await r.setupSync();
+            const sync = join(vault, "confluence");
+            configure(sync);
+            for (const [file, text] of [
+                ["page.md", "v1\n"],
+                ["other.md", "o1\n"],
+                ["page.md", "v2\n"],
+                ["other.md", "o2\n"],
+                ["page.md", "v3\n"],
+            ]) {
+                await writeFile(join(sync, file as string), text as string);
+                git(sync, "add", "-A");
+                git(sync, "commit", "-qm", `${file} ${text?.trim()}`);
+            }
+            const path = "confluence/page.md";
+
+            const page2 = await r.sync.log({ path, skip: 1, limit: 1 });
+            const page3 = await r.sync.log({ path, skip: 2, limit: 5 });
+
+            expect(page2.map((e) => e.subject)).toEqual(["page.md v2"]);
+            expect(page3.map((e) => e.subject)).toEqual(["page.md v1"]);
+        });
+
         it("land in a knowledge base's own clone, by vault path", async () => {
             const r = repos();
             await r.setupSync();

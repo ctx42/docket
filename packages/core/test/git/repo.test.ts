@@ -171,19 +171,48 @@ describe("GitRepo.log", () => {
 
         const have = await new GitRepo(git).log({
             path: "B/p.md",
-            skip: 100,
+            skip: 0,
             limit: 101,
         });
 
-        expect(git.calls[0]?.args.slice(-6)).toEqual([
+        expect(git.calls[0]?.args.slice(-5)).toEqual([
             "--max-count=101",
-            "--skip=100",
             "--name-only",
             "--follow",
             "--",
             "B/p.md",
         ]);
         expect(have.map((e) => e.path)).toEqual(["B/p.md", "A/p.md"]);
+    });
+
+    it("pages one file's history without git's --skip", async () => {
+        // With --follow, git's --skip also counts commits that leave the
+        // file alone; --max-count counts only the file's.
+        const git = new StubGitExec().on("log", {
+            stdout: "h3\x1f3\x1fc\0\np.md\0h2\x1f2\x1fb\0\np.md\0h1\x1f1\x1fa\0\np.md\0",
+        });
+
+        const have = await new GitRepo(git).log({
+            path: "p.md",
+            skip: 1,
+            limit: 2,
+        });
+
+        expect(git.calls[0]?.args).toContain("--max-count=3");
+        expect(git.calls[0]?.args.some((a) => a.startsWith("--skip"))).toBe(
+            false,
+        );
+        expect(have.map((e) => e.hash)).toEqual(["h2", "h1"]);
+    });
+
+    it("skips with git's --skip for the whole vault", async () => {
+        const git = new StubGitExec().on("log", { stdout: "h1\x1f1\x1fadd\0" });
+
+        await new GitRepo(git).log({ skip: 5, limit: 10 });
+
+        expect(git.calls[0]?.args).toEqual(
+            expect.arrayContaining(["--max-count=10", "--skip=5"]),
+        );
     });
 
     it("lists the whole vault without paths", async () => {
