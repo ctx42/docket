@@ -7,7 +7,7 @@
 export type { Clock } from "./clock.ts";
 export type { Env } from "./env.ts";
 export type { FileStat, FileSystem } from "./fs.ts";
-export type { GitExec, GitOutput, GitRunOptions } from "./git.ts";
+export type { GitAbort, GitExec, GitOutput, GitRunOptions } from "./git.ts";
 export type { HttpClient, HttpRequest, HttpResponse } from "./http.ts";
 export { responseText } from "./http.ts";
 export type { LockIO } from "./lock.ts";

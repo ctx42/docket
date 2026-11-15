@@ -57,6 +57,8 @@ export class NodeGitExec implements GitExec {
         args: string[],
         options: GitRunOptions | undefined,
     ): Promise<GitOutput> {
+        const signal = options?.signal;
+        if (signal?.aborted) return Promise.reject(abortError());
         return new Promise((resolve, reject) => {
             const child = execFile(
                 path,
@@ -69,6 +71,10 @@ export class NodeGitExec implements GitExec {
                     encoding: "utf8",
                 },
                 (err, stdout, stderr) => {
+                    if (signal?.aborted) {
+                        reject(abortError());
+                        return;
+                    }
                     if (err === null) {
                         resolve({ code: 0, stdout, stderr });
                         return;
@@ -85,8 +91,31 @@ export class NodeGitExec implements GitExec {
                     reject(err);
                 },
             );
+            const onStderr = options?.onStderr;
+            if (onStderr !== undefined) {
+                child.stderr?.on("data", (d: Buffer | string) =>
+                    onStderr(String(d)),
+                );
+            }
+            // Git's own children may hold its pipes open after it dies, so
+            // the run ends at the abort, not at the pipes' close.
+            signal?.addEventListener(
+                "abort",
+                () => {
+                    child.kill();
+                    reject(abortError());
+                },
+                { once: true },
+            );
             child.stdin?.on("error", () => undefined); // git may exit before reading
             child.stdin?.end(options?.input ?? "");
         });
     }
+}
+
+/** abortError is the error a run stopped by its signal rejects with. */
+function abortError(): Error {
+    const err = new Error("git: aborted");
+    err.name = "AbortError";
+    return err;
 }

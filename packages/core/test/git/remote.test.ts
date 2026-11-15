@@ -7,6 +7,7 @@ import {
     cloneInfo,
     cloneRepo,
     lsRemote,
+    ProgressReader,
     pullFastForward,
     RemoteError,
     remoteProblem,
@@ -133,6 +134,25 @@ describe("cloneRepo", () => {
             "not a clone URL",
         );
     });
+
+    it("reports progress and passes the signal on", async () => {
+        const git = new StubGitExec().on("clone", {
+            stderr:
+                "Cloning into 'kb'...\nReceiving objects:  40% (4/10)\r" +
+                "Receiving objects:  62% (620/1000), 1.20 MiB | 2.00 MiB/s\r",
+        });
+        const seen: string[] = [];
+        const ctl = new AbortController();
+
+        await cloneRepo(git, URL, "kb", "", {
+            signal: ctl.signal,
+            onProgress: (p) => seen.push(p.text),
+        });
+
+        expect(git.calls[0]?.cmd).toBe(`clone --progress -- ${URL} kb`);
+        expect(git.calls[0]?.options?.signal).toBe(ctl.signal);
+        expect(seen.at(-1)).toBe("Receiving objects 62% · 1.20 MiB");
+    });
 });
 
 describe("pullFastForward", () => {
@@ -196,5 +216,38 @@ describe("cloneInfo", () => {
         });
 
         await expect(cloneInfo(git, "kb")).rejects.toBeInstanceOf(GitError);
+    });
+});
+
+describe("ProgressReader", () => {
+    it("reads the last complete progress line of each chunk", () => {
+        const r = new ProgressReader();
+
+        const first = r.feed("Counting objects: 100% (5/5), done.\nReceiv");
+        const second = r.feed("ing objects:  7% (7/100)\r");
+
+        expect(first).toEqual({
+            phase: "Counting objects",
+            percent: 100,
+            text: "Counting objects 100%",
+        });
+        expect(second).toEqual({
+            phase: "Receiving objects",
+            percent: 7,
+            text: "Receiving objects 7%",
+        });
+    });
+
+    it("keeps the size git reports and ignores other lines", () => {
+        const r = new ProgressReader();
+
+        const have = r.feed(
+            "remote: Enumerating objects: 9, done.\n" +
+                "Resolving deltas:  50% (1/2), 12.50 KiB | 1 MiB/s\n" +
+                "warning: something\n",
+        );
+
+        expect(have?.text).toBe("Resolving deltas 50% · 12.50 KiB");
+        expect(r.feed("no progress here\n")).toBeNull();
     });
 });

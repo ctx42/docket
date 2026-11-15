@@ -18,6 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
     addIgnoreEntry,
+    cloneRepo,
     DEFAULT_IGNORES,
     defaultIgnoreBlock,
     type GitChange,
@@ -419,3 +420,79 @@ describe.skipIf(!hasGit)("GitRepo pull and push against a bare remote", () => {
         expect(await repo.aheadBehind()).toBeNull();
     });
 });
+
+describe.skipIf(!hasGit || process.platform === "win32")(
+    "NodeGitExec streaming and cancelling",
+    () => {
+        let root = "";
+
+        beforeEach(async () => {
+            root = await mkdtemp(join(tmpdir(), "docket-exec-"));
+        });
+        afterEach(async () => {
+            await rm(root, { recursive: true, force: true });
+        });
+
+        it("hands stderr to onStderr as git writes it", async () => {
+            const chunks: string[] = [];
+            const exec = new NodeGitExec(() => "", root);
+
+            const have = await exec.run(["no-such-command"], {
+                onStderr: (c) => chunks.push(c),
+            });
+
+            expect(have.stderr).toMatch(/not a git command/);
+            expect(chunks.join("")).toBe(have.stderr);
+        });
+
+        it("refuses to start with an aborted signal", async () => {
+            const exec = new NodeGitExec(() => "", root);
+
+            await expect(
+                exec.run(["--version"], { signal: AbortSignal.abort() }),
+            ).rejects.toMatchObject({ name: "AbortError" });
+        });
+
+        it("reports a real clone's progress", async () => {
+            const src = join(root, "src");
+            await mkdir(src);
+            const git = (...args: string[]): string =>
+                execFileSync("git", args, { cwd: src, encoding: "utf8" });
+            git("init", "-q", "-b", "main");
+            git("config", "user.email", "t@example.com");
+            git("config", "user.name", "t");
+            git("config", "commit.gpgsign", "false");
+            await writeFile(join(src, "a.md"), "a\n");
+            git("add", "-A");
+            git("commit", "-qm", "a");
+            const seen: string[] = [];
+
+            await cloneRepo(
+                new NodeGitExec(() => "", root),
+                `file://${src}`,
+                "kb",
+                "",
+                { onProgress: (p) => seen.push(p.phase) },
+            );
+
+            expect(seen).toContain("Receiving objects");
+            expect(await readFile(join(root, "kb", "a.md"), "utf8")).toBe(
+                "a\n",
+            );
+        });
+
+        it("kills a running git when the signal aborts", async () => {
+            const exec = new NodeGitExec(() => "", root);
+            const ctl = new AbortController();
+            const started = Date.now();
+            setTimeout(() => ctl.abort(), 100);
+
+            const run = exec.run(["-c", "alias.nap=!sleep 5", "nap"], {
+                signal: ctl.signal,
+            });
+
+            await expect(run).rejects.toMatchObject({ name: "AbortError" });
+            expect(Date.now() - started).toBeLessThan(3000);
+        });
+    },
+);

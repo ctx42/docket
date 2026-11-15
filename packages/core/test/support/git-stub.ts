@@ -44,8 +44,14 @@ export class StubGitExec implements GitExec {
             if (cmd.startsWith(r[0]) && r[0].length >= (best?.[0].length ?? -1))
                 best = r;
         }
+        if (options?.signal?.aborted) {
+            const err = new Error("git: aborted");
+            err.name = "AbortError";
+            return Promise.reject(err);
+        }
         const out = best?.[1] ?? {};
         if (out instanceof Error) return Promise.reject(out);
+        if (out.stderr !== undefined) options?.onStderr?.(out.stderr);
         return Promise.resolve({
             code: out.code ?? 0,
             stdout: out.stdout ?? "",

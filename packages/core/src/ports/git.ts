@@ -13,12 +13,32 @@ export interface GitOutput {
     stderr: string;
 }
 
+/**
+ * GitAbort is the part of a WHATWG `AbortSignal` a run needs; the core's
+ * runtime-neutral lib has no DOM types.
+ */
+export interface GitAbort {
+    readonly aborted: boolean;
+    addEventListener(
+        type: "abort",
+        listener: () => void,
+        options?: { once?: boolean },
+    ): void;
+}
+
 /** GitRunOptions are the per-invocation extras a command may need. */
 export interface GitRunOptions {
     /** Text written to git's stdin, which is then closed. */
     input?: string;
     /** Variables added to the inherited environment (e.g. `GIT_INDEX_FILE`). */
     env?: Record<string, string>;
+    /**
+     * Stops git when it aborts: `run` then rejects with an error named
+     * `AbortError`, and rejects that way at once when already aborted.
+     */
+    signal?: GitAbort;
+    /** Receives stderr as git writes it, e.g. a clone's progress lines. */
+    onStderr?: (chunk: string) => void;
 }
 
 /** GitExec runs the system git binary in the repository directory. */

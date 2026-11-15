@@ -7,7 +7,12 @@
 // off — so a missing key or an unknown host fails at once instead of waiting
 // for input nobody can give, and a failure says which of those it was.
 
-import type { GitExec, GitOutput } from "../ports/git.ts";
+import type {
+    GitAbort,
+    GitExec,
+    GitOutput,
+    GitRunOptions,
+} from "../ports/git.ts";
 import { GitError } from "./repo.ts";
 
 /**
@@ -103,9 +108,70 @@ export async function cloneRepo(
     url: string,
     dir: string,
     branch: string,
+    opts: CloneOptions = {},
 ): Promise<void> {
     const pick = branch === "" ? [] : ["--branch", branch];
-    await remote(exec, ["clone", ...pick, "--", checkUrl(url), dir]);
+    const onProgress = opts.onProgress;
+    const progress = onProgress === undefined ? [] : ["--progress"];
+    const run: GitRunOptions = {};
+    if (opts.signal !== undefined) run.signal = opts.signal;
+    if (onProgress !== undefined) {
+        const reader = new ProgressReader();
+        run.onStderr = (chunk) => {
+            const p = reader.feed(chunk);
+            if (p !== null) onProgress(p);
+        };
+    }
+    await remote(
+        exec,
+        ["clone", ...progress, ...pick, "--", checkUrl(url), dir],
+        run,
+    );
+}
+
+/** CloneOptions lets a clone be cancelled and report its progress. */
+export interface CloneOptions {
+    /** Stops the clone; git removes the half-made folder. */
+    signal?: GitAbort;
+    /** Receives each progress step git reports. */
+    onProgress?: (p: Progress) => void;
+}
+
+/** Progress is one step of git's progress output. */
+export interface Progress {
+    /** What git is doing, e.g. "Receiving objects". */
+    phase: string;
+    percent: number;
+    /** A short line to show, e.g. "Receiving objects 62% · 1.20 MiB". */
+    text: string;
+}
+
+/** PROGRESS_LINE matches a git progress line, with the size git may add. */
+const PROGRESS_LINE =
+    /^(?:remote: )?([A-Z][A-Za-z ]+?):\s+(\d+)% \([^)]*\)(?:, ([\d.]+ [KMGT]?i?B))?/;
+
+/**
+ * ProgressReader reads git's progress from stderr chunks, which split lines
+ * anywhere and end steps with `\r` or `\n`.
+ */
+export class ProgressReader {
+    private rest = "";
+
+    /** feed takes the next chunk and returns its last progress step, or null. */
+    feed(chunk: string): Progress | null {
+        const lines = (this.rest + chunk).split(/[\r\n]/);
+        this.rest = lines.pop() ?? "";
+        let last: Progress | null = null;
+        for (const line of lines) {
+            const m = PROGRESS_LINE.exec(line);
+            if (m === null) continue;
+            const phase = m[1] as string;
+            const percent = Number(m[2]);
+            const size = m[3] === undefined ? "" : ` · ${m[3]}`;
+            last = { phase, percent, text: `${phase} ${percent}%${size}` };
+        }
+        return last;
+    }
 }
 
 /**
@@ -152,8 +218,12 @@ export async function cloneInfo(
 }
 
 /** remote runs a git command without prompts and returns its stdout. */
-async function remote(exec: GitExec, args: string[]): Promise<string> {
-    const out = await exec.run(args, { env: { ...BATCH_ENV } });
+async function remote(
+    exec: GitExec,
+    args: string[],
+    options: GitRunOptions = {},
+): Promise<string> {
+    const out = await exec.run(args, { ...options, env: { ...BATCH_ENV } });
     if (out.code !== 0) throw new RemoteError(args, out);
     return out.stdout;
 }
