@@ -94,7 +94,10 @@ describe.skipIf(!hasGit || process.platform === "win32")(
                 exec,
                 repos,
                 knowledgeBases: () => kbs,
-                setPin: async () => {},
+                setPin: async (name, pin) => {
+                    const k = kbs.find((x) => x.name === name);
+                    if (k !== undefined) k.pin = pin;
+                },
                 folderExists: async (p) =>
                     (await stat(join(vault, p)).catch(() => null)) !== null,
                 loadRoles: () => roles,
@@ -105,7 +108,7 @@ describe.skipIf(!hasGit || process.platform === "win32")(
                 now: () => 1,
                 today: () => new Date(2026, 10, 16, 9, 5),
             });
-            return { watch, roles: () => roles, opened };
+            return { watch, kbs, roles: () => roles, opened };
         };
 
         it("clones, learns own access, pushes, then meets a protected main", async () => {
@@ -150,6 +153,48 @@ describe.skipIf(!hasGit || process.platform === "win32")(
                     "docket/anna-nowak-2026-11-16-0905",
                 ).trim(),
             ).toBe("docs: c\ndocs: b\na");
+        });
+
+        it("pins a read-only base and moves the pin only on accept", async () => {
+            const { watch, kbs, roles } = setup();
+            expect(await watch.clone("kb")).toBe(true);
+            // The server refuses every push the way Bitbucket answers an
+            // account that may only read, dry runs included.
+            const deny = join(root, "deny.sh");
+            await writeFile(
+                deny,
+                '#!/bin/sh\necho "repository access denied." >&2\nexit 1\n',
+            );
+            await chmod(deny, 0o755);
+            git(join(vault, "kb"), "config", "remote.origin.receivepack", deny);
+            const first = git(join(vault, "kb"), "rev-parse", "HEAD").trim();
+
+            await watch.check("kb");
+            expect(roles()["kb"]?.role).toBe("read");
+            expect(kbs[0]?.pin).toBe(first);
+            expect(watch.status("kb")?.update).toBeNull();
+
+            const seed = join(root, "seed");
+            await writeFile(join(seed, "b.md"), "b\n");
+            git(seed, "add", "-A");
+            git(seed, "commit", "-qm", "b");
+            git(seed, "push", "-q", bare, "main");
+            await watch.check("kb");
+            expect(watch.status("kb")?.update).toEqual({
+                commits: 1,
+                changed: [],
+                added: ["b.md"],
+                removed: [],
+            });
+            expect(git(join(vault, "kb"), "rev-parse", "HEAD").trim()).toBe(
+                first,
+            );
+
+            await watch.acceptUpdate("kb");
+            const next = git(join(vault, "kb"), "rev-parse", "HEAD").trim();
+            expect(next).not.toBe(first);
+            expect(kbs[0]?.pin).toBe(next);
+            expect(watch.status("kb")?.update).toBeNull();
         });
 
         it("cancels a clone and leaves no folder", async () => {
