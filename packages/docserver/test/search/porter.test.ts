@@ -3,7 +3,10 @@
 
 import { describe, expect, it } from "vitest";
 
-import { stemWithoutLowerCasing } from "../../src/search/porter.ts";
+import {
+    STEM_CACHE_MAX,
+    stemWithoutLowerCasing,
+} from "../../src/search/porter.ts";
 import { readGolden } from "../support/golden.ts";
 
 /** Pairs of [word, stem] produced by go-porterstemmer (oracle `stem`). */
@@ -35,7 +38,20 @@ describe("stemWithoutLowerCasing", () => {
         ["RUNNING", "RUNNING"],
         ["ladY", "ladI"],
         ["größe", "größe"],
+        ["x".repeat(70), "x".repeat(70)],
+        [`${"x".repeat(70)}ss`, `${"x".repeat(70)}ss`],
     ])("stems %j to %j", (word, want) => {
         expect(stemWithoutLowerCasing(word)).toBe(want);
+    });
+
+    it("stems a word the same again, also once the cache filled up", () => {
+        const first = stemWithoutLowerCasing("relational");
+        for (let i = 0; i <= STEM_CACHE_MAX; i++) {
+            stemWithoutLowerCasing(`word${i}ing`);
+        }
+
+        expect(STEM_CACHE_MAX).toBeGreaterThan(0);
+        expect(stemWithoutLowerCasing("relational")).toBe(first);
+        expect(stemWithoutLowerCasing("word7ing")).toBe("word7");
     });
 });

@@ -66,6 +66,18 @@ describe("segmentWords", () => {
         ]);
     });
 
+    it("keeps a long word whole in text with a lone surrogate", () => {
+        const word = "a".repeat(300_000);
+
+        const have = segmentWords(`${word}\udc00`);
+
+        expect(have.map((s) => [s.text === word, s.type, s.end])).toEqual([
+            [true, "letter", 300_000],
+            [false, "none", 300_003],
+        ]);
+        expect(have[1]?.text).toBe("\ufffd");
+    });
+
     it("returns nothing for empty text", () => {
         expect(segmentWords("")).toEqual([]);
     });

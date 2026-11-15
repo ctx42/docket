@@ -63,6 +63,18 @@ export function maskOf(cp: number): number {
     return 0;
 }
 
+/** LONE_SURROGATE matches a UTF-16 surrogate that is not part of a pair. */
+const LONE_SURROGATE =
+    /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
+
+/** ASCII_MASKS holds {@link maskOf} for every ASCII code point. */
+const ASCII_MASKS = Int32Array.from({ length: 0x80 }, (_, cp) => maskOf(cp));
+
+/** maskOfFast is {@link maskOf} with ASCII read from a table. */
+function maskOfFast(cp: number): number {
+    return cp < 0x80 ? (ASCII_MASKS[cp] as number) : maskOf(cp);
+}
+
 // --- Grammar as a regular-expression AST ---
 
 type Ast =
@@ -272,23 +284,41 @@ function utf8Len(cp: number): number {
  * are included; bleve's tokenizer skips them.
  */
 export function segmentWords(text: string): Segment[] {
-    // A lone surrogate is invalid UTF-8 to Go; it reads as U+FFFD.
-    const chars = [...text].map((ch) => {
-        const cp = ch.codePointAt(0) as number;
-        return cp >= 0xd800 && cp <= 0xdfff ? "\ufffd" : ch;
-    });
-    const cps = chars.map((ch) => ch.codePointAt(0) as number);
-    const masks = cps.map(maskOf);
+    // One entry per code point; at[k] is its UTF-16 offset in text, and
+    // at[n] is text.length.
+    const n0 = text.length;
+    const cps = new Int32Array(n0);
+    const at = new Int32Array(n0 + 1);
+    let n = 0;
+    let lone = false;
+    for (let u = 0; u < n0; ) {
+        let cp = text.codePointAt(u) as number;
+        at[n] = u;
+        u += cp > 0xffff ? 2 : 1;
+        // A lone surrogate is invalid UTF-8 to Go; it reads as U+FFFD.
+        if (cp >= 0xd800 && cp <= 0xdfff) {
+            cp = 0xfffd;
+            lone = true;
+        }
+        cps[n++] = cp;
+    }
+    at[n] = n0;
+    const masks = new Int32Array(n);
+    for (let k = 0; k < n; k++) masks[k] = maskOfFast(cps[k] as number);
+    // U+FFFD is one UTF-16 unit like the surrogate, so offsets hold.
+    const clean = lone ? text.replace(LONE_SURROGATE, "\ufffd") : text;
+    const slice = (i: number, j: number): string =>
+        clean.slice(at[i] as number, at[j] as number);
     const out: Segment[] = [];
     const NLCRLF = B.NL | B.CR | B.LF;
     const X = B.EXT | B.FMT;
     let byte = 0;
-    for (let i = 0; i < cps.length; ) {
+    for (let i = 0; i < n; ) {
         let len = 0;
         let pat = -1;
         let d: DfaState | null = DFA_START;
         if (d.accept >= 0) pat = d.accept;
-        for (let j = i; j < cps.length && d !== null; j++) {
+        for (let j = i; j < n && d !== null; j++) {
             d = step(d, masks[j] as number);
             if (d !== null && d.accept >= 0) {
                 len = j - i + 1;
@@ -302,7 +332,7 @@ export function segmentWords(text: string): Segment[] {
             let other = 1;
             if ((cps[i] as number) < 0x80) {
                 while (
-                    i + other < cps.length &&
+                    i + other < n &&
                     ((masks[i + other] as number) & X) !== 0
                 ) {
                     other++;
@@ -319,7 +349,7 @@ export function segmentWords(text: string): Segment[] {
         let bytes = 0;
         for (let k = i; k < i + len; k++) bytes += utf8Len(cps[k] as number);
         out.push({
-            text: chars.slice(i, i + len).join(""),
+            text: slice(i, i + len),
             type,
             start: byte,
             end: byte + bytes,

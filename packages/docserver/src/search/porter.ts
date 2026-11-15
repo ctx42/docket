@@ -52,9 +52,16 @@ function measure(s: Runes): number {
     return result;
 }
 
+/** SUFFIX_RUNES holds each suffix's runes, split once. */
+const SUFFIX_RUNES = new Map<string, Runes>();
+
 /** hasSuffix matches suffix only when s is strictly longer than it. */
 function hasSuffix(s: Runes, suffix: string): boolean {
-    const suf = [...suffix];
+    let suf = SUFFIX_RUNES.get(suffix);
+    if (suf === undefined) {
+        suf = [...suffix];
+        SUFFIX_RUNES.set(suffix, suf);
+    }
     if (s.length <= suf.length) return false;
     const off = s.length - suf.length;
     return suf.every((ch, i) => s[off + i] === ch);
@@ -275,12 +282,33 @@ function step5b(s: Runes): Runes {
     return s;
 }
 
+/** STEM_CACHE_MAX caps the stems kept for words seen before. */
+export const STEM_CACHE_MAX = 50_000;
+
+/** STEM_CACHE_WORD_MAX is the longest word (UTF-16 units) the cache keeps. */
+const STEM_CACHE_WORD_MAX = 64;
+
+/** stems maps a word to its stem; it empties once it holds the cap. */
+const stems = new Map<string, string>();
+
 /**
  * stemWithoutLowerCasing stems word as go-porterstemmer's
  * `StemWithoutLowerCasing`, the call bleve's `stemmer_porter` filter makes.
  * Words of up to two code points are returned unchanged.
  */
 export function stemWithoutLowerCasing(word: string): string {
+    if (word.length > STEM_CACHE_WORD_MAX) return stemRunes(word);
+    let stem = stems.get(word);
+    if (stem === undefined) {
+        if (stems.size >= STEM_CACHE_MAX) stems.clear();
+        stem = stemRunes(word);
+        stems.set(word, stem);
+    }
+    return stem;
+}
+
+/** stemRunes stems one word, uncached. */
+function stemRunes(word: string): string {
     let s: Runes = [...word];
     if (s.length <= 2) return word;
     s = step1a(s);

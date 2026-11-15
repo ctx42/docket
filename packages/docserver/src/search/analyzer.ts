@@ -42,6 +42,8 @@ const POSSESSIVE_MARKS = new Set(["’", "'", "＇"]);
 
 /** possessive drops a trailing "'s" (any of three apostrophes, s or S). */
 export function possessive(term: string): string {
+    const end = term.at(-1);
+    if (end !== "s" && end !== "S") return term;
     const runes = [...term];
     const last = runes[runes.length - 1];
     if (
@@ -53,6 +55,9 @@ export function possessive(term: string): string {
     return term;
 }
 
+/** NON_ASCII matches any UTF-16 unit outside ASCII. */
+const NON_ASCII = /[\u0080-\uffff]/;
+
 /**
  * toLower is bleve's to_lower filter (`toLowerDeferredCopy`), byte for byte:
  * each rune maps through Go's `unicode.ToLower`; a final capital sigma
@@ -61,6 +66,8 @@ export function possessive(term: string): string {
  * shrank, which garbles the term; that is reproduced too.
  */
 export function toLower(term: string): string {
+    // On ASCII both map exactly A-Z, so no rune changes width.
+    if (!NON_ASCII.test(term)) return term.toLowerCase();
     const s = utf8Encode(term);
     let j = 0;
     for (let i = 0; i < s.length; ) {

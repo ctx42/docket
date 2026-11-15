@@ -71,6 +71,9 @@ describe("toLower", () => {
         ["ΣΑ", "σα"],
         ["Ⱥpple", "ⱥpple"],
         ["İ", "i"],
+        ["@AZ[`az{\u007f0", "@az[`az{\u007f0"],
+        ["Mixed Case-42", "mixed case-42"],
+        ["ASCII then Ⱥ", "ascii then ⱥ"],
     ])("%j -> %j", (term, want) => {
         expect(toLower(term)).toBe(want);
     });
