@@ -34,6 +34,8 @@ describe("probeAccess", () => {
         "remote: Permission to anna/kb.git denied to marek.\nfatal: unable to access 'https://github.com/anna/kb.git/': The requested URL returned error: 403",
         "remote: You are not allowed to push code to this project.",
         "Unauthorized\nfatal: Could not read from remote repository.",
+        "repository access denied.\nfatal: Could not read from remote repository.",
+        "repository access denied. access via a deployment key is read-only.\nfatal: Could not read from remote repository.",
     ])("reads a refusal to write as read access: %j", async (stderr) => {
         const git = new StubGitExec().on("-C kb push", { code: 128, stderr });
 
@@ -93,6 +95,7 @@ describe("pushProblem", () => {
         [" ! [rejected]        main -> main (fetch first)", "behind"],
         [" ! [rejected]        main -> main (non-fast-forward)", "behind"],
         ["ERROR: Permission to anna/kb.git denied to marek.", "denied"],
+        ["repository access denied.", "denied"],
         ["The requested URL returned error: 403", "denied"],
         ["ssh: connect to host h port 22: Connection timed out", "network"],
         ["fatal: something else", "other"],

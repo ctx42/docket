@@ -29,6 +29,8 @@ const DENIED = [
     /not allowed to push/i,
     /You do not have (write )?(access|permission)/i,
     /^Unauthorized$/im,
+    // Bitbucket Cloud, for an account or an access key that may only read.
+    /repository access denied/i,
 ];
 
 /** REJECTED matches a push refused only because the branch moved on. */
