@@ -71,6 +71,37 @@ describe("utf8Decode", () => {
     });
 });
 
+describe("utf8Decode on long text", () => {
+    it("round-trips long ASCII runs between other runes", () => {
+        const s = `${"a".repeat(70_000)}é${"b".repeat(9_000)}😀\u0000`;
+
+        expect(utf8Decode(utf8Encode(s))).toBe(s);
+    });
+
+    it("replaces an invalid byte inside a long ASCII run", () => {
+        const bytes = utf8Encode(`${"a".repeat(20_000)}x${"b".repeat(20_000)}`);
+        bytes[20_000] = 0xff;
+
+        expect(utf8Decode(bytes)).toBe(
+            `${"a".repeat(20_000)}\ufffd${"b".repeat(20_000)}`,
+        );
+    });
+});
+
+describe("utf8Encode on long text", () => {
+    it("encodes every rune width and a lone surrogate", () => {
+        const s = `${"a".repeat(50_000)}é漢😀\ud800`;
+
+        const have = utf8Encode(s);
+
+        expect(have.length).toBe(50_000 + 2 + 3 + 4 + 3);
+        expect([...have.subarray(50_000)]).toEqual([
+            0xc3, 0xa9, 0xe6, 0xbc, 0xa2, 0xf0, 0x9f, 0x98, 0x80, 0xef, 0xbf,
+            0xbd,
+        ]);
+    });
+});
+
 describe("utf8DecodeEscaped", () => {
     it.each<[string, number[], string]>([
         ["valid text", [0x63, 0x61, 0x66, 0xc3, 0xa9], "café"],

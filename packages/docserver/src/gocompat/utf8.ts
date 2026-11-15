@@ -10,30 +10,38 @@
  * U+FFFD, as Go does when converting invalid UTF-16 to a string.
  */
 export function utf8Encode(s: string): Uint8Array {
-    const out: number[] = [];
-    for (const ch of s) {
-        let cp = ch.codePointAt(0) as number;
-        if (cp >= 0xd800 && cp <= 0xdfff) cp = 0xfffd;
+    // A UTF-16 unit never takes more than three bytes.
+    const out = new Uint8Array(s.length * 3);
+    let n = 0;
+    for (let i = 0; i < s.length; i++) {
+        let cp = s.charCodeAt(i);
         if (cp < 0x80) {
-            out.push(cp);
-        } else if (cp < 0x800) {
-            out.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f));
+            out[n++] = cp;
+            continue;
+        }
+        if (cp >= 0xd800 && cp <= 0xdbff && i + 1 < s.length) {
+            const lo = s.charCodeAt(i + 1);
+            if (lo >= 0xdc00 && lo <= 0xdfff) {
+                cp = 0x10000 + ((cp - 0xd800) << 10) + (lo - 0xdc00);
+                i++;
+            }
+        }
+        if (cp >= 0xd800 && cp <= 0xdfff) cp = 0xfffd;
+        if (cp < 0x800) {
+            out[n++] = 0xc0 | (cp >> 6);
+            out[n++] = 0x80 | (cp & 0x3f);
         } else if (cp < 0x10000) {
-            out.push(
-                0xe0 | (cp >> 12),
-                0x80 | ((cp >> 6) & 0x3f),
-                0x80 | (cp & 0x3f),
-            );
+            out[n++] = 0xe0 | (cp >> 12);
+            out[n++] = 0x80 | ((cp >> 6) & 0x3f);
+            out[n++] = 0x80 | (cp & 0x3f);
         } else {
-            out.push(
-                0xf0 | (cp >> 18),
-                0x80 | ((cp >> 12) & 0x3f),
-                0x80 | ((cp >> 6) & 0x3f),
-                0x80 | (cp & 0x3f),
-            );
+            out[n++] = 0xf0 | (cp >> 18);
+            out[n++] = 0x80 | ((cp >> 12) & 0x3f);
+            out[n++] = 0x80 | ((cp >> 6) & 0x3f);
+            out[n++] = 0x80 | (cp & 0x3f);
         }
     }
-    return Uint8Array.from(out);
+    return out.slice(0, n);
 }
 
 /**
@@ -65,6 +73,9 @@ export function quoteBytes(bin: string): string {
     return `${out}"`;
 }
 
+/** ASCII_CHUNK is how many bytes one String.fromCharCode call takes. */
+const ASCII_CHUNK = 8192;
+
 /**
  * utf8Decode decodes UTF-8 bytes, replacing each invalid sequence with
  * U+FFFD (what Go's encoders write for a string holding invalid UTF-8).
@@ -82,8 +93,15 @@ export function utf8Decode(
         let cp = 0;
         let min = 0;
         if (b < 0x80) {
-            out += String.fromCharCode(b);
-            i++;
+            // Copy the whole ASCII run, a chunk of arguments at a time.
+            let k = i + 1;
+            while (k < bytes.length && (bytes[k] as number) < 0x80) k++;
+            for (let c = i; c < k; c += ASCII_CHUNK) {
+                out += String.fromCharCode(
+                    ...bytes.subarray(c, Math.min(k, c + ASCII_CHUNK)),
+                );
+            }
+            i = k;
             continue;
         } else if (b >= 0xc2 && b <= 0xdf) {
             need = 1;

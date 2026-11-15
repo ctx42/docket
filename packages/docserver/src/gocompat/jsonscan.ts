@@ -272,7 +272,20 @@ function scan(data: Uint8Array, first: boolean, eof = true): ScanResult {
 
     step = beginValue;
     let start = -1;
-    for (const [i, c] of data.entries()) {
+    for (let i = 0; i < data.length; i++) {
+        // Inside a string only a quote, a backslash, or a control byte
+        // changes the state; skip the bytes in between.
+        if (step === inString) {
+            let k = i;
+            while (k < data.length) {
+                const b = data[k] as number;
+                if (b === 0x22 || b === 0x5c || b < 0x20) break;
+                k++;
+            }
+            if (k === data.length) break;
+            i = k;
+        }
+        const c = data[i] as number;
         if (start < 0 && !isSpace(c)) start = i;
         const depth = stack.length;
         step(c);

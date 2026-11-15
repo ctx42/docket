@@ -3,7 +3,11 @@
 
 import { describe, expect, it } from "vitest";
 
-import { goJSONSyntaxError } from "../../src/gocompat/jsonscan.ts";
+import {
+    goJSONFirstValue,
+    goJSONSyntaxError,
+} from "../../src/gocompat/jsonscan.ts";
+import { utf8Encode } from "../../src/gocompat/utf8.ts";
 
 describe("goJSONSyntaxError", () => {
     it.each([
@@ -53,5 +57,40 @@ describe("goJSONSyntaxError", () => {
         ["\ufeff{}", "invalid character 'ï' looking for beginning of value"],
     ])("reports %j like Go", (text, want) => {
         expect(goJSONSyntaxError(text)).toBe(want);
+    });
+});
+
+describe("goJSONSyntaxError on long strings", () => {
+    const pad = "x".repeat(100_000);
+
+    it.each([
+        [`"${pad}\\n${pad}"`, undefined],
+        [`"${pad}\u0001"`, "invalid character '\\x01' in string literal"],
+        [`"${pad}\\q"`, "invalid character 'q' in string escape code"],
+        [`["${pad}" 1]`, "invalid character '1' after array element"],
+    ])("reports a long string like Go (%#)", (text, want) => {
+        expect(goJSONSyntaxError(text)).toBe(want);
+    });
+});
+
+describe("goJSONFirstValue", () => {
+    it("finds the first value and ignores what follows", () => {
+        const data = utf8Encode(`  {"a":"${"é".repeat(1000)}"}  junk`);
+
+        expect(goJSONFirstValue(data)).toEqual({
+            kind: "value",
+            start: 2,
+            end: 2 + 6 + 2000 + 2,
+        });
+    });
+
+    it("asks for more when a long string runs past the data", () => {
+        const data = utf8Encode(`{"a":"${"x".repeat(100_000)}`);
+
+        expect(goJSONFirstValue(data, false)).toEqual({ kind: "more" });
+        expect(goJSONFirstValue(data, true)).toEqual({
+            kind: "error",
+            message: "unexpected EOF",
+        });
     });
 });
