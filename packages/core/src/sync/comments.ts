@@ -328,3 +328,77 @@ export function describe(t: RecordedThread): string {
     const text = t.anchorText.replace(/\s+/g, " ").trim();
     return text === "" ? `id:${t.id}` : `id:${t.id} "${text}"`;
 }
+
+/** CommentRef is a thread as its note callout shows it. */
+export interface CommentRef {
+    /** The thread's root comment id, the one a reply answers. */
+    id: string;
+    /** The author as the callout shows it, without the `@`; `""` when absent. */
+    author: string;
+    /** The root comment's own text, `> ` prefixes removed, replies left out. */
+    text: string;
+}
+
+/**
+ * threadAt returns the comment thread whose top-level `[!comment]` callout
+ * holds the 0-based `line` of note `text`, or null when the line is not inside
+ * one. A line in a nested reply belongs to its thread, so a reply always
+ * answers the thread's root comment.
+ */
+export function threadAt(text: string, line: number): CommentRef | null {
+    const lines = text.split(/\r?\n/);
+    if (line < 0 || line >= lines.length) {
+        return null;
+    }
+    let start = line;
+    while (start >= 0 && (lines[start] ?? "").startsWith(">")) {
+        const m = CALLOUT_RE.exec(lines[start] ?? "");
+        if (m?.[1] !== undefined) {
+            return {
+                id: m[1],
+                author: calloutAuthor(lines[start] ?? ""),
+                text: calloutText(lines, start + 1),
+            };
+        }
+        start--;
+    }
+    return null;
+}
+
+/** calloutAuthor is the `@`-field of a callout tag line, without the `@`. */
+function calloutAuthor(tag: string): string {
+    const field = tag.split(" · ").find((p) => p.startsWith("@"));
+    return field === undefined ? "" : field.slice(1);
+}
+
+/**
+ * calloutText is the root comment's body: the callout lines from `from` up to
+ * its first nested reply or the callout's end, each without its `> ` prefix.
+ */
+function calloutText(lines: string[], from: number): string {
+    const out: string[] = [];
+    for (let i = from; i < lines.length; i++) {
+        const ln = lines[i] ?? "";
+        if (!ln.startsWith(">") || /^>\s*>\s*\[!comment\]/i.test(ln)) {
+            break;
+        }
+        out.push(ln.replace(/^> ?/, ""));
+    }
+    return out.join("\n").trim();
+}
+
+/**
+ * threadOf returns the thread in note `text` whose callout, or one of whose
+ * reply callouts, carries comment `id`, or null when no callout does. Like
+ * {@link threadAt}, a reply's id gives its whole thread.
+ */
+export function threadOf(text: string, id: string): CommentRef | null {
+    const lines = text.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+        const m = /^(?:>\s*)+\[!comment\]\s+id:(\S+)/i.exec(lines[i] ?? "");
+        if (m?.[1] === id) {
+            return threadAt(text, i);
+        }
+    }
+    return null;
+}
