@@ -1086,6 +1086,50 @@ div.docket-review-row .docket-review-main {
     overflow-y: auto;
 }
 
+/* Reply dialog: the answered comment, then the reply's text box. */
+.docket-reply-quote {
+    margin: 0 0 var(--size-4-3);
+    padding-left: var(--size-4-3);
+    border-left: 2px solid var(--background-modifier-border);
+    color: var(--text-muted);
+    max-height: 30vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+.docket-reply-text {
+    width: 100%;
+    resize: vertical;
+}
+/* A nested or Reading-view comment callout's reply button sits in the
+   callout's top corner, where Obsidian puts a Live Preview block's edit
+   button; the title keeps clear of it. */
+.callout:has(> .callout-title > .docket-reply-button) {
+    position: relative;
+}
+.callout-title:has(> .docket-reply-button) {
+    padding-inline-end: var(--size-4-6);
+}
+.callout-title > .docket-reply-button {
+    position: absolute;
+    top: var(--size-2-2);
+    inset-inline-end: var(--size-2-2);
+    opacity: 0.6;
+}
+.callout-title > .docket-reply-button:hover {
+    opacity: 1;
+}
+/* Before Obsidian 1.15 the edit-block button sits alone in the block's corner;
+   the outer callout's reply button takes the same spot, one button-width in. */
+.markdown-source-view.mod-cm6 .cm-embed-block
+    > .edit-block-button.docket-reply-block {
+    margin-inline-end: calc(
+        var(--icon-size) +
+        2 *
+        var(--size-2-3) +
+        var(--size-2-1)
+    );
+}
+
 /* Tabs: the Sync | Git | History row sits flush with the panel's top edge. */
 .docket-tabs {
     display: flex;

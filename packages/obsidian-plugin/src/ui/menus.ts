@@ -7,6 +7,7 @@
 // glue; which actions a note gets is note-actions.ts.
 
 import {
+    type Editor,
     type Menu,
     Notice,
     type TAbstractFile,
@@ -19,6 +20,7 @@ import {
     type NoteAction,
     noteActions,
     noteLink,
+    replyTarget,
 } from "./note-actions.ts";
 import { toDest } from "./operations.ts";
 
@@ -124,6 +126,36 @@ export function addNoteItems(
         );
     }
     return actions.length > 0 || publishable || url !== "";
+}
+
+/**
+ * addReplyItem adds "Reply to comment…" when the `editor` cursor of note
+ * `file` sits in a `[!comment]` callout docket can answer (greyed out while a
+ * run is in flight).
+ */
+export function addReplyItem(
+    menu: Menu,
+    plugin: docketPlugin,
+    editor: Editor,
+    file: TFile,
+): void {
+    const ref = replyTarget(
+        plugin.settings.comments,
+        frontmatter(plugin, file),
+        editor.getValue(),
+        editor.getCursor().line,
+    );
+    if (ref === null) return;
+    menu.addItem((item) =>
+        item
+            .setSection(SECTION)
+            .setTitle("Reply to comment…")
+            .setIcon("reply")
+            .setDisabled(plugin.controller.busy)
+            .onClick(
+                () => void plugin.controller.reply(toDest(file.path), ref),
+            ),
+    );
 }
 
 /** syncedUnder returns the notes under `folder` that offer `action`. */

@@ -72,6 +72,17 @@ describe("runSummary", () => {
         expect(have).toBe("Published: 2 made visible");
     });
 
+    it("words a reply by the pull that shows it", () => {
+        const s = run({
+            verb: "replying",
+            tally: { ...tally, updated: 1, unchanged: 0, conflict: 0 },
+        });
+
+        const have = runSummary(s);
+
+        expect(have).toBe("Replied: 1 updated");
+    });
+
     it("says when nothing happened", () => {
         const have = runSummary(run({ verb: "applying" }));
 

@@ -574,10 +574,19 @@ alongside the body:
   next pull), and **dangling** inline comments — ones whose highlighted text was
   deleted, so the anchor no longer exists in the body.
 
-Comments are **managed on Confluence**, with one exception: a push can
-**resolve** an inline comment. A push **strips** the callouts and `[^cf-…]`
-anchors before reconstructing the body, so it never sends a reply, an edit, or a
-new comment — do those in the Confluence UI.
+Comments are **managed on Confluence**, with two exceptions: the Obsidian
+plugin can **reply** to a comment, and a push can **resolve** an inline comment.
+A push **strips** the callouts and `[^cf-…]` anchors before reconstructing the
+body, so it never sends a reply, an edit, or a new comment. Typing a reply
+callout into the note does nothing; use the reply command below.
+
+- **Reply** in Obsidian: right-click inside a `[!comment]` callout and choose
+  **Reply to comment…** (or run that command from the command palette with the
+  cursor in the callout). Write the reply and click **Send**. It goes to
+  Confluence at once, not with the next push, and the note is pulled so the
+  reply shows as a callout. Markdown works: bold, links, lists. A reply always
+  answers the thread, even when the cursor is in one of its replies. The CLI
+  has no reply command; reply in the Confluence UI there.
 
 - **Resolve** an inline comment by removing **both** its `[!comment]` callout and
   its `[^cf-…]` anchor from the note, then pushing. Deleting the whole commented

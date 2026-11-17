@@ -39,8 +39,8 @@ export interface docketSettings {
     flavor: string;
     /**
      * Whether a pull fetches each page's Confluence comments and renders them as
-     * `[!comment]` callouts with `[^cf-…]` anchors (and a push writes replies and
-     * resolutions back). Off by default.
+     * `[!comment]` callouts with `[^cf-…]` anchors (and a push resolves the
+     * ones the user deleted; the plugin also sends replies). Off by default.
      */
     comments: boolean;
     /** Destination `*.md` file → Confluence page source. */

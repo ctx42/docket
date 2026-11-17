@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 import { hostname } from "node:os";
-import { PACKAGE_NAME, posixJoin, syncFolder } from "@docket/core";
+import { PACKAGE_NAME, posixJoin, syncFolder, threadOf } from "@docket/core";
 import {
     addIcon,
     FileSystemAdapter,
@@ -35,6 +35,11 @@ import {
 } from "./mcp/status.ts";
 import { indentViewPlugin } from "./render/indent-livepreview.ts";
 import { indentPostProcessor } from "./render/indent-reading.ts";
+import {
+    type ReplyHost,
+    replyButtonsPlugin,
+    replyButtonsPostProcessor,
+} from "./render/reply-button.ts";
 import { resolveCacheRoot } from "./runtime.ts";
 import { vaultBasePath } from "./settings/fields.ts";
 import { DEFAULT_SETTINGS, type docketSettings } from "./settings/model.ts";
@@ -67,6 +72,7 @@ import {
     addFilesItems,
     addFolderItems,
     addNoteItems,
+    addReplyItem,
     copyLink,
     frontmatter,
     openInConfluence,
@@ -74,9 +80,11 @@ import {
 } from "./ui/menus.ts";
 import {
     canPublish,
+    canReply,
     type NoteAction,
     noteActions,
     noteLink,
+    replyTarget,
 } from "./ui/note-actions.ts";
 import { toDest } from "./ui/operations.ts";
 import { barText, statusCounts } from "./ui/summary.ts";
@@ -180,6 +188,11 @@ export default class docketPlugin extends Plugin {
         this.addSettingTab(new docketSettingTab(this.app, this));
         this.registerEditorExtension(indentViewPlugin);
         this.registerMarkdownPostProcessor(indentPostProcessor);
+        const replies = this.replyHost();
+        this.registerEditorExtension(replyButtonsPlugin(replies));
+        this.registerMarkdownPostProcessor(
+            replyButtonsPostProcessor(this.app.vault, replies),
+        );
         this.signs.load(this.diffSigns);
         this.barBase.load(() => this.signs.refreshAll());
         this.watchGit();
@@ -206,8 +219,10 @@ export default class docketPlugin extends Plugin {
             ),
         );
         this.registerEvent(
-            ws.on("editor-menu", (menu, _editor, info) => {
-                if (info.file !== null) addNoteItems(menu, this, info.file);
+            ws.on("editor-menu", (menu, editor, info) => {
+                if (info.file === null) return;
+                addReplyItem(menu, this, editor, info.file);
+                addNoteItems(menu, this, info.file);
             }),
         );
 
@@ -565,6 +580,23 @@ export default class docketPlugin extends Plugin {
             "discard",
         );
         this.addCommand({
+            id: "docket-reply-comment",
+            name: "Reply to comment…",
+            editorCheckCallback: (checking, editor, ctx) => {
+                const file = ctx.file;
+                if (file === null || file.extension !== "md") return false;
+                const ref = replyTarget(
+                    this.settings.comments,
+                    frontmatter(this, file),
+                    editor.getValue(),
+                    editor.getCursor().line,
+                );
+                if (ref === null) return false;
+                if (!checking) void c.reply(toDest(file.path), ref);
+                return true;
+            },
+        });
+        this.addCommand({
             id: "docket-publish-current",
             name: "Publish current note to Confluence…",
             checkCallback: (checking) => {
@@ -603,6 +635,29 @@ export default class docketPlugin extends Plugin {
             "Copy Confluence link of current note",
             copyLink,
         );
+    }
+
+    /**
+     * replyHost serves the comment callouts' reply buttons: a note's comments
+     * can be answered when comments are on and the note is on Confluence, and
+     * a click opens the reply dialog for the clicked comment's thread.
+     */
+    private replyHost(): ReplyHost {
+        return {
+            canReply: (file) =>
+                canReply(this.settings.comments, frontmatter(this, file)),
+            reply: (file, id) => void this.replyTo(file, id),
+        };
+    }
+
+    /** replyTo opens the reply dialog for the thread of comment `id` in `file`. */
+    private async replyTo(file: TFile, id: string): Promise<void> {
+        const ref = threadOf(await this.app.vault.cachedRead(file), id);
+        if (ref === null) {
+            new Notice(`docket: comment id:${id} is not in the note; pull it`);
+            return;
+        }
+        await this.controller.reply(toDest(file.path), ref);
     }
 
     /** activeNote is the active Markdown note, or null. */

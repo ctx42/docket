@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 // The plugin's run controller: it owns every pull, push, discard, publish,
-// status check, and status apply, so commands, menus, the panel, and the status bar share one
+// comment reply, status check, and status apply, so commands, menus, the panel, and the status bar share one
 // busy flag, one live RunState, and one last status report. Runs happen in the
 // background — nothing here reveals the panel unless the user must look (a
 // failure or a conflict); the push review is a modal. Subscribers re-render on
@@ -11,6 +11,7 @@
 
 import {
     type Choice,
+    type CommentRef,
     describeHolder,
     overwrites,
     type PreflightEntry,
@@ -20,6 +21,7 @@ import {
     publish,
     type RemoteBody,
     RunLockError,
+    replyToComment,
     type StatusReport,
 } from "@docket/core";
 import { type App, MarkdownView, Notice } from "obsidian";
@@ -37,6 +39,7 @@ import {
     vaultStatus,
 } from "./operations.ts";
 import { reviewPush } from "./push-modal.ts";
+import { replyModal } from "./reply-modal.ts";
 import { ACTION_DONE, reviewModel } from "./review.ts";
 import { runRefusal } from "./run-guard.ts";
 import { PanelReporter, type RunState } from "./run-state.ts";
@@ -232,6 +235,24 @@ export class SyncController {
                 reporter.log(`warning: ${plan.warning}`);
             }
             reporter.setCounts({ ok: cleared.length, warn: 0, err: 0 });
+        });
+    }
+
+    /**
+     * reply asks for a reply to the comment thread `ref` of note `dest`, posts
+     * it to Confluence, then pulls the note, so the reply shows as a callout and
+     * push's record of the thread includes it.
+     */
+    async reply(dest: string, ref: CommentRef): Promise<void> {
+        if (this.refuseRun() || this.refuseBusy()) return;
+        const text = await replyModal(this.app, ref);
+        if (text === null) return;
+        await this.execute("replying", async (rt, reporter) => {
+            await replyToComment(rt, dest, ref.id, text);
+            reporter.log(`replied to comment id:${ref.id}`);
+            const out = await pullNotes(rt, reporter, [dest]);
+            for (const e of out.errors) reporter.fail(e);
+            reporter.setTally(out.tally, out.errors.length);
         });
     }
 

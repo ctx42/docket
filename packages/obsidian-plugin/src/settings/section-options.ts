@@ -30,8 +30,9 @@ export function notesSection(ctx: SettingsCtx, el: HTMLElement): void {
     new Setting(el)
         .setName("Comments")
         .setDesc(
-            "Pull Confluence comments as [!comment] callouts, and push " +
-                "replies and resolutions back.",
+            "Pull Confluence comments as [!comment] callouts. Reply to " +
+                "one from its right-click menu; resolve one by deleting it " +
+                "and pushing.",
         )
         .addToggle((t) =>
             t.setValue(s.comments).onChange((v) =>

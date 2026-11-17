@@ -4,8 +4,10 @@
 import { describe, expect, it } from "vitest";
 import {
     canPublish,
+    canReply,
     noteActions,
     noteLink,
+    replyTarget,
 } from "../../src/ui/note-actions.ts";
 
 describe("noteActions", () => {
@@ -84,5 +86,56 @@ describe("noteLink", () => {
         const have = noteLink(fm);
 
         expect(have).toBe("");
+    });
+});
+
+describe("replyTarget", () => {
+    const fm = { docket_page_id: "42" };
+    const note = [
+        "---",
+        'docket_page_id: "42"',
+        "---",
+        "",
+        "Text.",
+        "",
+        "> [!comment] id:C1 · @Jane Doe · 2026-11-10T09:12:44Z · open",
+        "> Which devices?",
+    ].join("\n");
+
+    it("offers the thread under the cursor", () => {
+        const have = replyTarget(true, fm, note, 7);
+
+        expect(have).toEqual({
+            id: "C1",
+            author: "Jane Doe",
+            text: "Which devices?",
+        });
+    });
+
+    it.each([
+        ["comments off", false, fm, 7],
+        ["a line outside a callout", true, fm, 4],
+        ["no frontmatter", true, undefined, 7],
+        ["a never-pushed note", true, { title: "New" }, 7],
+        ["a local note", true, { docket_page_id: "42", docket_local: true }, 7],
+    ])("offers nothing on %s", (_name, on, meta, line) => {
+        const have = replyTarget(on, meta, note, line);
+
+        expect(have).toBeNull();
+    });
+});
+
+describe("canReply", () => {
+    it("allows replies on a synced note with comments on", () => {
+        expect(canReply(true, { docket_page_id: "42" })).toBe(true);
+    });
+
+    it.each([
+        ["comments off", false, { docket_page_id: "42" }],
+        ["no frontmatter", true, undefined],
+        ["a never-pushed note", true, { title: "New" }],
+        ["a local note", true, { docket_page_id: "42", docket_local: true }],
+    ])("refuses %s", (_name, on, fm) => {
+        expect(canReply(on, fm)).toBe(false);
     });
 });

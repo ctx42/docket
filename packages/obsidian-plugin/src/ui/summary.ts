@@ -33,6 +33,7 @@ const DONE: Record<string, string> = {
     discarding: "Discarded local changes",
     applying: "Applied",
     publishing: "Published",
+    replying: "Replied",
 };
 
 /**
