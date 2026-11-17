@@ -56,6 +56,7 @@ describe("comment decoration", () => {
             markerRef: "M1",
             resolution: "open",
             authorId: "jsmith",
+            authorName: "",
             createdAt: "2026-07-20T10:00:00Z",
             body: para("Where's this from?"),
             replies: [
@@ -64,6 +65,7 @@ describe("comment decoration", () => {
                     markerRef: "",
                     resolution: "",
                     authorId: "rzajac",
+                    authorName: "",
                     createdAt: "2026-07-21T09:00:00Z",
                     body: para("Added in the appendix."),
                     replies: [],
@@ -98,6 +100,7 @@ describe("comment decoration", () => {
             markerRef: "",
             resolution: "",
             authorId: "jsmith",
+            authorName: "",
             createdAt: "2026-07-22T08:00:00Z",
             body: para("Page-level note."),
             replies: [],
@@ -119,6 +122,54 @@ describe("comment decoration", () => {
                 "> Page-level note.",
             ].join("\n"),
         );
+    });
+
+    describe("author", () => {
+        /** The callout tag line of a footer thread by `authorId`/`authorName`. */
+        const tagLine = (authorId: string, authorName: string): string => {
+            const footer: CommentThread = {
+                id: "F1",
+                markerRef: "",
+                resolution: "",
+                authorId,
+                authorName,
+                createdAt: "2026-07-22T08:00:00Z",
+                body: para("Note."),
+                replies: [],
+            };
+            const out = body(doc, { byMarker: new Map(), trailing: [footer] });
+            return out.split("\n").find((l) => l.includes("[!comment]")) ?? "";
+        };
+
+        it("shows the author's name when known", () => {
+            expect(tagLine("557058:abc", "Jane Doe")).toBe(
+                "> [!comment] id:F1 · @Jane Doe · 2026-07-22T08:00:00Z",
+            );
+        });
+
+        it("falls back to the account id when the name is unknown", () => {
+            expect(tagLine("557058:abc", "")).toBe(
+                "> [!comment] id:F1 · @557058:abc · 2026-07-22T08:00:00Z",
+            );
+        });
+
+        it("keeps a name with line breaks on the tag line", () => {
+            expect(tagLine("U1", " Jane\n  Doe \r\n")).toBe(
+                "> [!comment] id:F1 · @Jane Doe · 2026-07-22T08:00:00Z",
+            );
+        });
+
+        it("falls back to the account id for a blank name", () => {
+            expect(tagLine("U1", " \n ")).toBe(
+                "> [!comment] id:F1 · @U1 · 2026-07-22T08:00:00Z",
+            );
+        });
+
+        it("omits the author when neither is known", () => {
+            expect(tagLine("", "")).toBe(
+                "> [!comment] id:F1 · 2026-07-22T08:00:00Z",
+            );
+        });
     });
 
     it("strips back to the exact comment-free body, and the strip is a no-op on the ADF", () => {
@@ -143,6 +194,7 @@ describe("comment decoration", () => {
             markerRef: "M1",
             resolution: "open",
             authorId: "jsmith",
+            authorName: "",
             createdAt: "2026-07-20T10:00:00Z",
             body: para("A question."),
             replies: [],
@@ -152,6 +204,7 @@ describe("comment decoration", () => {
             markerRef: "",
             resolution: "",
             authorId: "jsmith",
+            authorName: "",
             createdAt: "2026-07-22T08:00:00Z",
             body: para("Page note."),
             replies: [],
@@ -195,6 +248,7 @@ describe("comment decoration", () => {
             markerRef: "",
             resolution: "",
             authorId: "jsmith",
+            authorName: "",
             createdAt: "2026-07-22T08:00:00Z",
             body: para("Page note."),
             replies: [],
@@ -220,6 +274,7 @@ describe("comment decoration", () => {
             markerRef: "GONE",
             resolution: "dangling",
             authorId: "jsmith",
+            authorName: "",
             createdAt: "2026-07-23T08:00:00Z",
             body: para("Anchor text was edited away."),
             replies: [],
@@ -243,6 +298,7 @@ describe("comment decoration on standalone inline nodes", () => {
         markerRef: "M1",
         resolution: "open",
         authorId: "jsmith",
+        authorName: "",
         createdAt: "2026-07-20T10:00:00Z",
         body: para("Check the link."),
         replies: [],

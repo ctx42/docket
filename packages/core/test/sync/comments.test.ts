@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 import { describe, expect, it } from "vitest";
-import { planResolves, type RecordedThread } from "../../src/sync/comments.ts";
+import type { PageComment } from "../../src/confluence/client.ts";
+import {
+    planResolves,
+    type RecordedThread,
+    toRenderComments,
+} from "../../src/sync/comments.ts";
 
 const thread: RecordedThread = {
     id: "C1",
@@ -39,5 +44,39 @@ describe("planResolves", () => {
         expect(() => planResolves([thread], unanchored, null)).toThrow(
             "anchor removed",
         );
+    });
+});
+
+describe("toRenderComments", () => {
+    /** A live comment by `authorName`, with `replies`. */
+    const live = (
+        id: string,
+        authorName: string,
+        replies: PageComment[] = [],
+    ): PageComment => ({
+        id,
+        kind: "footer",
+        resolution: "",
+        markerRef: "",
+        anchorText: "",
+        authorId: `acc-${id}`,
+        authorName,
+        createdAt: "",
+        version: 1,
+        adf: "",
+        replies,
+    });
+
+    it("carries each author's id and name, replies included", () => {
+        const have = toRenderComments({
+            inline: [],
+            footer: [live("F1", "Ann", [live("F2", "Bob")])],
+        });
+
+        const f1 = have.trailing[0];
+        expect(f1?.authorId).toBe("acc-F1");
+        expect(f1?.authorName).toBe("Ann");
+        expect(f1?.replies[0]?.authorId).toBe("acc-F2");
+        expect(f1?.replies[0]?.authorName).toBe("Bob");
     });
 });

@@ -15,6 +15,8 @@ import { responseText } from "../ports/http.ts";
 
 /** The Confluence current-user endpoint (v1; returns the authenticated account). */
 const USER_ENDPOINT = "/wiki/rest/api/user/current";
+/** The Confluence user-by-account endpoint (v1; `?accountId=` names the user). */
+const USER_BY_ID_ENDPOINT = "/wiki/rest/api/user?accountId=";
 /** The Confluence v2 page-by-id endpoint prefix. */
 export const PAGE_ENDPOINT = "/wiki/api/v2/pages/";
 /** The Confluence v2 pages-list endpoint (no trailing id): multi-`id` + cursor. */
@@ -187,6 +189,11 @@ export interface PageComment {
     anchorText: string;
     /** The account id of the comment's author (`version.authorId`). */
     authorId: string;
+    /**
+     * The author's display name, looked up by {@link authorId}; `""` when the
+     * lookup failed or the Site hides the name.
+     */
+    authorName: string;
     /** The ISO-8601 creation timestamp of the comment (`version.createdAt`). */
     createdAt: string;
     /** The comment's current version number (`version.number`), bumped when resolving. */
@@ -224,10 +231,13 @@ export interface CurrentUser {
 /**
  * ConfluenceClient wraps a Site's v2 REST API over an {@link HttpClient}. It is
  * constructed once per run with the credentials and issues authenticated GETs;
- * it holds no per-request state and never mutates its inputs.
+ * it holds no per-request state and never mutates its inputs. Its only state is
+ * the run's memo of comment authors' names, so each account is looked up once.
  */
 export class ConfluenceClient {
     private readonly auth: string;
+    /** Comment authors' names by account id, `""` when the lookup failed. */
+    private readonly authorNames = new Map<string, Promise<string>>();
 
     constructor(
         private readonly http: HttpClient,
@@ -274,6 +284,30 @@ export class ConfluenceClient {
             throw new Error(`connecting to ${host}: response has no accountId`);
         }
         return { accountId, displayName: asStr(o["displayName"]) };
+    }
+
+    /**
+     * fetchUserName returns the display name of the account `accountId`, or its
+     * public name when the Site gives no display name, or `""` when it gives
+     * neither. It throws on a non-2xx status (a missing user, or no permission
+     * to browse users) or an unparseable response.
+     */
+    async fetchUserName(accountId: string): Promise<string> {
+        const url =
+            `${this.cfg.host}${USER_BY_ID_ENDPOINT}` +
+            encodeURIComponent(accountId);
+        const resp = await this.get(url);
+        if (!ok(resp.status)) {
+            throw new Error(`user ${accountId}: HTTP ${resp.status}`);
+        }
+        let user: unknown;
+        try {
+            user = JSON.parse(responseText(resp));
+        } catch (err) {
+            throw new Error(`decoding user ${accountId}: ${message(err)}`);
+        }
+        const o = asObj(user);
+        return asStr(o["displayName"]) || asStr(o["publicName"]);
     }
 
     /**
@@ -552,6 +586,7 @@ export class ConfluenceClient {
      * comment's replies recursively via {@link fetchReplies}. Inline comments
      * carry the `markerRef` that ties them to a body `annotation` mark; footer
      * comments are page-level. A page with no comments yields two empty arrays.
+     * Every comment and reply carries its author's name ({@link nameAuthors}).
      */
     async fetchComments(pageId: string): Promise<PageComments> {
         const inlineBase =
@@ -564,7 +599,47 @@ export class ConfluenceClient {
             this.listComments(inlineBase, "inline"),
             this.listComments(footerBase, "footer"),
         ]);
+        await this.nameAuthors([...inline, ...footer]);
         return { inline, footer };
+    }
+
+    /**
+     * nameAuthors sets the {@link PageComment.authorName} of every comment in
+     * `comments` and in their reply threads. Each account is looked up once per
+     * client, concurrent lookups included. A failed lookup is not an error: the
+     * name stays `""`, the render shows the account id, and the account is not
+     * asked for again in this run.
+     */
+    private async nameAuthors(comments: PageComment[]): Promise<void> {
+        const all: PageComment[] = [];
+        const walk = (cs: PageComment[]): void => {
+            for (const c of cs) {
+                all.push(c);
+                walk(c.replies);
+            }
+        };
+        walk(comments);
+        await Promise.all(
+            all.map(async (c) => {
+                c.authorName = await this.authorName(c.authorId);
+            }),
+        );
+    }
+
+    /**
+     * authorName returns the memoized name of account `accountId`, `""` for an
+     * empty id or a failed lookup. It never throws.
+     */
+    private authorName(accountId: string): Promise<string> {
+        if (accountId === "") {
+            return Promise.resolve("");
+        }
+        let name = this.authorNames.get(accountId);
+        if (name === undefined) {
+            name = this.fetchUserName(accountId).catch(() => "");
+            this.authorNames.set(accountId, name);
+        }
+        return name;
     }
 
     /**
@@ -1184,6 +1259,7 @@ function parseComment(
             "inline-original-selection",
         ),
         authorId: asStr(version["authorId"]),
+        authorName: "",
         createdAt: asStr(version["createdAt"]),
         version: asInt(version["number"]),
         adf: asStr(asObj(asObj(o["body"])["atlas_doc_format"])["value"]),

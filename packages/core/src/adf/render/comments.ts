@@ -177,12 +177,13 @@ function calloutLines(
  * metaLine is the `[!comment]` tag line of a callout: the thread id, then the
  * author, timestamp, and (inline only) resolution, joined by ` · `. Empty fields
  * are omitted, so a reply — which carries no resolution — shows just id, author,
- * and date.
+ * and date. The author is the name when known, else the account id.
  */
 function metaLine(thread: CommentThread): string {
     const parts = [`id:${thread.id}`];
-    if (thread.authorId !== "") {
-        parts.push(`@${thread.authorId}`);
+    const author = oneLine(thread.authorName) || thread.authorId;
+    if (author !== "") {
+        parts.push(`@${author}`);
     }
     if (thread.createdAt !== "") {
         parts.push(thread.createdAt);
@@ -191,4 +192,12 @@ function metaLine(thread: CommentThread): string {
         parts.push(thread.resolution);
     }
     return `[!comment] ${parts.join(" · ")}`;
+}
+
+/**
+ * oneLine collapses every whitespace run in `s` (line breaks included) to one
+ * space and trims it, so a name cannot break the callout's tag line.
+ */
+function oneLine(s: string): string {
+    return s.replace(/\s+/g, " ").trim();
 }

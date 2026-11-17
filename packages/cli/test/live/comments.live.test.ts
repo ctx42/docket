@@ -51,6 +51,11 @@ describe.skipIf(!liveConfigured())("live comments", () => {
         expect(md).toContain(`[^cf-${c.markerRef}]`);
         expect(md).toContain("[!comment]");
         expect(md).toContain("Which devices exactly?");
+        // The author shows by name, looked up from the account id. The seeding
+        // account wrote the comment, so its name is the one to expect.
+        const me = await client.currentUser();
+        expect(me.displayName).not.toBe("");
+        expect(md).toContain(`· @${me.displayName} ·`);
     });
 
     it("pull: a footer comment renders in the trailing section", async () => {

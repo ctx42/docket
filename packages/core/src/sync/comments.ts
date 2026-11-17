@@ -66,6 +66,7 @@ function toThread(comment: PageComment): CommentThread {
         markerRef: comment.markerRef,
         resolution: comment.resolution,
         authorId: comment.authorId,
+        authorName: comment.authorName,
         createdAt: comment.createdAt,
         body: commentBody(comment.adf),
         replies: comment.replies.map(toThread),

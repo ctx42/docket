@@ -253,6 +253,7 @@ async function pulled(
         markerRef: "",
         anchorText: "",
         authorId: "u",
+        authorName: "",
         createdAt: "",
         version: c.version ?? 1,
         adf: commentJSON(c).body.atlas_doc_format.value,

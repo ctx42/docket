@@ -131,6 +131,75 @@ describe("currentUser", () => {
     });
 });
 
+describe("fetchUserName", () => {
+    const userURL = "https://ex.atlassian.net/wiki/rest/api/user?accountId=";
+
+    it("returns the display name of an account", async () => {
+        const stub = new StubHttpClient().on("GET", `${userURL}U1`, {
+            body: '{"accountId":"U1","displayName":"Jane Doe"}',
+        });
+
+        const have = await clientWith(stub).fetchUserName("U1");
+
+        expect(have).toBe("Jane Doe");
+        const req = stub.requests[0];
+        expect(req?.method).toBe("GET");
+        expect(req?.headers?.["Authorization"]).toBe(
+            basicAuth("a@ex.com", "secret"),
+        );
+    });
+
+    it("encodes the account id in the query", async () => {
+        const stub = new StubHttpClient().on(
+            "GET",
+            `${userURL}557058%3Aab%2Fc`,
+            { body: '{"displayName":"Jane Doe"}' },
+        );
+
+        const have = await clientWith(stub).fetchUserName("557058:ab/c");
+
+        expect(have).toBe("Jane Doe");
+    });
+
+    it("falls back to the public name", async () => {
+        const stub = new StubHttpClient().on("GET", `${userURL}U1`, {
+            body: '{"publicName":"jdoe"}',
+        });
+
+        const have = await clientWith(stub).fetchUserName("U1");
+
+        expect(have).toBe("jdoe");
+    });
+
+    it("returns an empty name when the Site hides both names", async () => {
+        const stub = new StubHttpClient().on("GET", `${userURL}U1`, {
+            body: '{"accountId":"U1"}',
+        });
+
+        const have = await clientWith(stub).fetchUserName("U1");
+
+        expect(have).toBe("");
+    });
+
+    it("rejects a non-2xx status", async () => {
+        const stub = new StubHttpClient().on("GET", `${userURL}U1`, {
+            status: 403,
+        });
+        await expect(clientWith(stub).fetchUserName("U1")).rejects.toThrow(
+            "user U1: HTTP 403",
+        );
+    });
+
+    it("rejects an invalid response", async () => {
+        const stub = new StubHttpClient().on("GET", `${userURL}U1`, {
+            body: "not json",
+        });
+        await expect(clientWith(stub).fetchUserName("U1")).rejects.toThrow(
+            "decoding user U1",
+        );
+    });
+});
+
 describe("fetchPage", () => {
     const pageURL =
         "https://ex.atlassian.net/wiki/api/v2/pages/123?body-format=atlas_doc_format";
@@ -705,6 +774,120 @@ describe("fetchComments", () => {
         const comments = await clientWith(stub).fetchComments("123");
 
         expect(comments.inline.map((c) => c.id)).toEqual(["C1", "C3"]);
+    });
+
+    describe("author names", () => {
+        const userURL =
+            "https://ex.atlassian.net/wiki/rest/api/user?accountId=";
+        /** A comment result by `author`, with no replies. */
+        const by = (id: string, author: string) => ({
+            id,
+            version: { authorId: author, createdAt: "" },
+            body: body(id),
+        });
+        /** A stub whose page has inline C1 (reply C2) and footer F1. */
+        const thread = (): StubHttpClient =>
+            new StubHttpClient()
+                .on("GET", inlineBase, {
+                    body: JSON.stringify({
+                        results: [by("C1", "U1")],
+                        _links: {},
+                    }),
+                })
+                .on("GET", `${v2}/inline-comments/C1/children${adf}`, {
+                    body: JSON.stringify({
+                        results: [by("C2", "U2")],
+                        _links: {},
+                    }),
+                })
+                .on(
+                    "GET",
+                    `${v2}/inline-comments/C2/children${adf}`,
+                    noChildren,
+                )
+                .on("GET", footerBase, {
+                    body: JSON.stringify({
+                        results: [by("F1", "U1")],
+                        _links: {},
+                    }),
+                })
+                .on(
+                    "GET",
+                    `${v2}/footer-comments/F1/children${adf}`,
+                    noChildren,
+                );
+        /** The user lookups `stub` received. */
+        const lookups = (stub: StubHttpClient): string[] =>
+            stub.requests
+                .map((r) => r.url)
+                .filter((u) => u.startsWith(userURL));
+
+        it("names every author, replies included, looking each up once", async () => {
+            const stub = thread()
+                .on("GET", `${userURL}U1`, { body: '{"displayName":"Ann"}' })
+                .on("GET", `${userURL}U2`, { body: '{"displayName":"Bob"}' });
+
+            const comments = await clientWith(stub).fetchComments("123");
+
+            expect(comments.inline[0]?.authorName).toBe("Ann");
+            expect(comments.inline[0]?.replies[0]?.authorName).toBe("Bob");
+            expect(comments.footer[0]?.authorName).toBe("Ann");
+            expect(lookups(stub).sort()).toEqual([
+                `${userURL}U1`,
+                `${userURL}U2`,
+            ]);
+        });
+
+        it("reuses a looked-up name across pages", async () => {
+            const stub = thread()
+                .on("GET", `${userURL}U1`, { body: '{"displayName":"Ann"}' })
+                .on("GET", `${userURL}U2`, { body: '{"displayName":"Bob"}' });
+            const client = clientWith(stub);
+
+            await client.fetchComments("123");
+            const comments = await client.fetchComments("123");
+
+            expect(comments.inline[0]?.authorName).toBe("Ann");
+            expect(lookups(stub)).toHaveLength(2);
+        });
+
+        it("leaves the name empty when the lookup fails, and does not retry", async () => {
+            const stub = thread()
+                .on("GET", `${userURL}U1`, { status: 403 })
+                .on("GET", `${userURL}U2`, { body: '{"displayName":"Bob"}' });
+            const client = clientWith(stub);
+
+            await client.fetchComments("123");
+            const comments = await client.fetchComments("123");
+
+            expect(comments.inline[0]?.authorName).toBe("");
+            expect(comments.inline[0]?.authorId).toBe("U1");
+            expect(comments.inline[0]?.replies[0]?.authorName).toBe("Bob");
+            expect(lookups(stub)).toHaveLength(2);
+        });
+
+        it("looks nothing up for a comment with no author", async () => {
+            const stub = thread();
+            stub.on("GET", inlineBase, {
+                body: JSON.stringify({
+                    results: [{ id: "C9", body: body("x") }],
+                    _links: {},
+                }),
+            })
+                .on(
+                    "GET",
+                    `${v2}/inline-comments/C9/children${adf}`,
+                    noChildren,
+                )
+                .on("GET", footerBase, {
+                    body: JSON.stringify({ results: [], _links: {} }),
+                });
+
+            const comments = await clientWith(stub).fetchComments("123");
+
+            expect(comments.inline[0]?.authorName).toBe("");
+            expect(lookups(stub)).toEqual([]);
+        });
     });
 
     it("rejects a non-2xx status", async () => {

@@ -564,7 +564,9 @@ alongside the body:
 - An **inline comment** appends a `[^cf-<id>]` footnote anchor after the run of
   text it annotates, and a `> [!comment]` callout after that block. The callout's
   first line carries the thread's id, author, date, and resolution; replies nest
-  as deeper callouts.
+  as deeper callouts. The author shows as a display name; when Confluence does
+  not give the name (the account may not browse users, or the profile hides
+  it), the account id shows instead.
 - **Footer comments** (page-level) collect in a trailing `## Comments` section.
 - The pull mirrors what Confluence shows on the page, so it **omits** two kinds of
   comment Confluence itself hides: **resolved** inline comments (once a thread is

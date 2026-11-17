@@ -64,8 +64,10 @@ export interface CommentThread {
     markerRef: string;
     /** The inline comment's resolution (`open`/`resolved`/…); `""` for a footer comment or a reply. */
     resolution: string;
-    /** The comment author's account id, shown as `@<authorId>`. */
+    /** The comment author's account id, shown as `@<authorId>` when no name is known. */
     authorId: string;
+    /** The comment author's display name, shown as `@<authorName>`; `""` when unknown. */
+    authorName: string;
     /** The ISO-8601 creation timestamp, shown on the metadata line. */
     createdAt: string;
     /** The comment body as ADF block nodes, rendered through the normal block dispatch. */
