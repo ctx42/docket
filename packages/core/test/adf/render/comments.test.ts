@@ -124,6 +124,56 @@ describe("comment decoration", () => {
         );
     });
 
+    it("separates sibling replies so each stays its own callout", () => {
+        /** reply builds a reply by `who` with `replies`. */
+        const reply = (
+            id: string,
+            who: string,
+            replies: CommentThread[] = [],
+        ): CommentThread => ({
+            id,
+            markerRef: "",
+            resolution: "",
+            authorId: who,
+            authorName: "",
+            createdAt: "",
+            body: para(`from ${who}`),
+            replies,
+        });
+        const footer: CommentThread = {
+            ...reply("F1", "ann", [
+                reply("F2", "bob", [reply("F4", "dan"), reply("F5", "eve")]),
+                reply("F3", "cid"),
+            ]),
+        };
+        const comments: RenderComments = {
+            byMarker: new Map(),
+            trailing: [footer],
+        };
+
+        const have = body(doc, comments);
+
+        expect(have.slice(have.indexOf("> [!comment]"))).toBe(
+            [
+                "> [!comment] id:F1 · @ann",
+                "> from ann",
+                "> > [!comment] id:F2 · @bob",
+                "> > from bob",
+                "> > > [!comment] id:F4 · @dan",
+                "> > > from dan",
+                "> >",
+                "> > > [!comment] id:F5 · @eve",
+                "> > > from eve",
+                ">",
+                "> > [!comment] id:F3 · @cid",
+                "> > from cid",
+            ].join("\n"),
+        );
+        expect(stripCommentDecorations(have)).toBe(
+            body(doc, { byMarker: new Map(), trailing: [] }),
+        );
+    });
+
     describe("author", () => {
         /** The callout tag line of a footer thread by `authorId`/`authorName`. */
         const tagLine = (authorId: string, authorName: string): string => {

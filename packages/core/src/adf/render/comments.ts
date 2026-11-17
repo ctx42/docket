@@ -150,8 +150,10 @@ export function annotationIdsIn(node: Node): string[] {
  * carrying the `> ` blockquote prefix repeated `depth + 1` times so a reply nests
  * inside its parent. The metadata line leads, the comment body (rendered through
  * the normal block dispatch) follows, and each reply is drawn recursively one
- * level deeper. Every line stays `>`-prefixed — no bare blank line — so the whole
- * thread is one contiguous blockquote the strip step can drop as a unit.
+ * level deeper. A bare `>` line at this depth separates sibling replies;
+ * without it the second reply's tag line would continue the first reply's
+ * callout as text. Every line stays `>`-prefixed — no bare blank line — so the
+ * whole thread is one contiguous blockquote the strip step can drop as a unit.
  */
 function calloutLines(
     thread: CommentThread,
@@ -167,9 +169,12 @@ function calloutLines(
             lines.push(ln === "" ? bare : prefix + ln);
         }
     }
-    for (const reply of thread.replies) {
+    thread.replies.forEach((reply, i) => {
+        if (i > 0) {
+            lines.push(bare);
+        }
         lines.push(...calloutLines(reply, ctx, depth + 1));
-    }
+    });
     return lines;
 }
 
