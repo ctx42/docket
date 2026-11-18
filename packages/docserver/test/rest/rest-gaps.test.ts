@@ -812,6 +812,26 @@ describe("PUT /gaps/{id}", () => {
         expect(stored[0]?.asked).toBe("2026-10-04");
     });
 
+    it("adds ask names", async () => {
+        // --- Given ---
+        const { store } = newStore();
+        const rest = await newRest({ store });
+        const id = await store.append({ ...TEST_GAP, ask: ["Anna M"] });
+
+        // --- When ---
+        const have = await send(
+            rest,
+            "PUT",
+            `/gaps/${id}`,
+            '{"add_ask":["Bob"]}',
+        );
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        const stored = await store.list({});
+        expect(stored[0]?.ask).toEqual(["Anna M", "Bob"]);
+    });
+
     // go: Test_server_updateGap_error_asked
     it("refuses an asked value that is not a date", async () => {
         // --- Given ---

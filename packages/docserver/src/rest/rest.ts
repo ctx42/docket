@@ -433,6 +433,7 @@ export const UPDATE: RequestSchema = {
         srd_ref: "*string",
         answer: "*string",
         ask: "*[]string",
+        add_ask: "*[]string",
         asked: "*string",
         add_hit: "bool",
     },

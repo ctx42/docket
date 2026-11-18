@@ -613,7 +613,7 @@
       }
     },
     {
-      "description": "Change fields of a draft or open gap. Only the fields given change, so edits made to the gap file by hand survive; add_hit counts one more encounter of the gap in SRD work. ask replaces the names of the people who can answer; asked records the date (YYYY-MM-DD) the questions were sent, an empty string clears it. Filled and wontfix gaps cannot be edited; they keep ask and asked as history.",
+      "description": "Change fields of a draft or open gap. Only the fields given change, so edits made to the gap file by hand survive; add_hit counts one more encounter of the gap in SRD work. ask replaces the names of the people who can answer and add_ask adds to them; asked records the date (YYYY-MM-DD) the questions were sent, an empty string clears it. Filled and wontfix gaps cannot be edited; they keep ask and asked as history.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -673,6 +673,13 @@
               "type": "string"
             },
             "description": "names of the people who can answer the gap's question; replaces the list, empty clears it"
+          },
+          "add_ask": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "string"
+            },
+            "description": "names to add to the ones the gap holds (after ask, when both are given); a name already there, ignoring case, is not added again"
           },
           "asked": {
             "type": ["null", "string"],

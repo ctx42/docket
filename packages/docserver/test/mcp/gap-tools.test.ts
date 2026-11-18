@@ -587,6 +587,24 @@ describe("update_gap", () => {
         expect(gap?.hits).toBe(2);
     });
 
+    it("adds ask names", async () => {
+        // --- Given ---
+        const { store } = newStore();
+        const id = await store.append({ ...TEST_GAP, ask: ["Anna M"] });
+        const client = await connectStore(store);
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "update_gap",
+            arguments: { gap_id: id, add_ask: ["Bob"] },
+        });
+
+        // --- Then ---
+        expect(contentText(res)).toBe('{"ok":true}');
+        const [gap] = await store.list({});
+        expect(gap?.ask).toEqual(["Anna M", "Bob"]);
+    });
+
     // go: Test_gapTools_update_ask_and_asked
     it("sets ask and asked", async () => {
         // --- Given ---

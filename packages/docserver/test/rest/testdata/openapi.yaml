@@ -1057,6 +1057,14 @@ components:
           description: >
             Replaces the names of the people who can answer the gap's
             question; an empty list clears them.
+        add_ask:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: >
+            Names to add to the ones the gap holds, after ask when both are
+            given; a name already there, ignoring case, is not added again.
         asked:
           type: string
           description: >

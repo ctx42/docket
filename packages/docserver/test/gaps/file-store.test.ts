@@ -1549,6 +1549,57 @@ async function moveToClosed(mfs: MemDocFs, name: string): Promise<void> {
 }
 
 describe("FileStore.update", () => {
+    it("adds ask names to the ones the gap holds", async () => {
+        // --- Given ---
+        const { fst } = newStore();
+        const id = await fst.append({ ...AUTHORED, ask: ["Anna M"] });
+
+        // --- When ---
+        await fst.update(id, { addAsk: ["anna m", " Bob "] });
+
+        // --- Then ---
+        const [gap] = await fst.list({});
+        expect(gap?.ask).toEqual(["Anna M", "Bob"]);
+    });
+
+    it("adds ask names after the ask a patch sets", async () => {
+        // --- Given ---
+        const { fst } = newStore();
+        const id = await fst.append({ ...AUTHORED, ask: ["Anna M"] });
+
+        // --- When ---
+        await fst.update(id, { ask: ["Cy"], addAsk: ["Bob"] });
+
+        // --- Then ---
+        const [gap] = await fst.list({});
+        expect(gap?.ask).toEqual(["Cy", "Bob"]);
+    });
+
+    it("refuses a blank ask name to add", async () => {
+        // --- Given ---
+        const { fst } = newStore();
+        const id = await fst.append(AUTHORED);
+
+        // --- When ---
+        const err = await caught(() => fst.update(id, { addAsk: [" "] }));
+
+        // --- Then ---
+        expect(isGapError(err, EC_INVALID)).toBe(true);
+        expect(err.message).toContain("blank ask name");
+    });
+
+    it("refuses a patch that only adds no ask names", async () => {
+        // --- Given ---
+        const { fst } = newStore();
+        const id = await fst.append(AUTHORED);
+
+        // --- When ---
+        const err = await caught(() => fst.update(id, { addAsk: [] }));
+
+        // --- Then ---
+        expect(err.message).toContain("nothing to update");
+    });
+
     // go: Test_FileStore_Update
     it("applies every patch field", async () => {
         // --- Given ---

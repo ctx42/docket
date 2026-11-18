@@ -267,6 +267,11 @@ export interface Patch {
     kind?: string;
     answer?: string;
     ask?: string[];
+    /**
+     * addAsk adds names to ask: to the gap's names, or to the ones ask sets;
+     * a name already there, ignoring case, is not added again.
+     */
+    addAsk?: string[];
     asked?: string;
     srdRef?: string;
     docID?: string;
@@ -283,7 +288,10 @@ export interface Patch {
 /** validatePatch reports a field the gap cannot store, or an empty patch. */
 export function validatePatch(pch: Patch): void {
     const fields = Object.entries(pch).filter(
-        ([k, v]) => v !== undefined && !(k === "addHit" && v === false),
+        ([k, v]) =>
+            v !== undefined &&
+            !(k === "addHit" && v === false) &&
+            !(k === "addAsk" && (v as string[]).length === 0),
     );
     if (fields.length === 0) throw invalid("nothing to update");
     if (pch.kind !== undefined && !validKind(pch.kind))
@@ -292,6 +300,7 @@ export function validatePatch(pch: Patch): void {
         throw invalid(`unknown answer ${goQuote(pch.answer)}`);
     }
     if (pch.ask !== undefined) checkAsk(pch.ask);
+    if (pch.addAsk !== undefined) checkAsk(pch.addAsk);
     if (pch.asked !== undefined) checkAsked(pch.asked);
     if (pch.topic !== undefined) checkTopic(pch.topic);
     if (pch.demand !== undefined) checkRequired("demand", pch.demand);

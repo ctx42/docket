@@ -413,6 +413,7 @@ const UPDATE_FIELDS: readonly [string, keyof Patch][] = [
     ["kind", "kind"],
     ["answer", "answer"],
     ["ask", "ask"],
+    ["add_ask", "addAsk"],
     ["asked", "asked"],
     ["srd_ref", "srdRef"],
     ["doc_id", "docID"],

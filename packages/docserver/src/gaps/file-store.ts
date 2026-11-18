@@ -898,8 +898,11 @@ export function applyPatch(gfl: GapFile, pch: Patch, docID: string): void {
     const fm = gfl.meta;
     if (pch.kind !== undefined) setKey(fm, KEY.kind, strNode(pch.kind));
     if (pch.answer !== undefined) setKey(fm, KEY.answer, strNode(pch.answer));
-    if (pch.ask !== undefined)
-        setKey(fm, KEY.ask, listNode(uniqueFold(pch.ask)));
+    if (pch.ask !== undefined || (pch.addAsk ?? []).length > 0) {
+        const base = pch.ask ?? gfl.gap.ask;
+        const ask = uniqueFold([...base, ...(pch.addAsk ?? [])]);
+        setKey(fm, KEY.ask, listNode(ask));
+    }
     if (pch.asked !== undefined) setKey(fm, KEY.asked, dateNode(pch.asked));
     if (pch.srdRef !== undefined) setKey(fm, KEY.srdRef, strNode(pch.srdRef));
     if (pch.docID !== undefined) setKey(fm, KEY.docID, strNode(docID));
