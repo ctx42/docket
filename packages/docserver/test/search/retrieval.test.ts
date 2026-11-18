@@ -253,6 +253,25 @@ describe("BM25", () => {
         expect(have).toHaveLength(2);
     });
 
+    it("keeps only a folder's results, before the k cut", async () => {
+        const have = await new BM25(corpusDocs()).search({
+            text: "book",
+            k: 1,
+            folder: "shop/guides",
+        });
+
+        expect(have.map((r) => r.docPath)).toEqual(["shop/guides/intro.md"]);
+    });
+
+    it("matches a folder by whole path segments", async () => {
+        const have = await new BM25(corpusDocs()).search({
+            text: "book",
+            folder: "shop/cat",
+        });
+
+        expect(have).toEqual([]);
+    });
+
     // go: Test_BM25_Search_nonpositive_K_returns_all_matches
     it("uses the default k for a non-positive k", async () => {
         const have = await new BM25(corpusDocs()).search({

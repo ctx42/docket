@@ -111,6 +111,21 @@ describe("GET /search", () => {
         expect(have.body).toBe(goldy("search.golden"));
     });
 
+    it("keeps only the sections of a folder", async () => {
+        // --- Given ---
+        const { rest } = await newRest();
+
+        // --- When ---
+        const have = await get(rest, "/search?q=shop&folder=shop%2Fcatalog");
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        const body = JSON.parse(have.body) as { results: { path: string }[] };
+        expect(body.results.map((r) => r.path)).toEqual([
+            "shop/catalog/epub.md",
+        ]);
+    });
+
     // go: Test_server_search_carries_rank
     it("carries the trust rank", async () => {
         // --- Given ---
@@ -167,6 +182,19 @@ describe("GET /docs", () => {
         // --- Then ---
         expect(have.status).toBe(200);
         expect(have.body).toBe(goldy("docs.golden"));
+    });
+
+    it("lists only the documents of a folder", async () => {
+        // --- Given ---
+        const { rest } = await newRest();
+
+        // --- When ---
+        const have = await get(rest, "/docs?folder=shop/catalog");
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        const body = JSON.parse(have.body) as { docs: { path: string }[] };
+        expect(body.docs.map((d) => d.path)).toEqual(["shop/catalog/epub.md"]);
     });
 
     // go: Test_server_docs_carries_rank

@@ -56,6 +56,15 @@ paths:
             minimum: 1
             maximum: 100
             default: 10
+        - name: folder
+          in: query
+          required: false
+          description: >
+            Keep only the sections of documents under this folder, a corpus
+            path such as kb, matched by whole segments; omit to search the
+            whole corpus.
+          schema:
+            type: string
       responses:
         "200":
           description: Ranked sections, best match first.
@@ -76,6 +85,15 @@ paths:
         Returns the identity, path, trust rank, and title of every indexed
         document, sorted by path. Mirrors the MCP list_docs tool.
       operationId: listDocs
+      parameters:
+        - name: folder
+          in: query
+          required: false
+          description: >
+            Keep only the documents under this folder, a corpus path such as
+            kb, matched by whole segments; omit to list every document.
+          schema:
+            type: string
       responses:
         "200":
           description: The corpus inventory.

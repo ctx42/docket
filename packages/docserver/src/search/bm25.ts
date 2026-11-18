@@ -57,6 +57,11 @@ export interface SearchOptions {
     /** size caps the hits returned; Infinity returns all. */
     size: number;
     sort: readonly SortKey[];
+    /**
+     * keep, when set, drops the documents whose id it rejects before the
+     * size cut; scores still count the whole index.
+     */
+    keep?: ((id: string) => boolean) | undefined;
 }
 
 /** Hit is a scored document. */
@@ -148,6 +153,8 @@ export class Bm25Index {
         }
         const hits: { num: number; score: number }[] = [];
         for (const num of candidates) {
+            if (opts.keep && !opts.keep((this.docs[num] as IndexDoc).id))
+                continue;
             let outerSum = 0;
             let outerMatched = 0;
             for (const c of outer) {

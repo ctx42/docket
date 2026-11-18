@@ -26,6 +26,7 @@ import {
     type Retriever,
 } from "../search/retrieval.ts";
 import { Mutex } from "../util/mutex.ts";
+import { cleanFolder, inFolder, under } from "../util/paths.ts";
 
 /** EC_DOC_NOT_FOUND is the stable code of {@link NotFoundError}. */
 export const EC_DOC_NOT_FOUND = "ECDocNotFound";
@@ -104,14 +105,7 @@ export function rank(rnk: Ranking, path: string): number {
     return best;
 }
 
-/**
- * under reports whether a document path lies under prefix pfx, comparing
- * whole path segments; an empty pfx covers nothing.
- */
-export function under(path: string, pfx: string): boolean {
-    if (pfx === "") return false;
-    return path === pfx || path.startsWith(`${pfx}/`);
-}
+export { under };
 
 /** DocInfo identifies one ingested document in a corpus listing. */
 export interface DocInfo {
@@ -280,9 +274,13 @@ export class Engine {
         return under(path, this.opts.ranking?.unranked ?? "");
     }
 
-    /** listDocs returns every document sorted by path; do not modify it. */
-    listDocs(): readonly DocInfo[] {
-        return this.snap.list;
+    /**
+     * listDocs returns the documents sorted by path, only those under folder
+     * when it names one ({@link inFolder}); do not modify the result.
+     */
+    listDocs(folder = ""): readonly DocInfo[] {
+        if (cleanFolder(folder) === "") return this.snap.list;
+        return this.snap.list.filter((doc) => inFolder(doc.path, folder));
     }
 
     /**

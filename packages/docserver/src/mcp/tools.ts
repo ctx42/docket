@@ -135,7 +135,9 @@ export class Tools {
         );
         this.handlers.set("search", (a) => this.search(a));
         this.handlers.set("get_doc", (a) => this.getDoc(a));
-        this.handlers.set("list_docs", async () => this.listDocs());
+        this.handlers.set("list_docs", async (a) =>
+            this.listDocs(str(a, "folder")),
+        );
         if (deps.glossary !== undefined) {
             const gls = deps.glossary;
             this.handlers.set("glossary_terms", async (a) => ({
@@ -243,7 +245,11 @@ export class Tools {
         const k = (a["k"] as number | undefined) ?? 0;
         if (k < 0 || k > MAX_K)
             throw new ToolError(`k must be between 1 and ${MAX_K}`);
-        const hits = await this.deps.engine.search({ text: query, k });
+        const hits = await this.deps.engine.search({
+            text: query,
+            k,
+            folder: str(a, "folder"),
+        });
         return {
             results: hits.map((hit) => ({
                 title: hit.title,
@@ -271,9 +277,9 @@ export class Tools {
         };
     }
 
-    private listDocs() {
+    private listDocs(folder: string) {
         return {
-            docs: this.deps.engine.listDocs().map((doc) => ({
+            docs: this.deps.engine.listDocs(folder).map((doc) => ({
                 id: doc.id,
                 path: doc.path,
                 rank: omitZero(doc.rank),

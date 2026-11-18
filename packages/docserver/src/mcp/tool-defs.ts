@@ -202,9 +202,16 @@ export const TOOL_DEFS: readonly ToolDef[] = [
     },
     {
         description:
-            "List the id, path, trust rank, and title of every document in the corpus.",
+            "List the id, path, trust rank, and title of every document in the corpus, or of one folder.",
         inputSchema: {
             type: "object",
+            properties: {
+                folder: {
+                    type: "string",
+                    description:
+                        "keep only the documents under this folder, a corpus path such as kb or conflu/srd matched by whole segments; omit for every document",
+                },
+            },
             additionalProperties: false,
         },
         name: "list_docs",
@@ -571,6 +578,11 @@ export const TOOL_DEFS: readonly ToolDef[] = [
                     type: "integer",
                     description:
                         "maximum number of results, 1 to 100; omit for 10",
+                },
+                folder: {
+                    type: "string",
+                    description:
+                        "keep only the sections of documents under this folder, a corpus path such as kb or conflu/srd matched by whole segments; omit for the whole corpus",
                 },
             },
             required: ["query"],

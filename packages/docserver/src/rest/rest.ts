@@ -94,7 +94,7 @@ export class Rest {
         this.logErr = deps.logErr ?? (() => {});
         this.add("GET", "/healthz", () => this.healthz());
         this.add("GET", "/search", (r) => this.search(r));
-        this.add("GET", "/docs", () => this.docs());
+        this.add("GET", "/docs", (r) => this.docs(r));
         this.add("GET", "/docs/{id...}", (r) => this.doc(r));
         this.add("GET", "/openapi.yaml", () => ({
             status: 200,
@@ -200,7 +200,11 @@ export class Rest {
         }
         let hits: Awaited<ReturnType<ToolDeps["engine"]["search"]>>;
         try {
-            hits = await this.deps.engine.search({ text: query, k });
+            hits = await this.deps.engine.search({
+                text: query,
+                k,
+                folder: r.values.get("folder"),
+            });
         } catch (err) {
             return this.internal(err);
         }
@@ -219,14 +223,16 @@ export class Rest {
         });
     }
 
-    private docs(): RestResponse {
+    private docs(r: Matched): RestResponse {
         return json(200, {
-            docs: this.deps.engine.listDocs().map((doc) => ({
-                id: doc.id,
-                path: doc.path,
-                rank: omitZero(doc.rank),
-                title: doc.title,
-            })),
+            docs: this.deps.engine
+                .listDocs(r.values.get("folder"))
+                .map((doc) => ({
+                    id: doc.id,
+                    path: doc.path,
+                    rank: omitZero(doc.rank),
+                    title: doc.title,
+                })),
         });
     }
 

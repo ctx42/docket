@@ -205,6 +205,26 @@ describe("search", () => {
         expect(contentText(res)).toContain(want);
     });
 
+    it("keeps only the sections of a folder", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const inside = await client.callTool({
+            name: "search",
+            arguments: { query: "EPUB", folder: "shop/catalog" },
+        });
+        const outside = await client.callTool({
+            name: "search",
+            arguments: { query: "EPUB", folder: "shop/guides" },
+        });
+
+        // --- Then ---
+        expect(decode<{ results: Section[] }>(inside).results).toHaveLength(1);
+        expect(decode<{ results: Section[] }>(outside).results).toEqual([]);
+    });
+
     // go: Test_tools_search_carries_identity_and_path
     it("carries the identity and path", async () => {
         // --- Given ---
@@ -385,6 +405,21 @@ describe("list_docs", () => {
                 },
             ],
         });
+    });
+
+    it("lists only the documents of a folder", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "list_docs",
+            arguments: { folder: "shop/guides" },
+        });
+
+        // --- Then ---
+        expect(decode(res)).toEqual({ docs: [] });
     });
 
     // go: Test_tools_listDocs_carries_identity_and_path

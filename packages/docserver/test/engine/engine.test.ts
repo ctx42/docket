@@ -126,6 +126,17 @@ describe("Engine.create", () => {
         expect(have.listDocs()).toEqual(want);
     });
 
+    it("lists the documents of one folder", async () => {
+        const fs = new MemDocFs()
+            .writeFile("/d/a.md", "---\ntitle: A\n---\n")
+            .writeFile("/d/sub/b.md", "---\ntitle: B\n---\n");
+        const have = await create(fs, [{ name: "docs", dir: "/d" }]);
+
+        expect(have.listDocs("docs/sub/").map((d) => d.path)).toEqual([
+            "docs/sub/b.md",
+        ]);
+    });
+
     // go: Test_New_skips_non_regular_files
     it("skips a dangling symlink", async () => {
         const fs = new MemDocFs()

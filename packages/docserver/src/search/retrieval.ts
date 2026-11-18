@@ -8,6 +8,7 @@
 // (document path, start line).
 
 import type { Chunk, Doc } from "../corpus/corpus.ts";
+import { cleanFolder, inFolder } from "../util/paths.ts";
 import { Bm25Index } from "./bm25.ts";
 
 /** MAX_K is the largest result count a caller may request. */
@@ -21,6 +22,11 @@ export interface Query {
     text: string;
     /** k caps the results; a non-positive k uses {@link DEFAULT_K}. */
     k?: number;
+    /**
+     * folder keeps only the sections of documents under it, before the k
+     * cut ({@link inFolder}); omitted or "" keeps all.
+     */
+    folder?: string;
 }
 
 /** Result is one ranked chunk with the citation data callers need. */
@@ -118,7 +124,7 @@ export class BM25 implements Retriever {
                 { field: FIELD_TITLE, text: qry.text, boost: BOOST_TITLE },
                 { field: FIELD_HEADING, text: qry.text, boost: BOOST_HEADING },
             ],
-            { size: k, sort: SORT },
+            { size: k, sort: SORT, keep: this.keep(qry.folder ?? "") },
         );
         const out: Result[] = [];
         for (const hit of hits) {
@@ -126,6 +132,15 @@ export class BM25 implements Retriever {
             if (r !== undefined) out.push({ ...r, score: hit.score, rank: 0 });
         }
         return out;
+    }
+
+    /**
+     * keep returns the filter of the index ids whose document lies under
+     * folder, or undefined to keep every id when folder names none.
+     */
+    private keep(folder: string): ((id: string) => boolean) | undefined {
+        if (cleanFolder(folder) === "") return undefined;
+        return (id) => inFolder(this.results.get(id)?.docPath ?? "", folder);
     }
 
     /** close releases the index; a no-op kept for the Go contract. */
