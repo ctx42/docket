@@ -11,6 +11,7 @@ import { runtimeDirs } from "../../src/runtime-dirs.ts";
 import {
     applyStatus,
     markNever,
+    pagePreflight,
     preflight,
     pullNotes,
     pullVault,
@@ -129,6 +130,29 @@ describe("operations", () => {
         const have = await preflight(rt, { kind: "folder", path: "wiki" });
 
         expect(have.map((e) => e.dest)).toEqual(["wiki/A.md"]);
+    });
+
+    it("pagePreflight classifies notes in order, unmanaged ones as skip", async () => {
+        const fs = new MemFS();
+        await fs.write("wiki/A.md", note("1", 3));
+        const http = new QueueHttpClient().rsp(200, versionsJson("1", 9));
+        const rt = await runtime(http, fs);
+        await fs.write(`${rt.dirs.cacheDir}/wiki/A.v3.md`, note("1", 3));
+
+        const have = await pagePreflight(rt, ["wiki/A.md", "not/managed.md"]);
+
+        expect(have.map((e) => [e.dest, e.cls])).toEqual([
+            ["wiki/A.md", "remote-moved"],
+            ["not/managed.md", "skip"],
+        ]);
+    });
+
+    it("pagePreflight fails when Confluence cannot be reached", async () => {
+        const fs = new MemFS();
+        await fs.write("wiki/A.md", note("1", 3));
+        const rt = await runtime(new QueueHttpClient().rsp(500, "down"), fs);
+
+        await expect(pagePreflight(rt, ["wiki/A.md"])).rejects.toThrow();
     });
 
     it("pullNotes collects a failing note and goes on", async () => {

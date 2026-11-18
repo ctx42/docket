@@ -162,6 +162,20 @@ export async function preflight(
     return pushPreflight(await preflightDeps(rt), dests, cache);
 }
 
+/**
+ * pagePreflight classifies the vault notes `dests` against their remote
+ * versions, in order; a note docket does not manage is skip. It throws when
+ * Confluence cannot be reached, so no note reads as current by mistake.
+ */
+export async function pagePreflight(
+    rt: PluginRuntime,
+    dests: string[],
+): Promise<PreflightEntry[]> {
+    return pushPreflight(await preflightDeps(rt), dests, undefined, {
+        strict: true,
+    });
+}
+
 /** VaultStatus is a status report and the remote body of each changed note. */
 export interface VaultStatus {
     report: StatusReport;

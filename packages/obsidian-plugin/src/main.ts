@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 
 import { hostname } from "node:os";
-import { PACKAGE_NAME, posixJoin, syncFolder, threadOf } from "@docket/core";
+import {
+    PACKAGE_NAME,
+    type PreflightEntry,
+    posixJoin,
+    syncFolder,
+    threadOf,
+} from "@docket/core";
 import {
     addIcon,
     FileSystemAdapter,
@@ -40,7 +46,7 @@ import {
     replyButtonsPlugin,
     replyButtonsPostProcessor,
 } from "./render/reply-button.ts";
-import { resolveCacheRoot } from "./runtime.ts";
+import { buildRuntime, resolveCacheRoot } from "./runtime.ts";
 import { vaultBasePath } from "./settings/fields.ts";
 import { DEFAULT_SETTINGS, type docketSettings } from "./settings/model.ts";
 import {
@@ -86,7 +92,7 @@ import {
     noteLink,
     replyTarget,
 } from "./ui/note-actions.ts";
-import { toDest } from "./ui/operations.ts";
+import { pagePreflight, toDest } from "./ui/operations.ts";
 import { barText, statusCounts } from "./ui/summary.ts";
 import { docketView, VIEW_TYPE } from "./ui/view.ts";
 
@@ -131,6 +137,15 @@ export default class docketPlugin extends Plugin {
     mcpEnabled = false;
     /** The MCP doc server this device runs. */
     readonly mcp = new McpController(this);
+
+    /**
+     * pagePreflight classifies vault notes against Confluence for the doc
+     * server's page_status tool; it throws when the plugin is not connected.
+     */
+    pagePreflight(dests: string[]): Promise<PreflightEntry[]> {
+        const rt = buildRuntime(this.app, this.settings, this.token);
+        return pagePreflight(rt, dests);
+    }
     /** The vault and sync repositories: change lists, commits, history. */
     readonly repos = openRepos(this.app, {
         gitPath: () => this.gitPath,

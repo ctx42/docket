@@ -14,7 +14,8 @@
 // glue; the state machine and event filtering are in host.ts and
 // vault-notifier.ts.
 
-import { syncFolder } from "@docket/core";
+import { type PreflightEntry, syncFolder } from "@docket/core";
+import type { PageStatusFn } from "@docket/docserver";
 import { FsNotifier, NodeDocFs, run } from "@docket/docserver-node";
 import {
     FileSystemAdapter,
@@ -32,6 +33,7 @@ import {
 import { McpHost, type McpState, type RunRequest } from "./host.ts";
 import { withKeysSection } from "./keys-doc.ts";
 import { McpLog } from "./log.ts";
+import { pageStates } from "./pages.ts";
 import { type Assigned, assignPort, NODE_PORT_DEPS } from "./port.ts";
 import { ensureConfig } from "./starter.ts";
 import {
@@ -47,6 +49,11 @@ export interface McpPlugin extends Plugin {
     /** mcpEnabled is this device's switch. */
     mcpEnabled: boolean;
     settings: { syncRoot: string };
+    /**
+     * pagePreflight classifies vault notes against Confluence for the
+     * server's page_status tool; without it the tool is not offered.
+     */
+    pagePreflight?(dests: string[]): Promise<PreflightEntry[]>;
 }
 
 /** McpController runs the plugin's doc server; see the module comment. */
@@ -215,7 +222,22 @@ export class McpController {
             signal: req.signal,
             fs: new NodeDocFs(),
             newWatcher: this.watchers.factory,
+            ...this.pagesOption(base),
         });
+    }
+
+    /** pagesOption is the run's page port, when the plugin can preflight. */
+    private pagesOption(base: string): { pages?: PageStatusFn } {
+        const plugin = this.plugin;
+        if (plugin.pagePreflight === undefined) return {};
+        return {
+            pages: (files) =>
+                pageStates(files, {
+                    base,
+                    preflight: (dests) =>
+                        plugin.pagePreflight?.(dests) ?? Promise.resolve([]),
+                }),
+        };
     }
 
     /** moved tells the user and the log that the server took another port. */
