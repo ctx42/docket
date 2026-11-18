@@ -294,6 +294,27 @@ describe("get_doc", () => {
         expect(have.text).toContain("Readers download book data as EPUB.");
     });
 
+    it("returns one section for an id with an anchor", async () => {
+        // --- Given ---
+        const { engine } = await identityEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "get_doc",
+            arguments: { id: "doc-12#license-plan" },
+        });
+
+        // --- Then ---
+        expect(res.isError).toBeFalsy();
+        const have = decode<Section>(res);
+        expect(have.id).toBe("doc-12");
+        expect(have.text).toMatch(
+            /^## License Plan\n\nA contracted service tier\./,
+        );
+        expect(have.text).not.toContain("## Overview");
+    });
+
     // go: Test_tools_getDoc_by_id_or_path_tabular
     it.each([
         ["by id", "doc-12"],

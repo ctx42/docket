@@ -16,7 +16,8 @@ import {
     posixRel,
 } from "@docket/core";
 
-import { type Doc, Loader } from "../corpus/corpus.ts";
+import { type Doc, Loader, section } from "../corpus/corpus.ts";
+import { goQuote } from "../gocompat/strconv.ts";
 import { type DocFs, errorIs } from "../ports.ts";
 import { compareBytes } from "../search/bm25.ts";
 import {
@@ -38,8 +39,8 @@ export const EC_DOC_NOT_FOUND = "ECDocNotFound";
 export class NotFoundError extends Error {
     readonly code = EC_DOC_NOT_FOUND;
 
-    constructor(ref: string) {
-        super(`document not found: ${ref}`);
+    constructor(ref: string, message = `document not found: ${ref}`) {
+        super(message);
         this.name = "NotFoundError";
     }
 }
@@ -241,7 +242,14 @@ export class Engine {
      */
     async getDoc(ref: string): Promise<Document> {
         const dref = this.snap.docs.get(ref);
-        if (dref === undefined) throw new NotFoundError(ref);
+        if (dref === undefined) {
+            const at = ref.indexOf("#");
+            const ident = ref.slice(0, at);
+            if (at > 0 && this.snap.docs.has(ident)) {
+                return this.getSection(ident, ref.slice(at + 1));
+            }
+            throw new NotFoundError(ref);
+        }
         let text: string;
         try {
             text = await this.opts.fs.readText(dref.absPath);
@@ -258,6 +266,22 @@ export class Engine {
             sourceURL: dref.sourceURL,
             text,
         };
+    }
+
+    /**
+     * getSection returns the document ident names with its text cut to the
+     * section under the heading whose anchor is anchor, heading line
+     * included, up to the next heading of the same or a higher level. It
+     * throws {@link NotFoundError} when no heading has that anchor.
+     */
+    private async getSection(ident: string, anchor: string): Promise<Document> {
+        const doc = await this.getDoc(ident);
+        const sec = section(doc.text, anchor);
+        if (!sec.found) {
+            const why = `document ${goQuote(ident)} has no heading with anchor ${goQuote(anchor)}`;
+            throw new NotFoundError(`${ident}#${anchor}`, why);
+        }
+        return { ...doc, text: sec.text };
     }
 
     /**

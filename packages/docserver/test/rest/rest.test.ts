@@ -235,6 +235,26 @@ describe("GET /docs", () => {
 });
 
 describe("GET /docs/{id...}", () => {
+    it("returns one section for an id with an anchor", async () => {
+        // --- Given ---
+        const { rest, fs } = await newRest();
+        fs.writeFile(
+            "/c/intro.md",
+            "---\nid: intro-1\ntitle: Intro\n---\n\n## Hours\n\nNine to five.\n",
+        );
+
+        // --- When ---
+        const have = await get(rest, "/docs/intro-1%23hours");
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        const body = JSON.parse(have.body) as { id: string; text: string };
+        expect([body.id, body.text]).toEqual([
+            "intro-1",
+            "## Hours\n\nNine to five.\n",
+        ]);
+    });
+
     // go: Test_server_doc_routes_nested_id
     it("routes a nested id", async () => {
         // --- Given ---

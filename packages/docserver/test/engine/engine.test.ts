@@ -696,6 +696,40 @@ describe("Engine.getDoc", () => {
         });
     });
 
+    it("returns one section for an id with an anchor", async () => {
+        const content =
+            "---\nid: doc-12\ntitle: G\n---\n# G\n\nintro\n\n" +
+            "## Plans\n\nplan text\n\n### Detail\n\nmore\n\n## Other\n\nx\n";
+        const eng = await create(new MemDocFs().writeFile("/d/g.md", content), [
+            { name: "docs", dir: "/d" },
+        ]);
+
+        const byId = await eng.getDoc("doc-12#plans");
+        const byPath = await eng.getDoc("docs/g.md#plans");
+
+        expect([byId.id, byId.path, byId.title]).toEqual([
+            "doc-12",
+            "docs/g.md",
+            "G",
+        ]);
+        expect(byId.text).toBe("## Plans\n\nplan text\n\n### Detail\n\nmore\n");
+        expect(byPath.text).toBe(byId.text);
+    });
+
+    it("refuses an anchor the document lacks", async () => {
+        const eng = await create(
+            new MemDocFs().writeFile("/d/g.md", "# G\n\nbody\n"),
+            [{ name: "docs", dir: "/d" }],
+        );
+
+        const err = await eng.getDoc("docs/g.md#none").catch((e) => e);
+
+        expect(isDocNotFound(err)).toBe(true);
+        expect((err as Error).message).toBe(
+            'document "docs/g.md" has no heading with anchor "none"',
+        );
+    });
+
     // go: Test_Engine_GetDoc_by_id_or_path_tabular
     it.each([
         ["by id", "doc-12"],

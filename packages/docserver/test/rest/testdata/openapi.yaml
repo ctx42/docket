@@ -116,8 +116,9 @@ paths:
       summary: Get one whole document
       description: >
         Returns the complete source file for the given document identity or
-        current path, read from disk at request time. Mirrors the MCP get_doc
-        tool.
+        current path, read from disk at request time. An id followed by
+        #<anchor> (sent as %23) returns one section only: the heading with
+        that anchor and everything under it. Mirrors the MCP get_doc tool.
       operationId: getDoc
       parameters:
         - name: id

@@ -100,13 +100,14 @@ export const TOOL_DEFS: readonly ToolDef[] = [
     },
     {
         description:
-            "Return the whole document with the given id or path, for reading full tables or following links. Both come from search results and list_docs; store the id, which survives the document moving.",
+            "Return the whole document with the given id or path, for reading full tables or following links. Both come from search results and list_docs; store the id, which survives the document moving. Add #<anchor> to return one section only: the heading with that anchor and everything under it, up to the next heading of the same or a higher level.",
         inputSchema: {
             type: "object",
             properties: {
                 id: {
                     type: "string",
-                    description: "the document id or current path",
+                    description:
+                        "the document id or current path, optionally followed by #<anchor> for one section",
                 },
             },
             required: ["id"],
