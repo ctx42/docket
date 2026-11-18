@@ -65,6 +65,7 @@ import {
     confirmCreates,
     confirmOverwrite,
     confirmPublish,
+    confirmReplies,
     confirmStale,
 } from "./prompt.ts";
 import { newReporter } from "./reporter.ts";
@@ -423,6 +424,7 @@ function runCommand(
                 deps,
                 flags.page,
                 (cands) => confirmCreates(cands, promptOpts),
+                (items) => confirmReplies(items, promptOpts),
                 flags.force,
                 flags.dropComments,
             );
@@ -671,9 +673,11 @@ const COMMAND_USAGE: Record<ConfigCommand, string> = {
         "starts unticked: mark it create, leave it to be asked about next push,\n" +
         "or mark it never (writes docket_mode: ignore-push to its frontmatter).\n" +
         "Add --yes to create every new note without the list.\n" +
+        "With comments on, each > [!reply] draft under a comment is sent as a\n" +
+        "reply; a list asks which to send and which to hold for a later push.\n" +
         "\nFlags:\n" +
         FLAGS_COMMON +
-        "  --yes               Create new pages without asking.\n" +
+        "  --yes               Create new pages and send reply drafts without asking.\n" +
         "  --force             Repush pages whose ADF changed even if the Markdown did not.\n" +
         "  --drop-comments     Detach open inline comments an edit rewrote, not move them.\n",
     publish:

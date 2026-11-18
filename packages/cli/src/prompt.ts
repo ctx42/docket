@@ -14,6 +14,8 @@ import {
     type CreateInput,
     type PublishPlan,
     pageName,
+    type ReplyCandidate,
+    replyLabel,
     type StaleItem,
 } from "@docket/core";
 import { type KeySource, runSelect } from "./select.ts";
@@ -89,6 +91,61 @@ export async function confirmCreates(
         decided.set(c.dest, choice === "create");
     }
     return decided;
+}
+
+/** REPLY_OPTIONS are a reply draft's selector options, the default first. */
+const REPLY_OPTIONS = ["send", "hold"];
+
+/**
+ * confirmReplies decides which reply drafts a push keeps back, the hold map
+ * push's `Pusher` takes (dest → draft keys). A draft that cannot be sent is
+ * always held. It prints the drafts that can go, then sends them all with
+ * `--yes`, refuses to prompt without a terminal, or shows the selector with
+ * every draft at "send"; a draft set to "hold" stays in its note.
+ */
+export async function confirmReplies(
+    items: ReplyCandidate[],
+    opts: PromptOptions,
+): Promise<Map<string, Set<string>>> {
+    const hold = new Map<string, Set<string>>();
+    const keep = (r: ReplyCandidate): void => {
+        hold.set(r.dest, (hold.get(r.dest) ?? new Set()).add(r.key));
+    };
+    for (const r of items.filter((r) => r.mark !== "")) keep(r);
+    const sendable = items.filter((r) => r.mark === "");
+    if (sendable.length === 0) {
+        return hold;
+    }
+    const label = (r: ReplyCandidate): string =>
+        `${pageName(opts.syncRoot, r.dest)} — ${replyLabel(r)}`;
+    let summary = `docket: ${sendable.length} reply draft(s) to send:\n`;
+    for (const r of sendable) summary += `  ${label(r)}\n`;
+    opts.err(summary);
+
+    if (opts.yes) {
+        return hold;
+    }
+    if (!opts.isTTY) {
+        throw new Error(
+            "refusing to prompt without a terminal; re-run with --yes",
+        );
+    }
+    const rows = sendable.map((r) => ({
+        label: label(r),
+        options: REPLY_OPTIONS,
+    }));
+    let choices: number[];
+    try {
+        choices = await runSelect(rows, opts.keys(), opts.err);
+    } catch (err) {
+        throw err instanceof Error && err.message === "cancelled"
+            ? new Error("push cancelled")
+            : err;
+    }
+    for (const [i, r] of sendable.entries()) {
+        if (REPLY_OPTIONS[choices[i] ?? 0] === "hold") keep(r);
+    }
+    return hold;
 }
 
 /**

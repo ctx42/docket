@@ -12,6 +12,7 @@
 // Run: bun run --filter @docket/cli test:live
 
 import { readFile, writeFile } from "node:fs/promises";
+import { upsertDraft } from "@docket/core";
 import { describe, expect, it } from "vitest";
 import {
     seedFooterComment,
@@ -113,15 +114,10 @@ describe.skipIf(!liveConfigured())("live comments", () => {
         );
 
         let md = await readFile(seed.dest, "utf8");
-        // Edit prose that leaves the commented word "Devices" intact, and add a
-        // local reply callout. The push must apply the body edit but leave the
-        // comment — anchor, thread, and the would-be reply — entirely to
-        // Confluence: the comment must survive the update, not vanish.
+        // Edit prose that leaves the commented word "Devices" intact. The push
+        // must apply the body edit and leave the comment to Confluence: the
+        // comment must survive the update, not vanish.
         md = md.replace("lives here.", "lives right here.");
-        md = md.replace(
-            "> Which devices?",
-            "> Which devices?\n> > [!comment]\n> > A local reply.",
-        );
         await writeFile(seed.dest, md);
 
         const pushed = await seed.run(["push", "--config", seed.cfgPath]);
@@ -132,12 +128,73 @@ describe.skipIf(!liveConfigured())("live comments", () => {
         expect(docText(parseDoc(page.adf))).toContain("lives right here.");
 
         // The inline comment still exists, still anchored (never dangling), and
-        // no reply was written back — comments are Confluence-managed.
+        // the push wrote no reply.
         const remote = await client.fetchComments(seed.id);
         expect(remote.inline).toHaveLength(1);
         const top = remote.inline[0];
         expect(docText(parseDoc(top?.adf ?? ""))).toContain("Which devices?");
         expect(top?.resolution).not.toBe("dangling");
         expect(remote.inline.flatMap((t) => t.replies)).toHaveLength(0);
+    });
+
+    it("draft: a re-pull keeps a reply draft and a push sends it once", async () => {
+        const seed = await seedPage(
+            env,
+            client,
+            "cmt-draft",
+            PAGE_ADF,
+            "comments: true",
+        );
+        const c = await seedInlineComment(env, seed.id, "Devices", "Which?");
+        expect((await seed.run(["pull", "--config", seed.cfgPath])).code).toBe(
+            0,
+        );
+        const pulled = await readFile(seed.dest, "utf8");
+        await writeFile(
+            seed.dest,
+            upsertDraft(pulled, c.id, "Only the **T2** loggers."),
+        );
+
+        // A re-pull keeps the draft under its comment.
+        expect((await seed.run(["pull", "--config", seed.cfgPath])).code).toBe(
+            0,
+        );
+        expect(await readFile(seed.dest, "utf8")).toContain(
+            "> [!reply] draft\n> Only the **T2** loggers.",
+        );
+
+        const pushed = await seed.run([
+            "push",
+            "--yes",
+            "--config",
+            seed.cfgPath,
+        ]);
+        expect(pushed.code, pushed.err).toBe(0);
+        expect(pushed.out).toContain(`replied to comment id:${c.id}`);
+
+        // The reply is on Confluence once, and the draft left the note.
+        const remote = await client.fetchComments(seed.id);
+        const replies = remote.inline.flatMap((t) => t.replies);
+        expect(replies).toHaveLength(1);
+        expect(docText(parseDoc(replies[0]?.adf ?? ""))).toContain(
+            "Only the T2 loggers.",
+        );
+        const note = await readFile(seed.dest, "utf8");
+        expect(note).not.toContain("[!reply]");
+        expect(note).toContain("Only the **T2** loggers.");
+
+        // A second push has nothing to send.
+        const again = await seed.run([
+            "push",
+            "--yes",
+            "--config",
+            seed.cfgPath,
+        ]);
+        expect(again.code, again.err).toBe(0);
+        expect(
+            (await client.fetchComments(seed.id)).inline.flatMap(
+                (t) => t.replies,
+            ),
+        ).toHaveLength(1);
     });
 });

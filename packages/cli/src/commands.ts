@@ -18,6 +18,7 @@ import {
     type ConfluenceClient,
     type CreateInput,
     collectGarbage,
+    collectReplies,
     collectStatus,
     type FileSystem,
     findStale,
@@ -38,6 +39,7 @@ import {
     publish,
     pullConfig,
     pullSummary,
+    type ReplyCandidate,
     type Reporter,
     readPageMeta,
     removeStale,
@@ -81,6 +83,11 @@ export type ConfirmPublish = (plan: PublishPlan) => Promise<boolean>;
 export type ConfirmCreates = (
     cands: CreateInput[],
 ) => Promise<Map<string, boolean>>;
+
+/** ConfirmReplies decides which reply drafts a push keeps back (dest → keys). */
+export type ConfirmReplies = (
+    items: ReplyCandidate[],
+) => Promise<Map<string, Set<string>>>;
 
 /** ConfirmStale selects which stale items to remove from the found set. */
 export type ConfirmStale = (items: StaleItem[]) => Promise<StaleItem[]>;
@@ -199,12 +206,15 @@ async function pullSelected(
 
 /**
  * runPush pushes edited notes back to Confluence, creating any confirmed new
- * pages first. With `selected` it pushes only that managed page.
+ * pages first. With `selected` it pushes only that managed page. With comments
+ * on, `confirmReplies` picks which reply drafts to keep back; the rest are
+ * sent.
  */
 export async function runPush(
     d: CliDeps,
     selected: string,
     confirm: ConfirmCreates,
+    confirmReplies: ConfirmReplies,
     force: boolean,
     dropComments: boolean,
 ): Promise<CommandResult> {
@@ -238,6 +248,9 @@ export async function runPush(
     }
 
     const plan = await planCreates(d, dests, confirm, cache);
+    const hold = d.config.comments
+        ? await confirmReplies(await collectReplies(d.fs, dests))
+        : new Map<string, Set<string>>();
     const pusher = new Pusher({
         client: d.client,
         fs: d.fs,
@@ -252,6 +265,7 @@ export async function runPush(
         flavor: resolveFlavor(d.config.flavor),
         force,
         dropComments,
+        hold,
     });
     const outcome = await pusher.pushDests(dests, plan);
 

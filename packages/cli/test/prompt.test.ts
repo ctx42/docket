@@ -1,12 +1,18 @@
 // SPDX-FileCopyrightText: (c) 2026 Rafal Zajac
 // SPDX-License-Identifier: MIT
 
-import type { CreateInput, PublishPlan, StaleItem } from "@docket/core";
+import type {
+    CreateInput,
+    PublishPlan,
+    ReplyCandidate,
+    StaleItem,
+} from "@docket/core";
 import { describe, expect, it } from "vitest";
 import {
     confirmCreates,
     confirmOverwrite,
     confirmPublish,
+    confirmReplies,
     confirmStale,
     type PromptOptions,
 } from "../src/prompt.ts";
@@ -220,5 +226,75 @@ describe("confirmPublish", () => {
         await expect(
             confirmPublish(plan, opts({ isTTY: false })),
         ).rejects.toThrow("re-run with --yes");
+    });
+});
+
+describe("confirmReplies", () => {
+    const reply = (key: string, mark = ""): ReplyCandidate => ({
+        dest: "/v/p.md",
+        key,
+        to: "Jane Doe",
+        text: `text ${key}`,
+        mark,
+    });
+
+    it("sends every draft with --yes, holding only those that cannot go", async () => {
+        const lines: string[] = [];
+
+        const have = await confirmReplies(
+            [reply("C1#1"), reply("C9#1", "thread id:C9 is gone")],
+            opts({ yes: true, err: (t) => lines.push(t) }),
+        );
+
+        expect(have).toEqual(new Map([["/v/p.md", new Set(["C9#1"])]]));
+        expect(lines.join("")).toBe(
+            "docket: 1 reply draft(s) to send:\n" +
+                '  p.md — Reply to Jane Doe: "text C1#1"\n',
+        );
+    });
+
+    it("sends every draft when enter is pressed straight away", async () => {
+        const have = await confirmReplies(
+            [reply("C1#1"), reply("C2#1")],
+            opts({ keys: () => scripted(["\r"]) }),
+        );
+
+        expect(have).toEqual(new Map());
+    });
+
+    it("holds the drafts marked hold", async () => {
+        const keys = scripted(["\x1b[B", "h", "\r"]);
+
+        const have = await confirmReplies(
+            [reply("C1#1"), reply("C2#1")],
+            opts({ keys: () => keys }),
+        );
+
+        expect(have).toEqual(new Map([["/v/p.md", new Set(["C2#1"])]]));
+        expect(keys.closed).toBe(true);
+    });
+
+    it("asks nothing when no draft can go", async () => {
+        const have = await confirmReplies(
+            [reply("C9#1", "thread id:C9 is gone")],
+            opts({ isTTY: false }),
+        );
+
+        expect(have).toEqual(new Map([["/v/p.md", new Set(["C9#1"])]]));
+    });
+
+    it("refuses to prompt without a terminal", async () => {
+        await expect(
+            confirmReplies([reply("C1#1")], opts({ isTTY: false })),
+        ).rejects.toThrow("re-run with --yes");
+    });
+
+    it("cancels the push on cancel", async () => {
+        await expect(
+            confirmReplies(
+                [reply("C1#1")],
+                opts({ keys: () => scripted(["\x1b"]) }),
+            ),
+        ).rejects.toThrow("push cancelled");
     });
 });
