@@ -64,13 +64,18 @@ you work — or use both against the same vault.
 
 ## Packages
 
-`docket` is a [Bun](https://bun.sh) workspace of three packages:
+`docket` is a [Bun](https://bun.sh) workspace of five packages:
 
 | Package                                               | What it is                                                                                                                     |
 |-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | [`@docket/core`](packages/core)                       | Runtime-neutral core: the ADF↔Markdown lens, sync orchestration, and injected I/O ports. Imports no `node:`/`bun:`/`obsidian`. |
+| [`@docket/docserver`](packages/docserver)             | The doc server: corpus, BM25 search, glossary, and doc gaps, served as MCP tools and a REST API. No I/O.                       |
+| [`@docket/docserver-node`](packages/docserver-node)   | The doc server's Node host: filesystem port, file watching, and the HTTP and stdio transports.                                 |
 | [`@docket/cli`](packages/cli)                         | The standalone CLI: Node/Bun port adapters, config + `.env` loading, compiled to one binary.                                   |
 | [`@docket/obsidian-plugin`](packages/obsidian-plugin) | The Obsidian plugin: adapters, settings tab, control-center panel, indent rendering.                                           |
+
+How the doc server cuts and ranks documents, and how to write documents it
+finds: [Writing documents that search well](docs/search.md).
 
 ## Prerequisites
 
