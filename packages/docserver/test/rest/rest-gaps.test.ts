@@ -96,6 +96,8 @@ interface RestOptions {
     glossary?: boolean;
     /** index mounts the index status routes. */
     index?: boolean;
+    /** pages mounts the page status route over a stub port. */
+    pages?: boolean;
 }
 
 /**
@@ -142,6 +144,7 @@ async function newRest(
         ...(opts.index === true
             ? { index: new IndexTracker(engine, () => 0, false) }
             : {}),
+        ...(opts.pages === true ? { pages: async () => [] } : {}),
     });
 }
 
@@ -1173,7 +1176,12 @@ describe("OpenAPI description", () => {
             }
         }
         await newRest(
-            { store: newStore().store, glossary: true, index: true },
+            {
+                store: newStore().store,
+                glossary: true,
+                index: true,
+                pages: true,
+            },
             (deps) => new Recorder(deps),
         );
 
@@ -1190,6 +1198,7 @@ describe("OpenAPI description", () => {
                 "/docs",
                 "/docs/{id}",
                 "/refs/check",
+                "/pages/status",
                 "/status",
                 "/status/reindex",
                 "/openapi.yaml",

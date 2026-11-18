@@ -19,6 +19,7 @@ import {
     fromDate,
     type Gap,
     hash,
+    type ToolDeps,
 } from "@docket/docserver";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -325,6 +326,29 @@ describe("run", { timeout: 30_000 }, () => {
 
         // --- Then ---
         await expect(have).rejects.toThrow("listen address is required");
+    });
+
+    it("hands the page port to the tools", async () => {
+        // --- Given ---
+        const dir = corpusDir();
+        const path = writeConfig(
+            `listen: "127.0.0.1:0"\nsources:\n  shop:\n    dir: ${dir}\n`,
+        );
+        const pages = async () => [];
+        let have: ToolDeps["pages"];
+        const srv = start(path, {
+            pages,
+            routes: (deps) => {
+                have = deps.pages;
+                return new Map();
+            },
+        });
+
+        // --- When ---
+        await waitListening(srv.stderr);
+
+        // --- Then ---
+        expect(have).toBe(pages);
     });
 
     // go: Test_run_http_serves_rest_and_mcp

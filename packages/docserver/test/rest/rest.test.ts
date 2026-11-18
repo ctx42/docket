@@ -235,6 +235,68 @@ describe("GET /docs", () => {
     });
 });
 
+describe("POST /pages/status", () => {
+    it("reports each document's page state", async () => {
+        // --- Given ---
+        const engine = await Engine.create({
+            fs: new MemDocFs().writeFile("/c/a.md", "body\n"),
+            sources: [{ name: "shop", dir: "/c" }],
+        });
+        const rest = new Rest({
+            engine,
+            version: "x",
+            pages: async (files) =>
+                files.map((file) => ({
+                    file,
+                    state: "modified",
+                    localVersion: 3,
+                    remoteVersion: 3,
+                    reason: "",
+                })),
+        });
+
+        // --- When ---
+        const have = await rest.handle({
+            method: "POST",
+            path: "/pages/status",
+            query: "",
+            body: new TextEncoder().encode('{"refs":["shop/a.md"]}'),
+        });
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        expect(JSON.parse(have.body)).toEqual({
+            pages: [
+                {
+                    ref: "shop/a.md",
+                    id: "shop/a.md",
+                    path: "shop/a.md",
+                    state: "modified",
+                    local_version: 3,
+                    remote_version: 3,
+                    reason: "",
+                },
+            ],
+        });
+    });
+
+    it("is not routed without a page port", async () => {
+        // --- Given ---
+        const { rest } = await newRest();
+
+        // --- When ---
+        const have = await rest.handle({
+            method: "POST",
+            path: "/pages/status",
+            query: "",
+            body: new TextEncoder().encode('{"refs":["x"]}'),
+        });
+
+        // --- Then ---
+        expect(have.status).toBe(404);
+    });
+});
+
 describe("GET /status", () => {
     it("reports the index, and reindexes on POST /status/reindex", async () => {
         // --- Given ---

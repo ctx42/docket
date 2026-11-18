@@ -293,6 +293,18 @@ export class Engine {
     }
 
     /**
+     * fileOf returns the identity, current path and absolute file path of
+     * the document ref names by its id or path, or undefined for none.
+     */
+    fileOf(
+        ref: string,
+    ): { id: string; path: string; file: string } | undefined {
+        const dref = this.snap.docs.get(ref);
+        if (dref === undefined) return undefined;
+        return { id: dref.id, path: dref.path, file: dref.absPath };
+    }
+
+    /**
      * checkRefs reports, for each reference, whether it still names a
      * document, and a section when it carries "#<anchor>": by the
      * document's id or path, or by a longer path ending in "/" and its path,

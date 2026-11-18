@@ -36,6 +36,7 @@ import {
     MILLISECOND,
     type Move,
     type Notifier,
+    type PageStatusFn,
     type Project,
     Rest,
     runLoop,
@@ -109,6 +110,11 @@ export interface RunOptions {
     now?: () => number;
     /** routes adds HTTP handlers beside /mcp, keyed by path prefix. */
     routes?: (deps: ToolDeps) => Map<string, Route>;
+    /**
+     * pages tells how notes stand against their Confluence pages; a host
+     * with Confluence access passes it, and page_status is offered then.
+     */
+    pages?: PageStatusFn;
 }
 
 /**
@@ -218,6 +224,7 @@ export async function run(opts: RunOptions): Promise<void> {
             logErr: (err) => log(`request failed: ${errorText(err)}`),
         };
         if (store !== undefined) deps.store = store;
+        if (opts.pages !== undefined) deps.pages = opts.pages;
         if (glossary !== undefined) deps.glossary = glossary;
         if (opts.stdio === true) {
             await serveStdio(deps, {

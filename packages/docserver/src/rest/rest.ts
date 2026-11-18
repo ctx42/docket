@@ -30,6 +30,7 @@ import { utf8DecodeEscaped, utf8Encode } from "../gocompat/utf8.ts";
 import {
     type GapStore,
     gapJSON,
+    pageStatus,
     refJSON,
     refsError,
     reportGap,
@@ -117,6 +118,27 @@ export class Rest {
             headers: { "Content-Type": "application/yaml" },
             body: OPENAPI_YAML,
         }));
+        if (deps.pages !== undefined) {
+            const pages = deps.pages;
+            this.add("POST", "/pages/status", (r) =>
+                this.body(r, CHECK_REFS, async (b) => {
+                    const refs = (b["refs"] as string[] | null) ?? [];
+                    const bad = refsError(refs);
+                    if (bad !== undefined) return errorJSON(400, bad);
+                    try {
+                        return json(200, {
+                            pages: await pageStatus(
+                                this.deps.engine,
+                                pages,
+                                refs,
+                            ),
+                        });
+                    } catch (err) {
+                        return this.internal(err);
+                    }
+                }),
+            );
+        }
         if (deps.index !== undefined) {
             const index = deps.index;
             this.add("GET", "/status", async () =>

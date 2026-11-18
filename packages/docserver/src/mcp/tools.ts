@@ -48,6 +48,9 @@ export const SERVER_NAME = "docket";
 /** The tools registered only with a glossary, and only with a gap store. */
 const GLOSSARY_TOOLS: ReadonlySet<string> = new Set(["glossary_terms"]);
 
+/** PAGE_TOOLS need a page port. */
+const PAGE_TOOLS: ReadonlySet<string> = new Set(["page_status"]);
+
 /** INDEX_TOOLS need an index tracker. */
 const INDEX_TOOLS: ReadonlySet<string> = new Set(["index_status"]);
 const GAP_TOOLS: ReadonlySet<string> = new Set([
@@ -89,7 +92,33 @@ export interface ToolDeps {
     logErr?: (err: unknown) => void;
     /** index reports how current the index is and rebuilds it. */
     index?: IndexTracker;
+    /**
+     * pages tells how notes stand against their Confluence pages; a host
+     * with Confluence access sets it, and page_status is offered only then.
+     */
+    pages?: PageStatusFn;
 }
+
+/** PageStatus is how one note stands against its Confluence page. */
+export interface PageStatus {
+    /** file is the note's absolute file path, as asked. */
+    file: string;
+    /**
+     * state is the host's class for the note: for the docket plugin
+     * unchanged, modified, new, refused, remote-moved (newer on
+     * Confluence), diverged, or skip.
+     */
+    state: string;
+    /** localVersion is the page version the note is based on. */
+    localVersion: number;
+    /** remoteVersion is the page's version on Confluence, 0 when unknown. */
+    remoteVersion: number;
+    /** reason explains a refused or skipped note; "" otherwise. */
+    reason: string;
+}
+
+/** PageStatusFn reports on notes by file path, one result each, in order. */
+export type PageStatusFn = (files: readonly string[]) => Promise<PageStatus[]>;
 
 /** Args are a tool call's decoded arguments. */
 type Args = Readonly<Record<string, unknown>>;
@@ -138,7 +167,8 @@ export class Tools {
                 (!GLOSSARY_TOOLS.has(def.name) ||
                     deps.glossary !== undefined) &&
                 (!GAP_TOOLS.has(def.name) || deps.store !== undefined) &&
-                (!INDEX_TOOLS.has(def.name) || deps.index !== undefined),
+                (!INDEX_TOOLS.has(def.name) || deps.index !== undefined) &&
+                (!PAGE_TOOLS.has(def.name) || deps.pages !== undefined),
         );
         this.handlers.set("search", (a) => this.search(a));
         this.handlers.set("get_doc", (a) => this.getDoc(a));
@@ -152,6 +182,17 @@ export class Tools {
         this.handlers.set("list_docs", async (a) =>
             this.listDocs(str(a, "folder"), a["fields"]),
         );
+        if (deps.pages !== undefined) {
+            const pages = deps.pages;
+            this.handlers.set("page_status", async (a) => {
+                const refs = list(a, "refs");
+                const bad = refsError(refs);
+                if (bad !== undefined) throw new ToolError(bad);
+                return {
+                    pages: await pageStatus(this.deps.engine, pages, refs),
+                };
+            });
+        }
         if (deps.index !== undefined) {
             const index = deps.index;
             this.handlers.set("index_status", async (a) => {
@@ -405,6 +446,42 @@ function intOverflow(name: string, args: Args): string | undefined {
             ? json.slice(at)
             : `${utf8Decode(rest.slice(0, 32))}...`;
     return `json: cannot unmarshal number ${window} overflows ${into}`;
+}
+
+/**
+ * pageStatus answers page_status: each ref's document file goes to pages in
+ * one call, and a ref naming no document is "unknown".
+ */
+export async function pageStatus(
+    engine: Engine,
+    pages: PageStatusFn,
+    refs: readonly string[],
+): Promise<GoJSON> {
+    const found = refs.map((ref) => ({ ref, doc: engine.fileOf(ref) }));
+    const files = found.flatMap((f) =>
+        f.doc === undefined ? [] : [f.doc.file],
+    );
+    const states = files.length === 0 ? [] : await pages(files);
+    let at = 0;
+    return found.map(({ ref, doc }) => {
+        if (doc === undefined) {
+            return {
+                ref,
+                state: "unknown",
+                reason: `${goQuote(ref)} names no corpus document`,
+            };
+        }
+        const st = states[at++];
+        return {
+            ref,
+            id: doc.id,
+            path: doc.path,
+            state: st?.state ?? "unknown",
+            local_version: st?.localVersion ?? 0,
+            remote_version: st?.remoteVersion ?? 0,
+            reason: st?.reason ?? "no status for the note",
+        };
+    });
 }
 
 /** stateJSON is an {@link IndexState} as index_status answers it. */

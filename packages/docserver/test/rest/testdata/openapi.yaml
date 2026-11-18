@@ -177,6 +177,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /pages/status:
+    post:
+      summary: How notes stand against their Confluence pages
+      description: >
+        Reports, for each document (id or path), its state against its
+        Confluence page, the page version the note is based on, and the
+        version on Confluence, in one call to Confluence. Routed only when
+        the server runs inside the docket Obsidian plugin. Mirrors the MCP
+        page_status tool.
+      operationId: pageStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckRefsRequest"
+      responses:
+        "200":
+          description: One result per document, in the order given.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageStatusResponse"
+        "400":
+          description: The body is not valid, or holds no or too many refs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /status:
     get:
       summary: How current the index is
@@ -821,6 +850,39 @@ components:
         last_error:
           type: string
           description: Why the last rebuild failed; empty when it did not.
+    PageStatusResponse:
+      type: object
+      required: [pages]
+      properties:
+        pages:
+          type: array
+          items:
+            type: object
+            required: [ref, state]
+            properties:
+              ref:
+                type: string
+                description: The document reference as given.
+              id:
+                type: string
+              path:
+                type: string
+              state:
+                type: string
+                enum:
+                  [unchanged, modified, new, refused, remote-moved, diverged, skip, unknown]
+                description: >
+                  remote-moved: Confluence has a newer version; diverged: both
+                  sides changed; unknown: no such document.
+              local_version:
+                type: integer
+                description: The page version the note is based on.
+              remote_version:
+                type: integer
+                description: The page version on Confluence, 0 when unknown.
+              reason:
+                type: string
+                description: Why a note is refused, skipped, or unknown.
     RefCheck:
       type: object
       required: [ref, found]

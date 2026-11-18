@@ -72,6 +72,14 @@ export async function bookshop(
         engine,
         version: "0.0.0-oracle",
         index: new IndexTracker(engine, () => 0, false),
+        pages: async (files) =>
+            files.map((file) => ({
+                file,
+                state: "unchanged",
+                localVersion: 1,
+                remoteVersion: 1,
+                reason: "",
+            })),
     };
     if (opts.store !== false && cfg.gaps !== "") {
         deps.store = new FileStore(

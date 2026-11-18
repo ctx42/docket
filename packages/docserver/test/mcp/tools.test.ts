@@ -273,6 +273,87 @@ describe("search", () => {
     });
 });
 
+describe("page_status", () => {
+    it("asks the page port about each document's file", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        let asked: readonly string[] = [];
+        const pages = async (files: readonly string[]) => {
+            asked = files;
+            return files.map((file) => ({
+                file,
+                state: "remote-moved",
+                localVersion: 77,
+                remoteVersion: 78,
+                reason: "",
+            }));
+        };
+        const client = await connect({ engine, version: "x", pages });
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "page_status",
+            arguments: { refs: ["shop/catalog/epub.md", "gone.md"] },
+        });
+
+        // --- Then ---
+        expect(res.isError).toBeFalsy();
+        expect(asked).toEqual(["/shop/catalog/epub.md"]);
+        expect(decode(res)).toEqual({
+            pages: [
+                {
+                    ref: "shop/catalog/epub.md",
+                    id: "shop/catalog/epub.md",
+                    path: "shop/catalog/epub.md",
+                    state: "remote-moved",
+                    local_version: 77,
+                    remote_version: 78,
+                    reason: "",
+                },
+                {
+                    ref: "gone.md",
+                    state: "unknown",
+                    reason: '"gone.md" names no corpus document',
+                },
+            ],
+        });
+    });
+
+    it("refuses an empty list", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        const client = await connect({
+            engine,
+            version: "x",
+            pages: async () => [],
+        });
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "page_status",
+            arguments: { refs: [] },
+        });
+
+        // --- Then ---
+        expect(res.isError).toBe(true);
+        expect(contentText(res)).toContain(
+            "refs must hold 1 to 100 references",
+        );
+    });
+
+    it("is not offered without a page port", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const have = (await client.listTools()).tools.map((t) => t.name);
+
+        // --- Then ---
+        expect(have).not.toContain("page_status");
+    });
+});
+
 describe("index_status", () => {
     it("reports the index, and reindexes when asked", async () => {
         // --- Given ---

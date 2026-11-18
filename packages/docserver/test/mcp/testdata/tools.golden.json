@@ -528,6 +528,62 @@
       }
     },
     {
+      "description": "Report how notes stand against their Confluence pages, in one call to Confluence: for each document (id or path), its state (unchanged; modified: local edits to push; new: not yet on Confluence; refused: a push would be refused, see reason; remote-moved: Confluence has a newer version, pull first; diverged: both sides changed; skip: not a managed note, see reason; unknown: no such document), the page version the note is based on, and the version on Confluence. Offered only when the server runs inside the docket Obsidian plugin.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "the documents to check, 1 to 100: ids or paths"
+          }
+        },
+        "required": ["refs"],
+        "additionalProperties": false
+      },
+      "name": "page_status",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "pages": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "local_version": {
+                  "type": "integer"
+                },
+                "remote_version": {
+                  "type": "integer"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": ["ref", "state"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["pages"],
+        "additionalProperties": false
+      }
+    },
+    {
       "description": "Move a filled gap back to open, appending reason to its Detail section. Its filled_by list is kept, so it can be filled again with a corrected list.",
       "inputSchema": {
         "type": "object",

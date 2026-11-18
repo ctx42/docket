@@ -675,6 +675,20 @@ describe("Engine.search", () => {
     });
 });
 
+describe("Engine.fileOf", () => {
+    it("names the file of a document by id or path", async () => {
+        const eng = await create(
+            new MemDocFs().writeFile("/d/g.md", "---\nid: doc-12\n---\nbody\n"),
+            [{ name: "docs", dir: "/d" }],
+        );
+
+        const want = { id: "doc-12", path: "docs/g.md", file: "/d/g.md" };
+        expect(eng.fileOf("doc-12")).toEqual(want);
+        expect(eng.fileOf("docs/g.md")).toEqual(want);
+        expect(eng.fileOf("docs/none.md")).toBeUndefined();
+    });
+});
+
 describe("Engine.checkRefs", () => {
     /** refsEngine holds an identified page with a heading, and a plain one. */
     function refsEngine(): Promise<Engine> {
