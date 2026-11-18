@@ -127,6 +127,8 @@ export interface DocRef {
     absPath: string;
     title: string;
     sourceURL: string;
+    /** fields are the document's named values ({@link Doc.fields}). */
+    fields: Readonly<Record<string, string>>;
 }
 
 /** Document is a whole corpus file with its citation metadata. */
@@ -284,6 +286,28 @@ export class Engine {
     }
 
     /**
+     * fields returns the named values of the document at path that names
+     * asks for, each matched against the document's field names ignoring
+     * case and keyed as asked; a name the document lacks is left out, and an
+     * unknown path yields none.
+     */
+    fields(path: string, names: readonly string[]): Record<string, string> {
+        const ref = this.snap.docs.get(path);
+        const out: Record<string, string> = {};
+        if (ref === undefined || ref.path !== path) return out;
+        const byFold = new Map<string, string>();
+        for (const [k, v] of Object.entries(ref.fields)) {
+            const fold = k.toLowerCase();
+            if (!byFold.has(fold)) byFold.set(fold, v);
+        }
+        for (const name of names) {
+            const v = byFold.get(name.toLowerCase());
+            if (v !== undefined) out[name] = v;
+        }
+        return out;
+    }
+
+    /**
      * close releases the retriever's index once in-flight calls return. It
      * waits for a reload in progress; later calls are no-ops.
      */
@@ -373,6 +397,7 @@ export async function loadSources(
             absPath: abs,
             title: doc.title,
             sourceURL: doc.sourceURL,
+            fields: doc.fields ?? {},
         });
     };
 

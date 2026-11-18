@@ -109,6 +109,20 @@ describe("Loader.file", () => {
         expect(have.chunks[0]?.text).toContain("[[*caption:]]");
     });
 
+    it("merges the front matter over the metadata table", async () => {
+        const content =
+            "---\ntitle: T\nStatus: Front\n---\n\n" +
+            "| Status | Table |\n|---|---|\n| Owner | Ann |\n";
+
+        const have = await load("d.md", content, "src/d.md");
+
+        expect(have.fields).toEqual({
+            Status: "Front",
+            Owner: "Ann",
+            title: "T",
+        });
+    });
+
     // go: Test_Loader_File_carries_aliases_onto_doc_and_chunks
     it("carries aliases onto the doc and its chunks", async () => {
         const content =

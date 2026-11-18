@@ -224,15 +224,24 @@ export class Rest {
     }
 
     private docs(r: Matched): RestResponse {
+        const raw = r.values.get("fields");
+        const names =
+            raw === ""
+                ? null
+                : raw
+                      .split(",")
+                      .map((f) => f.trim())
+                      .filter((f) => f !== "");
+        const engine = this.deps.engine;
         return json(200, {
-            docs: this.deps.engine
-                .listDocs(r.values.get("folder"))
-                .map((doc) => ({
-                    id: doc.id,
-                    path: doc.path,
-                    rank: omitZero(doc.rank),
-                    title: doc.title,
-                })),
+            docs: engine.listDocs(r.values.get("folder")).map((doc) => ({
+                id: doc.id,
+                path: doc.path,
+                rank: omitZero(doc.rank),
+                title: doc.title,
+                fields:
+                    names === null ? undefined : engine.fields(doc.path, names),
+            })),
         });
     }
 

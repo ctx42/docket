@@ -15,8 +15,9 @@ import {
     headingText,
     splitSections,
 } from "./chunker.ts";
-import { parseFrontMatter } from "./frontmatter.ts";
+import { frontMatterFields, parseFrontMatter } from "./frontmatter.ts";
 import { sourceURL } from "./helpers.ts";
+import { metadataTable } from "./metadata.ts";
 
 /** Chunk is a retrievable section of a {@link Doc}. */
 export interface Chunk {
@@ -56,6 +57,12 @@ export interface Doc {
     sourceURL: string;
     aliases: string[];
     chunks: Chunk[];
+    /**
+     * fields are the document's named values as text: its metadata table
+     * ({@link metadataTable}) overlaid with its front-matter scalars
+     * ({@link frontMatterFields}). Unset on a document built by hand.
+     */
+    fields?: Record<string, string>;
 }
 
 /** CorpusError wraps a load failure as Go's `xrr.New(msg, WithCause(err))`. */
@@ -121,6 +128,7 @@ export class Loader {
             title,
             sourceURL: docURL,
             aliases,
+            fields: { ...metadataTable(body), ...frontMatterFields(raw) },
             chunks: splitSections(body, this.wholeFileTokens()).map((sec) => ({
                 docID: id,
                 docPath,

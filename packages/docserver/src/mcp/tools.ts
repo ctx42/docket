@@ -136,7 +136,7 @@ export class Tools {
         this.handlers.set("search", (a) => this.search(a));
         this.handlers.set("get_doc", (a) => this.getDoc(a));
         this.handlers.set("list_docs", async (a) =>
-            this.listDocs(str(a, "folder")),
+            this.listDocs(str(a, "folder"), a["fields"]),
         );
         if (deps.glossary !== undefined) {
             const gls = deps.glossary;
@@ -277,13 +277,19 @@ export class Tools {
         };
     }
 
-    private listDocs(folder: string) {
+    private listDocs(folder: string, fields: unknown) {
+        const names = Array.isArray(fields)
+            ? fields.filter((f): f is string => typeof f === "string")
+            : null;
+        const engine = this.deps.engine;
         return {
-            docs: this.deps.engine.listDocs(folder).map((doc) => ({
+            docs: engine.listDocs(folder).map((doc) => ({
                 id: doc.id,
                 path: doc.path,
                 rank: omitZero(doc.rank),
                 title: doc.title,
+                fields:
+                    names === null ? undefined : engine.fields(doc.path, names),
             })),
         };
     }

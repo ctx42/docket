@@ -126,6 +126,20 @@ describe("Engine.create", () => {
         expect(have.listDocs()).toEqual(want);
     });
 
+    it("returns the asked fields of a document, any case", async () => {
+        const fs = new MemDocFs().writeFile(
+            "/d/a.md",
+            "---\ntitle: A\ndocket_page_version: 7\n---\n\n" +
+                "| Status | Draft |\n|---|---|\n",
+        );
+        const have = await create(fs, [{ name: "docs", dir: "/d" }]);
+
+        expect(
+            have.fields("docs/a.md", ["status", "docket_page_version", "x"]),
+        ).toEqual({ status: "Draft", docket_page_version: "7" });
+        expect(have.fields("docs/none.md", ["status"])).toEqual({});
+    });
+
     it("lists the documents of one folder", async () => {
         const fs = new MemDocFs()
             .writeFile("/d/a.md", "---\ntitle: A\n---\n")

@@ -422,6 +422,30 @@ describe("list_docs", () => {
         expect(decode(res)).toEqual({ docs: [] });
     });
 
+    it("adds the asked fields of each document", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "list_docs",
+            arguments: { fields: ["title", "status"] },
+        });
+
+        // --- Then ---
+        expect(decode(res)).toEqual({
+            docs: [
+                {
+                    id: "shop/catalog/epub.md",
+                    path: "shop/catalog/epub.md",
+                    title: "EPUB Editions",
+                    fields: { title: "EPUB Editions" },
+                },
+            ],
+        });
+    });
+
     // go: Test_tools_listDocs_carries_identity_and_path
     it("carries the identity and path", async () => {
         // --- Given ---

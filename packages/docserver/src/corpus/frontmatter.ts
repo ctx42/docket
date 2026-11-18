@@ -81,6 +81,39 @@ export function parseFrontMatter(input: string): {
 }
 
 /**
+ * frontMatterFields returns the top-level scalar keys of input's front
+ * matter as text, the first of a repeated key winning; a null value, a list,
+ * or a mapping is left out. A document without a readable YAML mapping
+ * yields none.
+ */
+export function frontMatterFields(input: string): Record<string, string> {
+    const src = input.startsWith("\uFEFF") ? input.slice(1) : input;
+    const nl = src.indexOf("\n");
+    if (nl < 0 || trimCR(src.slice(0, nl)) !== "---") return {};
+    const rest = src.slice(nl + 1);
+    const [yamlEnd] = closingFence(rest);
+    if (yamlEnd < 0) return {};
+    let root: YamlNode | undefined;
+    try {
+        root = parseYaml(rest.slice(0, yamlEnd));
+    } catch {
+        return {};
+    }
+    if (root?.kind !== "mapping") return {};
+    const out: Record<string, string> = {};
+    for (let i = 0; i + 1 < root.content.length; i += 2) {
+        const key = deref(root.content[i] as YamlNode);
+        const val = deref(root.content[i + 1] as YamlNode);
+        if (key.kind !== "scalar" || val.kind !== "scalar") continue;
+        if (shortTag(val) === TAG.null || Object.hasOwn(out, key.value)) {
+            continue;
+        }
+        out[key.value] = val.value;
+    }
+    return out;
+}
+
+/**
  * closingFence locates the "---" line closing a front-matter block within
  * rest, returning where the YAML ends and where the body begins, or
  * [-1, -1] when no closing fence is present.

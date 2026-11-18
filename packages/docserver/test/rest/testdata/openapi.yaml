@@ -94,6 +94,16 @@ paths:
             kb, matched by whole segments; omit to list every document.
           schema:
             type: string
+        - name: fields
+          in: query
+          required: false
+          description: >
+            Comma-separated field names to add to each document, matched
+            ignoring case. Each is looked up in the front matter (top-level
+            scalars), then in the two-column metadata table that opens the
+            body, read as plain text; a field a document lacks is left out.
+          schema:
+            type: string
       responses:
         "200":
           description: The corpus inventory.
@@ -695,6 +705,13 @@ components:
         title:
           type: string
           description: The document's front-matter title.
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+          description: >
+            The asked fields the document has, keyed as asked; present only
+            when fields is given.
     DocList:
       type: object
       required: [docs]

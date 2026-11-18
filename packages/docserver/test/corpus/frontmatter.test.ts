@@ -9,6 +9,7 @@ import {
     emptyFrontMatter,
     type FrontMatter,
     FrontMatterError,
+    frontMatterFields,
     parseFrontMatter,
     unmarshalDocID,
 } from "../../src/corpus/frontmatter.ts";
@@ -230,4 +231,32 @@ describe("parseFrontMatter against the Go oracle", () => {
             }
         },
     );
+});
+
+describe("frontMatterFields", () => {
+    it("keeps the top-level scalar keys as text", () => {
+        const src =
+            "---\ntitle: T\ndocket_page_version: 97\ndraft: true\n" +
+            "aliases: [a, b]\nmeta:\n  k: v\nnone: null\n---\nbody";
+
+        const have = frontMatterFields(src);
+
+        expect(have).toEqual({
+            title: "T",
+            docket_page_version: "97",
+            draft: "true",
+        });
+    });
+
+    it("reads nothing without front matter", () => {
+        expect(frontMatterFields("# T\n\nbody")).toEqual({});
+    });
+
+    it("reads nothing from malformed front matter", () => {
+        expect(frontMatterFields("---\ntitle: [\n---\nbody")).toEqual({});
+    });
+
+    it("reads nothing from a block that is not a mapping", () => {
+        expect(frontMatterFields("---\n- a\n---\nbody")).toEqual({});
+    });
 });

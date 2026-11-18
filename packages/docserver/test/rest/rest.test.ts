@@ -197,6 +197,24 @@ describe("GET /docs", () => {
         expect(body.docs.map((d) => d.path)).toEqual(["shop/catalog/epub.md"]);
     });
 
+    it("adds the asked fields of each document", async () => {
+        // --- Given ---
+        const { rest } = await newRest();
+
+        // --- When ---
+        const have = await get(rest, "/docs?fields=id,title");
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        const body = JSON.parse(have.body) as {
+            docs: { path: string; fields?: Record<string, string> }[];
+        };
+        expect(body.docs.map((d) => [d.path, d.fields])).toEqual([
+            ["shop/catalog/epub.md", { title: "EPUB Editions" }],
+            ["shop/intro.md", { id: "intro-1", title: "Intro" }],
+        ]);
+    });
+
     // go: Test_server_docs_carries_rank
     it("carries the trust rank", async () => {
         // --- Given ---

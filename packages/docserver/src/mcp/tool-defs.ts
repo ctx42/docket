@@ -12,7 +12,7 @@ export interface JSONSchema {
     description?: string;
     properties?: Readonly<Record<string, JSONSchema>>;
     required?: readonly string[];
-    additionalProperties?: boolean;
+    additionalProperties?: boolean | JSONSchema;
     items?: JSONSchema;
     [key: string]: unknown;
 }
@@ -203,7 +203,7 @@ export const TOOL_DEFS: readonly ToolDef[] = [
     },
     {
         description:
-            "List the id, path, trust rank, and title of every document in the corpus, or of one folder.",
+            "List the id, path, trust rank, and title of every document in the corpus, or of one folder; with fields, also each document's values of those fields.",
         inputSchema: {
             type: "object",
             properties: {
@@ -211,6 +211,12 @@ export const TOOL_DEFS: readonly ToolDef[] = [
                     type: "string",
                     description:
                         "keep only the documents under this folder, a corpus path such as kb or conflu/srd matched by whole segments; omit for every document",
+                },
+                fields: {
+                    type: "array",
+                    items: { type: "string" },
+                    description:
+                        "field names to add to each document, matched ignoring case: each is looked up in the front matter (top-level scalars), then in the two-column metadata table that opens the body, read as plain text (a status label becomes its text); a field a document lacks is left out",
                 },
             },
             additionalProperties: false,
@@ -235,6 +241,10 @@ export const TOOL_DEFS: readonly ToolDef[] = [
                             },
                             title: {
                                 type: "string",
+                            },
+                            fields: {
+                                type: "object",
+                                additionalProperties: { type: "string" },
                             },
                         },
                         required: ["id", "path", "title"],
