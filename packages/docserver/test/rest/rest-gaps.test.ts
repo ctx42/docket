@@ -585,6 +585,22 @@ describe("GET /gaps", () => {
         expect(body.gaps[0]?.id).toBe(id);
     });
 
+    it("filters by document id", async () => {
+        // --- Given ---
+        const { store } = newStore();
+        const rest = await newRest({ store });
+        const id = await store.append({ ...TEST_GAP, docID: "intro-1" });
+        await store.append({ ...TEST_GAP, docID: "shop/catalog/epub.md" });
+
+        // --- When ---
+        const have = await get(rest, "/gaps?doc_id=shop%2Fintro.md");
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        const body = decode(have);
+        expect(body.gaps.map((g) => g.id)).toEqual([id]);
+    });
+
     // go: Test_server_listGaps_filters_ask_and_asked
     it("filters by ask and asked", async () => {
         // --- Given --- gap-0001 to ask Anna, sent; gap-0002 to ask Anna,

@@ -190,6 +190,15 @@ paths:
             SRD folder name; omit to return all.
           schema:
             type: string
+        - name: doc_id
+          in: query
+          required: false
+          description: >
+            Keep only gaps whose doc_id is this document, given as its id or
+            current path and matched whole; a document no longer in the
+            corpus matches as written. Omit to return all.
+          schema:
+            type: string
         - name: query
           in: query
           required: false

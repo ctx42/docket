@@ -219,6 +219,10 @@
             "type": "string",
             "description": "keep only gaps whose srd_ref contains this text, for example an SRD folder name"
           },
+          "doc_id": {
+            "type": "string",
+            "description": "keep only gaps whose doc_id is this document, given as its id or current path and matched whole; a document no longer in the corpus matches as written"
+          },
           "query": {
             "type": "string",
             "description": "free-text query; keeps only matching gaps, ranked by relevance best first, each with a score; omit to list in id order"

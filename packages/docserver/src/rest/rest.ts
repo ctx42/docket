@@ -310,6 +310,7 @@ export class Rest {
         const flt: Filter = {
             status: r.values.get("status"),
             srdRef: r.values.get("srd_ref"),
+            docId: r.values.get("doc_id"),
             query: r.values.get("query"),
             ask: r.values.get("ask"),
         };

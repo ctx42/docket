@@ -386,6 +386,23 @@ describe("list_gaps", () => {
         expect(decode<ListOut>(res).gaps.map((g) => g.id)).toEqual([id]);
     });
 
+    it("filters by document id", async () => {
+        // --- Given ---
+        const { store } = newStore();
+        const id = await store.append({ ...TEST_GAP, docID: "epub" });
+        await store.append(TEST_GAP);
+        const client = await connectStore(store);
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "list_gaps",
+            arguments: { doc_id: "shop/catalog/epub.md" },
+        });
+
+        // --- Then ---
+        expect(decode<ListOut>(res).gaps.map((g) => g.id)).toEqual([id]);
+    });
+
     // go: Test_gapTools_list_ask_and_asked
     it("filters by ask and asked", async () => {
         // --- Given --- 1 asks Anna, sent; 2 asks Anna, not sent; 3 asks Bob.

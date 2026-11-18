@@ -368,16 +368,35 @@ export class FileStore implements Store {
             const why = `unknown status ${goQuote(filter.status)}`;
             throw gapError(EC_INVALID, why);
         }
+        const flt = await this.docFilter(filter);
         return this.mu.run(async () => {
             checkSignal(signal);
             const out: Gap[] = [];
             for (const gap of (await this.readAll()).list) {
                 const checked = await this.stale(gap);
-                if (matchFilter(filter, checked)) out.push(checked);
+                if (matchFilter(flt, checked)) out.push(checked);
             }
             if (trimSpace(filter.query ?? "") === "") return out;
             return this.rank(filter.query as string, out);
         });
+    }
+
+    /**
+     * docFilter returns filter with its docId resolved to the identity a gap
+     * stores ({@link resolveDoc}), so a path and an id find the same gaps. A
+     * docId the corpus does not hold stays as written, so the gaps of a
+     * document that left the corpus still match it; one naming a section is
+     * refused.
+     */
+    private async docFilter(filter: Filter): Promise<Filter> {
+        const docId = trimSpace(filter.docId ?? "");
+        if (docId === "") return filter;
+        try {
+            return { ...filter, docId: await this.resolveDoc(docId) };
+        } catch (err) {
+            if (docId.includes("#") || !isGapError(err, EC_INVALID)) throw err;
+            return { ...filter, docId };
+        }
     }
 
     /** badFiles returns the invalid gap files and why, by number. */

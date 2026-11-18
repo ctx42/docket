@@ -2424,6 +2424,49 @@ describe("FileStore.list", () => {
         expect(await fst.badFiles()).toEqual([]);
     });
 
+    it("filters by document id, resolved like a stored one", async () => {
+        // --- Given ---
+        const { fst } = newStore();
+        const id = await fst.append(AUTHORED);
+        await fst.append({ ...AUTHORED, docID: "kb/shipping.md" });
+        await fst.append({ ...AUTHORED, docID: "" });
+
+        // --- When ---
+        const byPath = await fst.list({ docId: "docs/catalog/epub.md" });
+        const byId = await fst.list({ docId: " epub " });
+
+        // --- Then ---
+        expect(byPath.map((g) => g.id)).toEqual([id]);
+        expect(byId.map((g) => g.id)).toEqual([id]);
+    });
+
+    it("matches a document id that no longer resolves as written", async () => {
+        // --- Given --- a gap whose document left the corpus.
+        const { fst, mfs } = newStore();
+        const gone = { ...AUTHORED_STORED, id: "gap-0001", docID: "old/a.md" };
+        writeGap(mfs, DIR, gone);
+
+        // --- When ---
+        const have = await fst.list({ docId: "old/a.md" });
+        const part = await fst.list({ docId: "old/a" });
+
+        // --- Then ---
+        expect(have.map((g) => g.id)).toEqual(["gap-0001"]);
+        expect(part).toEqual([]);
+    });
+
+    it("refuses a document id naming a section", async () => {
+        // --- Given ---
+        const { fst } = newStore();
+
+        // --- When ---
+        const err = await caught(() => fst.list({ docId: "epub#tokens" }));
+
+        // --- Then ---
+        expect(isGapError(err, EC_INVALID)).toBe(true);
+        expect(err.message).toContain("must name a document, not a section");
+    });
+
     // go: Test_FileStore_List_filters
     it("filters by status and SRD reference", async () => {
         // --- Given ---

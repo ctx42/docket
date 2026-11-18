@@ -336,6 +336,11 @@ export interface Filter {
     status?: string;
     /** srdRef keeps gaps whose srd_ref contains it. */
     srdRef?: string;
+    /**
+     * docId keeps gaps whose doc_id is this document identity, whole; a
+     * store resolves it first (`FileStore.list`).
+     */
+    docId?: string;
     /** query ranks gaps by relevance (BM25) and keeps the matches. */
     query?: string;
     /** stale keeps only stale gaps. */
@@ -350,6 +355,7 @@ export interface Filter {
 export function matchFilter(flt: Filter, gap: Gap): boolean {
     if (flt.status && gap.status !== flt.status) return false;
     if (flt.stale && !gap.stale) return false;
+    if (flt.docId && gap.docID !== flt.docId) return false;
     if (flt.asked !== undefined && (gap.asked !== "") !== flt.asked)
         return false;
     const ask = goLower(trimSpace(flt.ask ?? ""));

@@ -254,6 +254,11 @@ export const TOOL_DEFS: readonly ToolDef[] = [
                     description:
                         "keep only gaps whose srd_ref contains this text, for example an SRD folder name",
                 },
+                doc_id: {
+                    type: "string",
+                    description:
+                        "keep only gaps whose doc_id is this document, given as its id or current path and matched whole; a document no longer in the corpus matches as written",
+                },
                 query: {
                     type: "string",
                     description:

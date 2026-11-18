@@ -170,6 +170,7 @@ export class Tools {
             const flt: Filter = {
                 status: str(a, "status"),
                 srdRef: str(a, "srd_ref"),
+                docId: str(a, "doc_id"),
                 query: str(a, "query"),
                 stale: a["stale"] === true,
                 ask: str(a, "ask"),
