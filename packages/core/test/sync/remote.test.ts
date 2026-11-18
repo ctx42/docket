@@ -231,6 +231,7 @@ function entryOf(
         cls,
         reason: "",
         resolves: [],
+        replies: [],
     };
 }
 

@@ -287,6 +287,33 @@ describe("comment decoration", () => {
         expect(JSON.stringify(rebuilt.doc)).toBe(JSON.stringify(base.doc));
     });
 
+    it("strips reply drafts, in the body and under the trailing heading", () => {
+        const page = `{ "adf": { "type": "doc", "content": [
+           { "type": "paragraph",
+             "content": [ { "type": "text", "text": "Body." } ] } ] } }`;
+        const note = [
+            "Body.",
+            "",
+            "> [!comment] id:C1 · @ann",
+            "> Q?",
+            "",
+            "> [!reply] draft",
+            "> A.",
+            "",
+            "## Comments",
+            "",
+            "> [!comment] id:F1 · @bob",
+            "> Page note.",
+            "",
+            "> [!reply] draft · thread id:F1 is resolved on Confluence",
+            "> Later.",
+        ].join("\n");
+
+        const have = stripCommentDecorations(note);
+
+        expect(have).toBe(body(page, { byMarker: new Map(), trailing: [] }));
+    });
+
     it("keeps a page's own Comments heading", () => {
         const page = `{ "adf": { "type": "doc", "content": [
            { "type": "heading", "attrs": { "level": 2 },

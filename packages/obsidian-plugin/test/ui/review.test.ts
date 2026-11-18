@@ -25,6 +25,7 @@ const entry = (
     cls,
     reason,
     resolves: [],
+    replies: [],
 });
 
 describe("reviewModel", () => {

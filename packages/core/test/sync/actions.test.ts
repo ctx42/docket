@@ -111,6 +111,7 @@ describe("statusRows", () => {
         cls,
         reason: cls === "refused" ? "why" : "",
         resolves: [],
+        replies: [],
     });
 
     it("flattens a report into rows in section order", () => {

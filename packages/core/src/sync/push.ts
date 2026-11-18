@@ -56,6 +56,7 @@ import {
     type Resolution,
     readRecord,
     recordThreads,
+    threadOf,
     toRenderComments,
     writeRecord,
 } from "./comments.ts";
@@ -66,6 +67,14 @@ import {
     rollbackFolders,
     rootSpaceKey,
 } from "./create.ts";
+import {
+    checkDrafts,
+    type Draft,
+    type PendingReply,
+    placeDrafts,
+    readDrafts,
+    threadGone,
+} from "./drafts.ts";
 import { mdFilesUnder } from "./fswalk.ts";
 import {
     canonicalizeImages,
@@ -83,6 +92,7 @@ import {
     pageURL,
 } from "./linkindex.ts";
 import { hasConflictMarkers } from "./merge.ts";
+import { sendDrafts } from "./reply.ts";
 
 /** PageImage is one entry of the `docket_page_images` frontmatter list. */
 export interface PageImage {
@@ -306,6 +316,12 @@ export interface PusherDeps {
     force?: boolean;
     /** Push even when the edit detaches an open inline comment (push --drop-comments). Defaults to `false`. */
     dropComments?: boolean;
+    /**
+     * The reply drafts the user held back, by note dest → draft keys
+     * ({@link Draft.key}); they stay in the note unsent. Every other draft of a
+     * pushed note is sent.
+     */
+    hold?: Map<string, Set<string>>;
 }
 
 /**
@@ -744,6 +760,11 @@ export class Pusher {
      * change is such a removal resolves without a page update. A half-removed
      * comment, or a thread changed on Confluence since the pull, fails the push
      * before anything is sent. `lines` reports each resolve.
+     *
+     * With comments on, each reply draft not held back ({@link PusherDeps.hold})
+     * is sent after the page update and before the resolves; a draft a push
+     * cannot read fails it before anything is sent. The refreshed note keeps
+     * every draft not sent, under its thread.
      */
     async pushOne(dest: string): Promise<{
         changed: boolean;
@@ -759,6 +780,13 @@ export class Pusher {
             dest,
         );
         const name = pageName(this.d.config.syncRoot, dest);
+        const drafts = readDrafts(rawBody);
+        let sending: Draft[] = [];
+        if (this.d.config.comments) {
+            checkDrafts(rawBody, bodyLine);
+            const held = this.d.hold?.get(dest);
+            sending = drafts.filter((d) => held?.has(d.key) !== true);
+        }
         const resolutions = await this.planComments(
             meta.pageId,
             name,
@@ -808,7 +836,7 @@ export class Pusher {
             ) {
                 await deleteAttachments(this.d.client, uploaded);
                 uploaded = [];
-                if (resolutions.length === 0) {
+                if (resolutions.length === 0 && sending.length === 0) {
                     return {
                         changed: false,
                         version: meta.pageVersion,
@@ -816,7 +844,8 @@ export class Pusher {
                         lines: [],
                     };
                 }
-                // Only comments changed: resolve them, no page update.
+                // Only comments changed: send replies, resolve, no page update.
+                const sent = await this.sendReplies(meta.pageId, sending);
                 const res = await this.resolveAll(resolutions);
                 const refreshed = await this.refreshNote(
                     dest,
@@ -826,12 +855,13 @@ export class Pusher {
                     meta.pageVersion,
                     assets,
                     links,
+                    unsent(drafts, sent.sent),
                 );
                 return {
-                    changed: res.resolved > 0,
+                    changed: sent.posted > 0 || res.resolved > 0,
                     version: meta.pageVersion,
-                    warning: joinWarnings(res.warning, refreshed),
-                    lines: res.lines,
+                    warning: joinWarnings(sent.warning, res.warning, refreshed),
+                    lines: [...sent.lines, ...res.lines],
                 };
             }
 
@@ -869,9 +899,11 @@ export class Pusher {
             const pushedImages = uploaded;
             uploaded = [];
             meta.pageVersion = pushed.version;
+            const sent = await this.sendReplies(meta.pageId, sending);
             const res = await this.resolveAll(resolutions);
             let warning = joinWarnings(
                 pushed.warning,
+                sent.warning,
                 res.warning,
                 unmappedWarning(links),
             );
@@ -894,6 +926,7 @@ export class Pusher {
                         pushed.version,
                         assets,
                         links,
+                        unsent(drafts, sent.sent),
                     ),
                 );
             } catch (err) {
@@ -907,7 +940,7 @@ export class Pusher {
                 changed: true,
                 version: pushed.version,
                 warning,
-                lines: res.lines,
+                lines: [...sent.lines, ...res.lines],
             };
         } catch (err) {
             await deleteAttachments(this.d.client, uploaded);
@@ -939,6 +972,46 @@ export class Pusher {
             return [];
         }
         return checkDrift(threads, await this.d.client.fetchComments(pageId));
+    }
+
+    /**
+     * sendReplies sends `drafts` against the page's live comments
+     * ({@link sendDrafts}); `posted` counts the replies it created. It never
+     * throws: a failed comment fetch keeps every draft and becomes the warning,
+     * since a page update may already stand.
+     */
+    private async sendReplies(
+        pageId: string,
+        drafts: Draft[],
+    ): Promise<{
+        sent: Draft[];
+        posted: number;
+        lines: string[];
+        warning: string;
+    }> {
+        if (drafts.length === 0) {
+            return { sent: [], posted: 0, lines: [], warning: "" };
+        }
+        try {
+            const live = await this.d.client.fetchComments(pageId);
+            const out = await sendDrafts(
+                this.d.client,
+                this.d.config,
+                drafts,
+                live,
+            );
+            const posted = out.lines.filter((l) =>
+                l.startsWith("replied to"),
+            ).length;
+            return { ...out, posted };
+        } catch (err) {
+            return {
+                sent: [],
+                posted: 0,
+                lines: [],
+                warning: `sending replies failed: ${message(err)}`,
+            };
+        }
     }
 
     /**
@@ -975,8 +1048,9 @@ export class Pusher {
     /**
      * refreshNote rewrites the cache and note from `docJSON` at `version` (see
      * {@link refreshAfterPush}), weaving in the page's comments as they stand
-     * now when comments are on. A failed comment fetch renders none and returns
-     * a warning; the next pull brings them back.
+     * now when comments are on, and putting the reply drafts `keep` back. A
+     * failed comment fetch renders none and returns a warning; the next pull
+     * brings them back.
      */
     private async refreshNote(
         dest: string,
@@ -986,6 +1060,7 @@ export class Pusher {
         version: number,
         assets: Record<string, string>,
         links: ReturnType<typeof linkMapper>,
+        keep: Draft[] = [],
     ): Promise<string> {
         let comments: PageComments | undefined;
         let warning = "";
@@ -1012,6 +1087,7 @@ export class Pusher {
             this.d.config.margin,
             this.d.flavor,
             comments,
+            keep,
         );
         return warning;
     }
@@ -1049,6 +1125,8 @@ export interface PreflightEntry {
     reason: string;
     /** The comments a push would resolve (id and highlighted text), one per line. */
     resolves: string[];
+    /** The reply drafts the note holds, in note order. */
+    replies: PendingReply[];
 }
 
 /** PreflightDeps are the ports a {@link pushPreflight} run reads. */
@@ -1178,6 +1256,7 @@ export async function pushPreflight(
             cls,
             local.refusal,
             local.resolves,
+            local.replies,
         );
     }
     return out as PreflightEntry[];
@@ -1191,15 +1270,18 @@ interface LocalChange {
     refusal: string;
     /** The comments a push would resolve, as {@link PreflightEntry.resolves}. */
     resolves: string[];
+    /** The note's reply drafts, as {@link PreflightEntry.replies}. */
+    replies: PendingReply[];
 }
 
 /**
  * localChange decides whether pushing the note at `dest` would change its page,
  * running the same local steps a push does — conflict-marker check, image
- * detection, comment planning, and the Put lens — without any write to
- * Confluence. A note byte-identical to its cached base render is unchanged
- * without reconstructing (the render↔reconstruct round-trip law). Otherwise the
- * note is changed when it adds an image, would resolve a comment, or
+ * detection, comment and reply-draft planning, and the Put lens — without any
+ * write to Confluence. A note byte-identical to its cached base render is
+ * unchanged without reconstructing (the render↔reconstruct round-trip law).
+ * Otherwise the note is changed when it adds an image, would resolve a
+ * comment, holds a reply draft that can be sent, or
  * reconstructs to ADF or a title that differ from the cached base; the
  * edge-space correction a push also writes ({@link hoistDocEdgeSpaces}) does
  * not count on its own. Any error a push would raise on these steps becomes
@@ -1214,7 +1296,12 @@ async function localChange(
     meta: PushMeta,
 ): Promise<LocalChange> {
     const { fs, yaml, config, cacheDir, flavor } = deps;
-    const none: LocalChange = { changed: false, refusal: "", resolves: [] };
+    const none: LocalChange = {
+        changed: false,
+        refusal: "",
+        resolves: [],
+        replies: [],
+    };
     if (await unchangedLocally(fs, cacheDir, name, meta.pageVersion, dest)) {
         return none;
     }
@@ -1234,13 +1321,20 @@ async function localChange(
                   await readBaseBody(fs, cacheDir, name, meta.pageVersion),
               ).map(describe)
             : [];
+        const replies = config.comments
+            ? pendingReplies(rawBody, bodyLine)
+            : [];
         const assets = metaAssets(meta);
         const images = await newImageEdits(fs, body, assets, dest);
         if (images.refusal !== "") {
             return { ...none, refusal: refusalReason(images.refusal, name) };
         }
-        if (images.pending > 0 || resolves.length > 0) {
-            return { changed: true, refusal: "", resolves };
+        if (
+            images.pending > 0 ||
+            resolves.length > 0 ||
+            replies.some((r) => r.mark === "")
+        ) {
+            return { changed: true, refusal: "", resolves, replies };
         }
         const next = flavor.reconstruct(base, body, {
             mentions: meta.mentions,
@@ -1253,10 +1347,55 @@ async function localChange(
         const changed =
             JSON.stringify(next.doc) !== JSON.stringify(base.doc) ||
             meta.title !== base.title;
-        return { changed, refusal: "", resolves };
+        return { changed, refusal: "", resolves, replies };
     } catch (err) {
         return { ...none, refusal: refusalReason(message(err), name) };
     }
+}
+
+/** ReplyCandidate is one reply draft a push would send, with its note. */
+export interface ReplyCandidate extends PendingReply {
+    dest: string;
+}
+
+/**
+ * collectReplies lists the reply drafts of the notes at `dests`, for a push to
+ * ask which to send. A note it cannot read, and one whose drafts a push would
+ * refuse, is left out: the push itself reports it.
+ */
+export async function collectReplies(
+    fs: FileSystem,
+    dests: string[],
+): Promise<ReplyCandidate[]> {
+    const out: ReplyCandidate[] = [];
+    for (const dest of dests) {
+        try {
+            const { body, bodyLine } = splitFrontmatter(
+                await fs.readText(dest),
+            );
+            for (const r of pendingReplies(body, bodyLine)) {
+                out.push({ dest, ...r });
+            }
+        } catch {
+            // Unreadable, or refused: the push reports it.
+        }
+    }
+    return out;
+}
+
+/**
+ * pendingReplies lists the reply drafts of note body `rawBody` for a push
+ * review, each with the author of the thread it answers. It throws, like a
+ * push, on a draft a push cannot read ({@link checkDrafts}).
+ */
+function pendingReplies(rawBody: string, bodyLine: number): PendingReply[] {
+    checkDrafts(rawBody, bodyLine);
+    return readDrafts(rawBody).map((d) => ({
+        key: d.key,
+        to: threadOf(rawBody, d.threadId)?.author ?? "",
+        text: d.text,
+        mark: d.mark,
+    }));
 }
 
 /**
@@ -1320,6 +1459,7 @@ function entry(
     cls: PreflightClass,
     reason: string,
     resolves: string[] = [],
+    replies: PendingReply[] = [],
 ): PreflightEntry {
     return {
         dest,
@@ -1330,6 +1470,7 @@ function entry(
         cls,
         reason,
         resolves,
+        replies,
     };
 }
 
@@ -1664,10 +1805,35 @@ function mergeOntoLive(
     return { docJSON: JSON.stringify(next.doc), version: live.version + 1 };
 }
 
+/** unsent returns `drafts` without the ones in `sent`. */
+function unsent(drafts: Draft[], sent: Draft[]): Draft[] {
+    return drafts.filter((d) => !sent.includes(d));
+}
+
+/**
+ * withDrafts returns the rendered note `md` with the reply drafts `keep` put
+ * back after their threads ({@link placeDrafts}), marking a draft whose thread
+ * the page's `comments` no longer show.
+ */
+function withDrafts(
+    md: string,
+    keep: Draft[],
+    comments: PageComments | undefined,
+): string {
+    if (keep.length === 0) {
+        return md;
+    }
+    const { body } = splitFrontmatter(md);
+    const at = md.lastIndexOf(body);
+    const placed = placeDrafts(body, keep, (id) => threadGone(comments, id));
+    return md.slice(0, at) + placed + md.slice(at + body.length);
+}
+
 /**
  * refreshAfterPush rewrites the ADF cache and the rendered Markdown (cache `.md`
  * and the note) for the pushed version, so the local state matches what was
- * pushed and the next push has a correct baseline.
+ * pushed and the next push has a correct baseline. The note also gets the
+ * reply drafts `keep` back; the cache render never carries drafts.
  */
 async function refreshAfterPush(
     fs: FileSystem,
@@ -1682,6 +1848,7 @@ async function refreshAfterPush(
     margin: number,
     flavor: Flavor,
     comments?: PageComments,
+    keep: Draft[] = [],
 ): Promise<void> {
     const page: Page = {
         name,
@@ -1706,7 +1873,7 @@ async function refreshAfterPush(
     })[0];
     const mdCache = `${adfPath.slice(0, -".json".length)}.md`;
     await fs.write(mdCache, md);
-    await fs.write(dest, md);
+    await fs.write(dest, withDrafts(md, keep, comments));
     if (comments) {
         await writeRecord(fs, cacheDir, name, recordThreads(comments, doc));
     }

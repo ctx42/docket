@@ -53,6 +53,7 @@ export * from "./sync/clean.ts";
 export { type CommentRef, threadAt, threadOf } from "./sync/comments.ts";
 export * from "./sync/create.ts";
 export * from "./sync/discover.ts";
+export * from "./sync/drafts.ts";
 export * from "./sync/fswalk.ts";
 export * from "./sync/gc.ts";
 export * from "./sync/images.ts";

@@ -20,7 +20,8 @@ import {
     readRecord,
     toRenderComments,
 } from "../../src/sync/comments.ts";
-import { Pusher, pushPreflight } from "../../src/sync/push.ts";
+import { draftBlock, upsertDraft } from "../../src/sync/drafts.ts";
+import { collectReplies, Pusher, pushPreflight } from "../../src/sync/push.ts";
 import { StubHttpClient } from "../support/http-stub.ts";
 import { MemFS } from "../support/memfs.ts";
 
@@ -147,6 +148,7 @@ class ResolvingStub extends StubHttpClient {
         super();
         this.on("GET", pageURL, { body: livePage(3) })
             .on("PUT", putURL, { status: 200 })
+            .on("POST", `${v2}/inline-comments`, { body: '{"id":"N1"}' })
             .on("GET", footerURL, {
                 body: JSON.stringify({
                     results: footer.map((f) => commentJSON(f)),
@@ -208,8 +210,30 @@ class ResolvingStub extends StubHttpClient {
         return this.failing.has(id);
     }
 
+    /** failReply makes posting a reply answer HTTP 500. */
+    failReply(): this {
+        this.on("POST", `${v2}/inline-comments`, { status: 500 });
+        return this;
+    }
+
     override async do(request: HttpRequest): Promise<HttpResponse> {
         const resp = await super.do(request);
+        if (request.method === "POST" && resp.status === 200) {
+            const parent = JSON.parse(String(request.body)).parentCommentId;
+            this.comments = this.comments.map((c) =>
+                c.id === parent
+                    ? {
+                          ...c,
+                          replies: [
+                              ...(c.replies ?? []),
+                              { id: "N1", version: 1 },
+                          ],
+                      }
+                    : c,
+            );
+            this.serve();
+            return resp;
+        }
         const id = request.url.startsWith(`${v2}/inline-comments/`)
             ? request.url.slice(`${v2}/inline-comments/`.length)
             : "";
@@ -302,8 +326,14 @@ const dropAnchor =
     (md: string): string =>
         md.replace(`[^cf-${marker}]`, "");
 
-function pusherFor(stub: StubHttpClient, fs: MemFS, config = cfg()): Pusher {
+function pusherFor(
+    stub: StubHttpClient,
+    fs: MemFS,
+    config = cfg(),
+    hold?: Map<string, Set<string>>,
+): Pusher {
     return new Pusher({
+        ...(hold ? { hold } : {}),
         client: new ConfluenceClient(stub, {
             host: config.host,
             account: config.account,
@@ -684,5 +714,213 @@ describe("pushPreflight resolves", () => {
 
         expect(have[0]?.cls).toBe("modified");
         expect(have[0]?.resolves).toEqual([]);
+    });
+});
+
+/** draft adds draft `text` under thread `id` of the note. */
+const draft =
+    (id: string, text: string) =>
+    (md: string): string =>
+        upsertDraft(md, id, text);
+
+/** posts are the reply bodies `stub` received. */
+const posts = (stub: ResolvingStub): Array<Record<string, unknown>> =>
+    stub
+        .writes()
+        .filter((r) => r.method === "POST")
+        .map((r) => JSON.parse(String(r.body)));
+
+describe("Pusher sending reply drafts", () => {
+    it("sends a draft as a reply and drops it from the note", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1, C2]);
+        await edit(fs, draft("C1", "Only **T2**."));
+        const stub = new ResolvingStub([C1, C2]);
+
+        const have = await pusherFor(stub, fs).pushOne("/vault/p.md");
+
+        expect(have.changed).toBe(true);
+        expect(have.lines).toEqual(['replied to comment id:C1 "Only **T2**."']);
+        expect(stub.writes().map((r) => r.method)).toEqual(["POST"]);
+        const sent = posts(stub)[0] as {
+            parentCommentId: string;
+            body: { value: string };
+        };
+        expect(sent.parentCommentId).toBe("C1");
+        expect(sent.body.value).toContain('"strong"');
+        const note = await fs.readText("/vault/p.md");
+        expect(note).not.toContain("[!reply]");
+        expect(note).toContain("> > [!comment] id:N1");
+    });
+
+    it("keeps a held draft under its thread through a page update", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1]);
+        await edit(fs, (md) =>
+            draft("C1", "Later.")(md.replace("keep", "kept")),
+        );
+        const stub = new ResolvingStub([C1]);
+        const hold = new Map([["/vault/p.md", new Set(["C1#1"])]]);
+
+        const have = await pusherFor(stub, fs, cfg(), hold).pushOne(
+            "/vault/p.md",
+        );
+
+        expect(have.version).toBe(4);
+        expect(posts(stub)).toEqual([]);
+        const note = await fs.readText("/vault/p.md");
+        expect(note).toContain("kept");
+        expect(note).toMatch(
+            /> \[!comment\] id:C1[^\n]*\n> say C1\n\n> \[!reply\] draft\n> Later\.\n/,
+        );
+        expect(await fs.readText("/data/cache/p.v4.md")).not.toContain(
+            "[!reply]",
+        );
+    });
+
+    it("marks a draft whose thread was resolved on Confluence", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1]);
+        await edit(fs, draft("C1", "Too late."));
+        const stub = new ResolvingStub([{ ...C1, status: "resolved" }]);
+
+        const have = await pusherFor(stub, fs).pushOne("/vault/p.md");
+
+        expect(have.changed).toBe(false);
+        expect(have.lines).toEqual([
+            "cannot send reply to comment id:C1: thread is resolved on Confluence",
+        ]);
+        expect(posts(stub)).toEqual([]);
+        expect(await fs.readText("/vault/p.md")).toContain(
+            draftBlock("Too late.", "thread id:C1 is resolved on Confluence"),
+        );
+    });
+
+    it("does not send a draft the thread already has", async () => {
+        const fs = new MemFS();
+        const withReply = { ...C1, replies: [{ id: "R1", version: 1 }] };
+        await pulled(fs, [withReply]);
+        await edit(fs, draft("C1", "say R1"));
+        const stub = new ResolvingStub([withReply]);
+
+        const have = await pusherFor(stub, fs).pushOne("/vault/p.md");
+
+        expect(have.lines).toEqual([
+            'reply to comment id:C1 already sent: "say R1"',
+        ]);
+        expect(posts(stub)).toEqual([]);
+        expect(await fs.readText("/vault/p.md")).not.toContain("[!reply]");
+    });
+
+    it("keeps a draft whose reply failed, as a warning", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1]);
+        await edit(fs, draft("C1", "Retry me."));
+        const stub = new ResolvingStub([C1]).failReply();
+
+        const have = await pusherFor(stub, fs).pushOne("/vault/p.md");
+
+        expect(have.changed).toBe(false);
+        expect(have.warning).toContain("sending reply failed: id:C1");
+        expect(await fs.readText("/vault/p.md")).toContain(
+            draftBlock("Retry me."),
+        );
+    });
+
+    it("refuses a draft not under a comment before any write", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1]);
+        await edit(fs, (md) => `${md}\n${draftBlock("Lost.")}\n`);
+        const stub = new ResolvingStub([C1]);
+
+        await expect(
+            pusherFor(stub, fs).pushOne("/vault/p.md"),
+        ).rejects.toThrow("is not under a comment");
+        expect(stub.writes()).toEqual([]);
+    });
+
+    it("keeps drafts unsent with comments off", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1]);
+        await edit(fs, (md) =>
+            draft("C1", "Later.")(md.replace("keep", "kept")),
+        );
+        const stub = new ResolvingStub([C1]);
+
+        await pusherFor(stub, fs, cfg(false)).pushOne("/vault/p.md");
+
+        expect(posts(stub)).toEqual([]);
+        expect(await fs.readText("/vault/p.md")).toContain(
+            draftBlock("Later."),
+        );
+    });
+
+    it("lists each draft in the preflight", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1]);
+        await edit(fs, draft("C1", "Only T2."));
+        const stub = new StubHttpClient().on(
+            "GET",
+            `${v2}/pages?id=123&limit=250`,
+            {
+                body: JSON.stringify({
+                    results: [{ id: "123", version: { number: 3 } }],
+                    _links: {},
+                }),
+            },
+        );
+        const config = cfg();
+
+        const have = await pushPreflight(
+            {
+                client: new ConfluenceClient(stub, {
+                    host: config.host,
+                    account: config.account,
+                    token: config.token,
+                }),
+                fs,
+                yaml,
+                config,
+                cacheDir: "/data/cache",
+                flavor: obsidianFlavor,
+                links: null,
+            },
+            ["/vault/p.md"],
+        );
+
+        expect(have[0]?.cls).toBe("modified");
+        expect(have[0]?.replies).toEqual([
+            { key: "C1#1", to: "u", text: "Only T2.", mark: "" },
+        ]);
+    });
+});
+
+describe("collectReplies", () => {
+    it("lists each note's drafts, skipping notes a push would refuse", async () => {
+        const fs = new MemFS();
+        await pulled(fs, [C1]);
+        await edit(fs, draft("C1", "Only T2."));
+        await fs.write("/vault/plain.md", "---\ntitle: x\n---\n\nText.\n");
+        await fs.write(
+            "/vault/bad.md",
+            `---\ntitle: x\n---\n\nText.\n\n${draftBlock("Lost.")}\n`,
+        );
+
+        const have = await collectReplies(fs, [
+            "/vault/p.md",
+            "/vault/plain.md",
+            "/vault/bad.md",
+            "/vault/missing.md",
+        ]);
+
+        expect(have).toEqual([
+            {
+                dest: "/vault/p.md",
+                key: "C1#1",
+                to: "u",
+                text: "Only T2.",
+                mark: "",
+            },
+        ]);
     });
 });

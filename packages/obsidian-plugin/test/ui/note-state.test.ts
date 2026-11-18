@@ -20,6 +20,7 @@ const entry = (cls: PreflightEntry["cls"], reason = ""): PreflightEntry => ({
     cls,
     reason,
     resolves: [],
+    replies: [],
 });
 
 const empty: StatusReport = {

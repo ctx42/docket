@@ -32,8 +32,9 @@ const COMMENT_REF_RE = /\[\^cf-[^\]]+\]/g;
  * stripCommentDecorations removes the comment decorations from a note body,
  * recovering the exact comment-free body a push must reconstruct — the inverse of
  * the render's decoration. It drops every `[^cf-…]` anchor ref (each sits at a
- * text-run boundary, so removing it restores the run verbatim) and every
- * top-level `[!comment]` callout block, including the trailing `## Comments`
+ * text-run boundary, so removing it restores the run verbatim), every
+ * top-level `[!comment]` callout block and `[!reply]` draft (the user's
+ * replies wait outside the page body), including the trailing `## Comments`
  * heading and the footer callouts under it; a `## Comments` heading anywhere
  * else is page content and stays. Block segmentation reuses
  * {@link segmentBody}, so a fenced code block that happens to contain a blank
@@ -52,10 +53,13 @@ export function stripCommentDecorations(body: string): string {
     return kept.map((b) => b.text).join("\n\n");
 }
 
-/** isCallout reports whether a top-level block is a `[!comment]` callout. */
+/**
+ * isCallout reports whether a top-level block is a `[!comment]` callout or a
+ * `[!reply]` draft; neither is page content.
+ */
 function isCallout(text: string): boolean {
     const first = text.split("\n", 1)[0] ?? "";
-    return /^>\s*\[!comment\]/i.test(first);
+    return /^>\s*\[!(?:comment|reply)\]/i.test(first);
 }
 
 /** isTrailingHeading reports whether a block is a bare `## Comments` heading. */

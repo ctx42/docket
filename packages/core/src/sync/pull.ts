@@ -54,6 +54,7 @@ import {
     discoverSpace,
     discoverSpaces,
 } from "./discover.ts";
+import { placeDrafts, readDrafts, threadGone } from "./drafts.ts";
 import { dirEmpty, mdFilesUnder } from "./fswalk.ts";
 import {
     buildLinkIndex,
@@ -538,7 +539,7 @@ export class Puller {
         // would see "remote unchanged" and keep the stale note — which is why
         // toggling comments on never reached an already-pulled note. Refresh the
         // cache after, so the base stays the previous render during the merge.
-        const merge = await this.mergeIntoNote(page, dest, md);
+        const merge = await this.mergeIntoNote(page, dest, md, fetched);
         const wroteCache = await writeIfChanged(this.d.fs, mdCache, md);
         // Record the inline threads the render drew, so a push can tell which
         // ones the user removed. A failed fetch drew none, so records none.
@@ -632,6 +633,7 @@ export class Puller {
         page: Page,
         dest: string,
         remote: string,
+        live: PageComments | undefined,
     ): Promise<"wrote" | "kept" | "merged" | "conflict"> {
         let local: string;
         try {
@@ -668,6 +670,19 @@ export class Puller {
             return wrote ? "wrote" : "kept";
         }
 
+        // Reply drafts are the user's, not the overlay: every body written below
+        // gets them back after their threads ({@link placeDrafts}).
+        const drafts = readDrafts(localFm.body);
+        const place = (body: string): string =>
+            placeDrafts(body, drafts, (id) => threadGone(live, id));
+        const at = remote.lastIndexOf(remoteFm.body);
+        const remoteNote =
+            drafts.length === 0
+                ? remote
+                : remote.slice(0, at) +
+                  place(remoteFm.body) +
+                  remote.slice(at + remoteFm.body.length);
+
         // Merge on comment-free bodies: the overlay is docket's, not a user edit,
         // so it must never be carried over from the note. Local and base are
         // stripped; the fresh render (remoteFm.body) keeps its overlay and is the
@@ -680,7 +695,7 @@ export class Puller {
         // the pre-fix cache-ordering bug left comment-free (its cached base was
         // clobbered, so the version compare below would wrongly keep it).
         if (localBody === stripCommentDecorations(remoteFm.body)) {
-            const wrote = await writeIfChanged(this.d.fs, dest, remote);
+            const wrote = await writeIfChanged(this.d.fs, dest, remoteNote);
             return wrote ? "wrote" : "kept";
         }
 
@@ -692,7 +707,7 @@ export class Puller {
         const base = rawBase === null ? null : stripCommentDecorations(rawBase);
         if (base !== null && localBody === base) {
             // No real edits; the remote moved on — take it (body + fresh overlay).
-            const wrote = await writeIfChanged(this.d.fs, dest, remote);
+            const wrote = await writeIfChanged(this.d.fs, dest, remoteNote);
             return wrote ? "wrote" : "kept";
         }
 
@@ -715,7 +730,7 @@ export class Puller {
         }
         await this.d.fs.write(
             dest,
-            assembleNote(remoteFm.frontmatter, result.text),
+            assembleNote(remoteFm.frontmatter, place(result.text)),
         );
         return result.conflict ? "conflict" : "merged";
     }
