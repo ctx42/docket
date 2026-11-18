@@ -5,9 +5,11 @@
 // without its default `project-config.md`, the plugin writes one holding only
 // what the server needs to start — its name, the sync folder as its one
 // source, and watching on. The first start then gives it a port and a
-// `.mcp.json` (port.ts). The keys only the srd skills read (`kb`,
-// `initiatives`, and the rest) are theirs to add (`srd:init`). File access is
-// injected, so the logic is unit-tested.
+// `.mcp.json` (port.ts). The settings tab's Detect action adds the feature
+// keys (`initiatives`, `glossary`, `gaps`, `precedence`; feature-keys.ts),
+// and `srd:init` adds the keys only the srd skills read (`kb`,
+// `srd-standard`, `srd-work`). File access is injected, so the logic is
+// unit-tested.
 
 import { DEFAULT_CONFIG_PATH } from "./config.ts";
 import type { PortDeps } from "./port.ts";
