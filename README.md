@@ -625,7 +625,10 @@ the next one.
 You freely edit prose, headings, list items, blockquotes, panels, expands, and
 table cells, and add paragraphs and images; the frozen ` ```adf ` blocks and
 `%%adf:…%%` comments carry everything else through unchanged, and an
-`` `adf:…` `` span is safe to move but not to hand-edit. Frontmatter — the
+`` `adf:…` `` span is safe to move but not to hand-edit. Spaces inside a line
+are content: make a double space single and the push sends it. Line breaks,
+and the spaces at a line's ends or after a list or heading marker, are layout
+and never count as a change. Frontmatter — the
 `docket_mode: pull` marker that flags the note as `docket`-managed, plus the
 bookkeeping fields that track each note's Confluence page — must be left
 intact. Every key `docket` keeps for itself carries the `docket_` prefix, so it

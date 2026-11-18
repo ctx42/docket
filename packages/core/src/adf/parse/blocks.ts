@@ -117,36 +117,51 @@ export function isThematicBreak(text: string): boolean {
 }
 
 /**
- * normalizeInlineText collapses cosmetic whitespace — the runs of ASCII spaces,
- * tabs and newlines that a soft-wrap or reflow introduces — to a single space,
- * trimming the ends, so two texts differing only by layout compare equal. Two
- * kinds of whitespace stay significant, because they are content the render
- * emits verbatim and an edit to them must be seen: the internal whitespace of an
- * inline code span (or `adf:` directive) and of a Markdown link `[label](href)`,
- * both of which are copied through untouched. A non-ASCII space such as a
- * non-breaking space is content, not layout, and is likewise preserved — keeping
- * this consistent with {@link isBlankLine}, which does not treat it as blank.
- * It is the shared collapse of the block key and the reconstruct lens's unwrap.
+ * normalizeInlineText collapses cosmetic whitespace — a run of ASCII spaces,
+ * tabs and newlines holding a line break, which a soft-wrap or reflow
+ * introduces — to a single space, trimming the ends, so two texts differing
+ * only by layout compare equal. A run inside one line is content, kept as is:
+ * the render writes it from the page text, so an edit to it (a double space
+ * made single) must be seen and pushed. Two more kinds of whitespace stay
+ * significant for the same reason: the internal whitespace of an inline code
+ * span (or `adf:` directive) and of a Markdown link `[label](href)`, both of
+ * which are copied through untouched. The run after a block marker that opens
+ * a line (see {@link LINE_MARKER_RE}) is Markdown syntax, so it collapses like
+ * layout. A non-ASCII space such as a non-breaking space is content, not
+ * layout, and is likewise preserved — keeping this consistent with
+ * {@link isBlankLine}, which does not treat it as blank. It is the shared
+ * collapse of the block key and the reconstruct lens's unwrap.
  */
 export function normalizeInlineText(s: string): string {
     let out = "";
-    let pendingSpace = false;
+    let pending = "";
+    let lineStart = true;
     const emit = (str: string): void => {
-        if (pendingSpace) {
-            if (out !== "") {
-                out += " ";
-            }
-            pendingSpace = false;
+        if (pending !== "" && out !== "") {
+            out += /[\r\n]/.test(pending) ? " " : pending;
         }
+        pending = "";
+        lineStart = false;
         out += str;
     };
     let i = 0;
     while (i < s.length) {
         const c = s.charAt(i);
-        if (c === " " || c === "\t" || c === "\r" || c === "\n") {
-            pendingSpace = true;
+        if (isAsciiSpace(c)) {
+            pending += c;
+            lineStart ||= c === "\n" || c === "\r";
             i++;
             continue;
+        }
+        if (lineStart) {
+            const mk = LINE_MARKER_RE.exec(s.slice(i, i + 16));
+            if (mk !== null) {
+                const marker = mk[1] ?? "";
+                emit(marker);
+                i += mk[0].length;
+                pending = " ";
+                continue;
+            }
         }
         if (c === "\\") {
             // Keep a backslash escape (e.g. \` or \[) intact so it does not open
@@ -160,7 +175,7 @@ export function normalizeInlineText(s: string): string {
                 // A `\` that ends a line is a hard break: the space before it
                 // is layout, like a trailing space, so `a \` keys as `a\`.
                 if (next === "" || next === "\n" || next === "\r") {
-                    pendingSpace = false;
+                    pending = "";
                 }
                 emit(c);
                 i++;
@@ -188,6 +203,14 @@ export function normalizeInlineText(s: string): string {
     }
     return out;
 }
+
+/**
+ * LINE_MARKER_RE matches a block marker that opens a line — a heading `#`
+ * run, a bullet, an ordered `1.` or `1)`, or an `N>` indent marker — with the
+ * spaces and tabs after it; group 1 is the marker alone. A marker counts only
+ * when whitespace follows it, as Markdown requires.
+ */
+const LINE_MARKER_RE = /^(#{1,6}|[-*+]|\d{1,9}[.)]|\d{1,2}>)[ \t]+/;
 
 /** isAsciiSpace reports whether c is one of the ASCII whitespace characters. */
 function isAsciiSpace(c: string): boolean {

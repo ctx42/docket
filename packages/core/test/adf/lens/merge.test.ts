@@ -46,6 +46,16 @@ describe("merge3", () => {
         expect(attrStr(out.doc.content?.[0]?.attrs, "localId")).toBe("p1");
     });
 
+    it("keeps a local edit that only removes a space", () => {
+        const base = doc("alpha  one", "beta");
+        const remote = doc("alpha  one", "beta remote");
+        const local = renderBody(base).replace("alpha  one", "alpha one");
+
+        const merged = merge3(base, remote, local, null);
+
+        expect(merged).toBe("alpha one\n\nbeta remote");
+    });
+
     it("the same edit on both sides is concordant", () => {
         const base = doc("alpha", "beta");
         const remote = doc("alpha edited", "beta");

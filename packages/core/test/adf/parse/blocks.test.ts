@@ -26,9 +26,49 @@ describe("normalizeBlock", () => {
             want: "one two three four",
         },
         {
-            testN: "trims and collapses runs",
-            in: "  a   b\t c \n",
-            want: "a b c",
+            testN: "trims the ends",
+            in: "  a b \n",
+            want: "a b",
+        },
+        {
+            testN: "keeps a run of spaces inside a line",
+            in: "a  b",
+            want: "a  b",
+        },
+        {
+            testN: "keeps a tab inside a line",
+            in: "a\t b",
+            want: "a\t b",
+        },
+        {
+            testN: "collapses a run holding a line break",
+            in: "a  \n  b",
+            want: "a b",
+        },
+        {
+            testN: "collapses the run after a heading marker",
+            in: "##  Alarm  widgets",
+            want: "## Alarm  widgets",
+        },
+        {
+            testN: "collapses the run after a bullet marker on each line",
+            in: "-  one\n   -\ttwo  three",
+            want: "- one - two  three",
+        },
+        {
+            testN: "collapses the run after an ordered marker",
+            in: "1.  first\n10)  tenth",
+            want: "1. first 10) tenth",
+        },
+        {
+            testN: "collapses the run after an indent marker",
+            in: "1>  Based on",
+            want: "1> Based on",
+        },
+        {
+            testN: "keeps a run after a dash that is not a marker",
+            in: "a -  b",
+            want: "a -  b",
         },
         { testN: "keeps a hard break marker", in: "a\\\nb", want: "a\\ b" },
         {

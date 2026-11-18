@@ -208,6 +208,35 @@ describe("put modify", () => {
         expect(t?.marks?.[0]?.type).toBe("code");
     });
 
+    it("applies an edit that only removes a space inside a line", () => {
+        const base = newADF(`{ "adf": { "type": "doc", "content": [
+           { "type": "paragraph", "attrs": { "localId": "p1" }, "content": [
+              { "type": "text", "text": "GR-3:",
+                "marks": [ { "type": "strong" } ] },
+              { "type": "text", "text": "  The widget." } ] } ] } }`);
+        const body = renderBody(base);
+        expect(body).toBe("**GR-3:**  The widget.");
+
+        const out = put(base, body.replace("  ", " "), null, null, null);
+
+        const para = out.doc.content?.[0];
+        expect(attrStr(para?.attrs, "localId")).toBe("p1");
+        expect(para?.content?.[1]?.text).toBe(" The widget.");
+    });
+
+    it("keeps a space run the edit did not touch", () => {
+        const base = newADF(`{ "adf": { "type": "doc", "content": [
+           { "type": "paragraph", "attrs": { "localId": "p1" }, "content": [
+              { "type": "text", "text": "GR-3:",
+                "marks": [ { "type": "strong" } ] },
+              { "type": "text", "text": "  The widget." } ] } ] } }`);
+        const body = renderBody(base);
+
+        const out = put(base, body.replace("The", "A"), null, null, null);
+
+        expect(out.doc.content?.[0]?.content?.[1]?.text).toBe("  A widget.");
+    });
+
     it("edits a paragraph, keeping underline and color", () => {
         const base = newADF(`{ "adf": { "type": "doc", "content": [
            { "type": "paragraph", "attrs": { "localId": "p" }, "content": [
@@ -2922,7 +2951,7 @@ describe("put on a page with stray spaces", () => {
         name: string;
         node: string;
         want: string;
-        old: string;
+        old?: string;
         edit: [string, string];
     }> = [
         {
@@ -2950,7 +2979,6 @@ describe("put on a page with stray spaces", () => {
                    "marks": [ { "type": "strong" } ] },
                  { "type": "text", "text": " bar" } ] }`,
             want: "**UI-1:** bar",
-            old: "**UI-1:**  bar",
             edit: ["bar", "baz"],
         },
         {
@@ -2982,13 +3010,16 @@ describe("put on a page with stray spaces", () => {
             expect(json(have)).toBe(json(adf));
         });
 
-        it(`keeps ${tc.name} unchanged on an old body`, () => {
-            const adf = base();
+        const old = tc.old;
+        if (old !== undefined) {
+            it(`keeps ${tc.name} unchanged on an old body`, () => {
+                const adf = base();
 
-            const have = put(adf, tc.old, null, null, null);
+                const have = put(adf, old, null, null, null);
 
-            expect(json(have)).toBe(json(adf));
-        });
+                expect(json(have)).toBe(json(adf));
+            });
+        }
 
         it(`edits ${tc.name}`, () => {
             const adf = base();
@@ -3002,4 +3033,20 @@ describe("put on a page with stray spaces", () => {
             );
         });
     }
+
+    it("pushes an old body's double space after a bold label as shown", () => {
+        // An old render wrote the space hoisted out of the bold next to the
+        // one after it. A space run inside a line is content, so the old
+        // body reads as an edit; the push keeps both visible spaces.
+        const adf = newADF(`{ "adf": { "type": "doc", "content": [
+           { "type": "paragraph", "attrs": { "localId": "p" }, "content": [
+             { "type": "text", "text": "UI-1: ",
+               "marks": [ { "type": "strong" } ] },
+             { "type": "text", "text": " bar" } ] } ] } }`);
+
+        const have = put(adf, "**UI-1:**  bar", null, null, null);
+
+        expect(renderBody(have)).toBe("**UI-1:**  bar");
+        expect(attrStr(have.doc.content?.[0]?.attrs, "localId")).toBe("p");
+    });
 });
