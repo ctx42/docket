@@ -38,6 +38,7 @@ import { formatRFC3339Nano } from "../gocompat/time.ts";
 import { utf8Decode, utf8Encode } from "../gocompat/utf8.ts";
 import { MAX_K } from "../search/retrieval.ts";
 import { CanceledError, type Signal } from "../util/cancel.ts";
+import type { IndexState, IndexTracker } from "../watch/status.ts";
 import { validateArgs } from "./schema.ts";
 import { TOOL_DEFS, type ToolDef } from "./tool-defs.ts";
 
@@ -46,6 +47,9 @@ export const SERVER_NAME = "docket";
 
 /** The tools registered only with a glossary, and only with a gap store. */
 const GLOSSARY_TOOLS: ReadonlySet<string> = new Set(["glossary_terms"]);
+
+/** INDEX_TOOLS need an index tracker. */
+const INDEX_TOOLS: ReadonlySet<string> = new Set(["index_status"]);
 const GAP_TOOLS: ReadonlySet<string> = new Set([
     "report_gap",
     "list_gaps",
@@ -83,6 +87,8 @@ export interface ToolDeps {
     glossary?: Glossary;
     /** logErr receives an unexpected tool failure; clients see none. */
     logErr?: (err: unknown) => void;
+    /** index reports how current the index is and rebuilds it. */
+    index?: IndexTracker;
 }
 
 /** Args are a tool call's decoded arguments. */
@@ -131,7 +137,8 @@ export class Tools {
             (def) =>
                 (!GLOSSARY_TOOLS.has(def.name) ||
                     deps.glossary !== undefined) &&
-                (!GAP_TOOLS.has(def.name) || deps.store !== undefined),
+                (!GAP_TOOLS.has(def.name) || deps.store !== undefined) &&
+                (!INDEX_TOOLS.has(def.name) || deps.index !== undefined),
         );
         this.handlers.set("search", (a) => this.search(a));
         this.handlers.set("get_doc", (a) => this.getDoc(a));
@@ -145,6 +152,13 @@ export class Tools {
         this.handlers.set("list_docs", async (a) =>
             this.listDocs(str(a, "folder"), a["fields"]),
         );
+        if (deps.index !== undefined) {
+            const index = deps.index;
+            this.handlers.set("index_status", async (a) => {
+                if (a["reindex"] === true) await index.reindex();
+                return stateJSON(index.state());
+            });
+        }
         if (deps.glossary !== undefined) {
             const gls = deps.glossary;
             this.handlers.set("glossary_terms", async (a) => ({
@@ -391,6 +405,20 @@ function intOverflow(name: string, args: Args): string | undefined {
             ? json.slice(at)
             : `${utf8Decode(rest.slice(0, 32))}...`;
     return `json: cannot unmarshal number ${window} overflows ${into}`;
+}
+
+/** stateJSON is an {@link IndexState} as index_status answers it. */
+export function stateJSON(st: IndexState): {
+    [key: string]: GoJSON | undefined;
+} {
+    return {
+        generation: st.generation,
+        indexed_at: st.indexedAt,
+        docs: st.docs,
+        watching: st.watching,
+        pending: st.pending,
+        last_error: st.lastError,
+    };
 }
 
 /** refJSON is a {@link RefCheck} as check_refs answers it. */

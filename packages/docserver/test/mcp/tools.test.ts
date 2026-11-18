@@ -15,6 +15,7 @@ import {
     ToolError,
     Tools,
 } from "../../src/mcp/tools.ts";
+import { IndexTracker } from "../../src/watch/status.ts";
 import { readGolden } from "../support/golden.ts";
 import { MemDocFs } from "../support/mem-doc-fs.ts";
 import {
@@ -269,6 +270,50 @@ describe("search", () => {
             "doc/misc/c.md": 5,
             "initiatives/srd.md": undefined,
         });
+    });
+});
+
+describe("index_status", () => {
+    it("reports the index, and reindexes when asked", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        const index = new IndexTracker(engine, () => 0, true);
+        index.signal();
+        const client = await connect({ engine, version: "x", index });
+
+        // --- When ---
+        const before = decode(
+            await client.callTool({ name: "index_status", arguments: {} }),
+        );
+        const after = decode(
+            await client.callTool({
+                name: "index_status",
+                arguments: { reindex: true },
+            }),
+        );
+
+        // --- Then ---
+        expect(before).toEqual({
+            generation: 0,
+            indexed_at: "1970-01-01T00:00:00.000Z",
+            docs: 1,
+            watching: true,
+            pending: true,
+            last_error: "",
+        });
+        expect(after).toMatchObject({ generation: 1, pending: false });
+    });
+
+    it("is not offered without an index tracker", async () => {
+        // --- Given ---
+        const { engine } = await newEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const have = (await client.listTools()).tools.map((t) => t.name);
+
+        // --- Then ---
+        expect(have).not.toContain("index_status");
     });
 });
 

@@ -15,6 +15,7 @@ import {
     Rest,
     type RestResponse,
 } from "../../src/rest/rest.ts";
+import { IndexTracker } from "../../src/watch/status.ts";
 import { bookshop, ROOT, rankEngine } from "../mcp/support.ts";
 import { readGolden } from "../support/golden.ts";
 import { MemDocFs } from "../support/mem-doc-fs.ts";
@@ -231,6 +232,50 @@ describe("GET /docs", () => {
                 '{"id":"initiatives/srd.md","path":"initiatives/srd.md","title":"srd"},' +
                 '{"id":"kb/a.md","path":"kb/a.md","rank":1,"title":"a"}]}\n',
         );
+    });
+});
+
+describe("GET /status", () => {
+    it("reports the index, and reindexes on POST /status/reindex", async () => {
+        // --- Given ---
+        const engine = await Engine.create({
+            fs: new MemDocFs().writeFile("/c/a.md", "body\n"),
+            sources: [{ name: "shop", dir: "/c" }],
+        });
+        const index = new IndexTracker(engine, () => 0, false);
+        const rest = new Rest({ engine, version: "x", index });
+
+        // --- When ---
+        const status = await get(rest, "/status");
+        const reindexed = await rest.handle({
+            method: "POST",
+            path: "/status/reindex",
+            query: "",
+        });
+
+        // --- Then ---
+        expect(status.status).toBe(200);
+        expect(JSON.parse(status.body)).toEqual({
+            generation: 0,
+            indexed_at: "1970-01-01T00:00:00.000Z",
+            docs: 1,
+            watching: false,
+            pending: false,
+            last_error: "",
+        });
+        expect(reindexed.status).toBe(200);
+        expect(JSON.parse(reindexed.body)).toMatchObject({ generation: 1 });
+    });
+
+    it("is not routed without an index tracker", async () => {
+        // --- Given ---
+        const { rest } = await newRest();
+
+        // --- When ---
+        const have = await get(rest, "/status");
+
+        // --- Then ---
+        expect(have.status).toBe(404);
     });
 });
 

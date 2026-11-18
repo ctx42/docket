@@ -21,7 +21,6 @@ import type { Readable, Writable } from "node:stream";
 
 import {
     CLOSED_DIR,
-    CloseReplacedError,
     type Config,
     checkMCPJSON,
     type DocFs,
@@ -32,6 +31,7 @@ import {
     fromDate,
     type Gap,
     Glossary,
+    IndexTracker,
     loadConfig,
     MILLISECOND,
     type Move,
@@ -159,6 +159,7 @@ export async function run(opts: RunOptions): Promise<void> {
         log(
             `indexed ${eng.listDocs().length} documents in ${since(now, start)}`,
         );
+        const index = new IndexTracker(eng, Date.now, ntf !== undefined);
 
         let store: FileStore | undefined;
         if (cfg.gaps !== "") {
@@ -194,10 +195,16 @@ export async function run(opts: RunOptions): Promise<void> {
             cfg.glossary !== "" ? new Glossary(eng, cfg.glossary) : undefined;
 
         if (ntf !== undefined) {
-            const stop = startWatch(log, ntf, cfg, async () => {
-                await reload(log, now, eng);
-                if (store !== undefined) await logStale(log, store);
-            });
+            const stop = startWatch(
+                log,
+                ntf,
+                cfg,
+                async () => {
+                    await reload(log, now, index);
+                    if (store !== undefined) await logStale(log, store);
+                },
+                () => index.signal(),
+            );
             cleanup.push(stop);
             log(
                 `watching sources for changes (debounce ${formatDuration(cfg.watch.debounce)})`,
@@ -207,6 +214,7 @@ export async function run(opts: RunOptions): Promise<void> {
         const deps: ToolDeps = {
             engine: eng,
             version: opts.version,
+            index,
             logErr: (err) => log(`request failed: ${errorText(err)}`),
         };
         if (store !== undefined) deps.store = store;
@@ -674,34 +682,23 @@ export async function logStale(
     log(`stale gaps (${list.length}): ${list.map((g) => g.id).join(", ")}`);
 }
 
-/** Reloader is the part of the engine reload drives. */
-export interface Reloader {
-    reload(): Promise<void>;
-    listDocs(): readonly unknown[];
-}
-
 /**
- * reload rebuilds the engine's index and logs the outcome; a failure to
- * close the replaced index is logged beside the success.
+ * reload rebuilds the index through index and logs the outcome; a failure
+ * to close the replaced index is logged beside the success.
  */
 export async function reload(
     log: (line: string) => void,
     now: () => number,
-    eng: Reloader,
+    index: Pick<IndexTracker, "reindex">,
 ): Promise<void> {
     const start = now();
-    let replaced: unknown;
-    try {
-        await eng.reload();
-    } catch (err) {
-        if (!(err instanceof CloseReplacedError)) {
-            log(`reindex failed, serving previous index: ${errorText(err)}`);
-            return;
-        }
-        replaced = err;
+    const res = await index.reindex();
+    if (!res.ok) {
+        log(`reindex failed, serving previous index: ${res.warning}`);
+        return;
     }
-    let msg = `reindexed ${eng.listDocs().length} documents in ${since(now, start)}`;
-    if (replaced !== undefined) msg += `; ${errorText(replaced)}`;
+    let msg = `reindexed ${res.docs} documents in ${since(now, start)}`;
+    if (res.warning !== "") msg += `; ${res.warning}`;
     log(msg);
 }
 
@@ -714,12 +711,14 @@ export function startWatch(
     ntf: Notifier,
     cfg: Config,
     rebuild: () => Promise<void>,
+    onSignal?: () => void,
 ): () => Promise<void> {
     const ctl = new AbortController();
     const done = runLoop(ntf, {
         debounceMs: Number(cfg.watch.debounce / MILLISECOND),
         rebuild,
         warn: (err) => log(err.message),
+        ...(onSignal === undefined ? {} : { onSignal }),
         signal: ctl.signal,
     });
     return async () => {

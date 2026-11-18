@@ -33,6 +33,7 @@ import {
     refJSON,
     refsError,
     reportGap,
+    stateJSON,
     type ToolDeps,
     updatePatch,
 } from "../mcp/tools.ts";
@@ -116,6 +117,16 @@ export class Rest {
             headers: { "Content-Type": "application/yaml" },
             body: OPENAPI_YAML,
         }));
+        if (deps.index !== undefined) {
+            const index = deps.index;
+            this.add("GET", "/status", async () =>
+                json(200, stateJSON(index.state())),
+            );
+            this.add("POST", "/status/reindex", async () => {
+                await index.reindex();
+                return json(200, stateJSON(index.state()));
+            });
+        }
         if (deps.store !== undefined) this.gapRoutes(deps.store);
         if (deps.glossary !== undefined) {
             const gls = deps.glossary;

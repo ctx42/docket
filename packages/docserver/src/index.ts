@@ -55,6 +55,7 @@ export * from "./util/cancel.ts";
 export * from "./util/mutex.ts";
 export * from "./util/timers.ts";
 export * from "./watch/loop.ts";
+export * from "./watch/status.ts";
 export * from "./yamlv3/decode.ts";
 export * from "./yamlv3/encode.ts";
 export * from "./yamlv3/node.ts";

@@ -20,8 +20,10 @@ import {
     type Filter,
     fromDate,
     type Gap,
+    IndexTracker,
     type Move,
     type Project,
+    type Reindexable,
     TidyError,
 } from "@docket/docserver";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -480,6 +482,10 @@ describe("logStale", () => {
 });
 
 describe("reload", () => {
+    /** tracker tracks eng with a still clock, watching nothing. */
+    const tracker = (eng: Reindexable): IndexTracker =>
+        new IndexTracker(eng, () => 0, false);
+
     // go: Test_reload
     it("reindexes and logs the document count", async () => {
         // --- Given ---
@@ -488,7 +494,7 @@ describe("reload", () => {
         writeMD(base, "paperback.md", "Couriers ship paperbacks.\n");
 
         // --- When ---
-        await reload(log, () => performance.now(), eng);
+        await reload(log, () => performance.now(), tracker(eng));
 
         // --- Then ---
         expect(serr).toContain("reindexed 2 documents in ");
@@ -504,7 +510,7 @@ describe("reload", () => {
         fs.rmSync(base, { recursive: true, force: true });
 
         // --- When ---
-        await reload(log, () => performance.now(), eng);
+        await reload(log, () => performance.now(), tracker(eng));
 
         // --- Then ---
         const want =
@@ -522,10 +528,11 @@ describe("reload", () => {
                     new CloseReplacedError(new Error("disk on fire")),
                 ),
             listDocs: () => [{ id: "shop/a.md" }, { id: "shop/b.md" }],
+            generation: () => 1,
         };
 
         // --- When ---
-        await reload(log, () => 0, eng);
+        await reload(log, () => 0, tracker(eng));
 
         // --- Then ---
         const want =

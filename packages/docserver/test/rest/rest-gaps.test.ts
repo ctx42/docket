@@ -23,6 +23,7 @@ import {
     type RestResponse,
     UPDATE,
 } from "../../src/rest/rest.ts";
+import { IndexTracker } from "../../src/watch/status.ts";
 import { MapResolver, TEST_EPOCH } from "../gaps/fixtures.ts";
 import { rankEngine } from "../mcp/support.ts";
 import { MemDocFs } from "../support/mem-doc-fs.ts";
@@ -93,6 +94,8 @@ function newStore(): { store: FileStore; mfs: MemDocFs } {
 interface RestOptions {
     store?: FileStore;
     glossary?: boolean;
+    /** index mounts the index status routes. */
+    index?: boolean;
 }
 
 /**
@@ -135,6 +138,9 @@ async function newRest(
         ...(opts.store === undefined ? {} : { store: opts.store }),
         ...(opts.glossary === true
             ? { glossary: new Glossary(engine, "shop/glossary") }
+            : {}),
+        ...(opts.index === true
+            ? { index: new IndexTracker(engine, () => 0, false) }
             : {}),
     });
 }
@@ -1167,7 +1173,7 @@ describe("OpenAPI description", () => {
             }
         }
         await newRest(
-            { store: newStore().store, glossary: true },
+            { store: newStore().store, glossary: true, index: true },
             (deps) => new Recorder(deps),
         );
 
@@ -1184,6 +1190,8 @@ describe("OpenAPI description", () => {
                 "/docs",
                 "/docs/{id}",
                 "/refs/check",
+                "/status",
+                "/status/reindex",
                 "/openapi.yaml",
                 "/glossary",
                 "/gaps",

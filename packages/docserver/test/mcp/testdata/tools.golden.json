@@ -242,6 +242,52 @@
       }
     },
     {
+      "description": "Report how current the search index is: its generation (0 for the index built at start, one more per rebuild), when it was built, how many documents it holds, whether the server rebuilds on source changes (watching), whether a source changed since the last rebuild began (pending), and why the last rebuild failed (last_error). With reindex true it rebuilds first: use it after writing a document that search must find.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reindex": {
+            "type": "boolean",
+            "description": "rebuild the index before reporting; omit to only report"
+          }
+        },
+        "additionalProperties": false
+      },
+      "name": "index_status",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "generation": {
+            "type": "integer"
+          },
+          "indexed_at": {
+            "type": "string"
+          },
+          "docs": {
+            "type": "integer"
+          },
+          "watching": {
+            "type": "boolean"
+          },
+          "pending": {
+            "type": "boolean"
+          },
+          "last_error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "generation",
+          "indexed_at",
+          "docs",
+          "watching",
+          "pending",
+          "last_error"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
       "description": "List the id, path, trust rank, and title of every document in the corpus, or of one folder; with fields, also each document's values of those fields.",
       "inputSchema": {
         "type": "object",

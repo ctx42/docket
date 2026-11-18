@@ -54,6 +54,39 @@ describe("runLoop", () => {
         await loop;
     });
 
+    it("reports every change signal, during a rebuild too", async () => {
+        // --- Given ---
+        const ntf = new Relay();
+        const ctl = new AbortController();
+        let seen = 0;
+        let release = (): void => {};
+        const loop = runLoop(ntf, {
+            debounceMs: 10,
+            rebuild: () =>
+                new Promise<void>((r) => {
+                    release = r;
+                }),
+            warn: () => {},
+            onSignal: () => {
+                seen++;
+            },
+            signal: ctl.signal,
+        });
+
+        // --- When ---
+        ntf.signal();
+        await vi.advanceTimersByTimeAsync(10);
+        ntf.signal();
+        release();
+
+        // --- Then ---
+        expect(seen).toBe(2);
+        ctl.abort();
+        await vi.advanceTimersByTimeAsync(10);
+        release();
+        await loop;
+    });
+
     // go: Test_Loop_Run_waits_for_quiet
     it("waits for a quiet window", async () => {
         // --- Given ---

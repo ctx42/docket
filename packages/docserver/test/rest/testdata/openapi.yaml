@@ -177,6 +177,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /status:
+    get:
+      summary: How current the index is
+      description: >
+        Reports the index generation (0 for the index built at start, one
+        more per rebuild), when it was built, how many documents it holds,
+        whether the server rebuilds on source changes, whether a source
+        changed since the last rebuild began, and why the last rebuild
+        failed. Mirrors the MCP index_status tool.
+      operationId: getStatus
+      responses:
+        "200":
+          description: The index status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndexStatus"
+  /status/reindex:
+    post:
+      summary: Rebuild the index
+      description: >
+        Rebuilds the index, then reports its status as GET /status does. A
+        failed rebuild keeps the previous index serving and shows in
+        last_error. Mirrors index_status with reindex true.
+      operationId: reindex
+      responses:
+        "200":
+          description: The index status after the rebuild.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndexStatus"
   /openapi.yaml:
     get:
       summary: This document
@@ -764,6 +796,31 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RefCheck"
+    IndexStatus:
+      type: object
+      required: [generation, indexed_at, docs, watching, pending, last_error]
+      properties:
+        generation:
+          type: integer
+          description: Rebuilds since start; 0 for the index built at start.
+        indexed_at:
+          type: string
+          format: date-time
+          description: When the serving index was built.
+        docs:
+          type: integer
+          description: The number of indexed documents.
+        watching:
+          type: boolean
+          description: Whether the server rebuilds on source changes.
+        pending:
+          type: boolean
+          description: >
+            Whether a source changed since the last rebuild began, so search
+            may not show it yet.
+        last_error:
+          type: string
+          description: Why the last rebuild failed; empty when it did not.
     RefCheck:
       type: object
       required: [ref, found]

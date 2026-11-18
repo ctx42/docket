@@ -19,6 +19,7 @@ import { FileStore } from "../../src/gaps/file-store.ts";
 import { Glossary } from "../../src/glossary/glossary.ts";
 import { newMcpServer, type ToolDeps, Tools } from "../../src/mcp/tools.ts";
 import { DocResolver } from "../../src/resolver/resolver.ts";
+import { IndexTracker } from "../../src/watch/status.ts";
 import { MemDocFs } from "../support/mem-doc-fs.ts";
 
 /** ROOT is where the bookshop example lives in the MemDocFs. */
@@ -67,7 +68,11 @@ export async function bookshop(
         sources,
         ranking: { precedence: cfg.precedence, unranked: cfg.initiatives },
     });
-    const deps: ToolDeps = { engine, version: "0.0.0-oracle" };
+    const deps: ToolDeps = {
+        engine,
+        version: "0.0.0-oracle",
+        index: new IndexTracker(engine, () => 0, false),
+    };
     if (opts.store !== false && cfg.gaps !== "") {
         deps.store = new FileStore(
             mfs,

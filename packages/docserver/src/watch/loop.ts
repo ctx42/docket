@@ -83,6 +83,8 @@ export interface LoopOptions {
     rebuild: () => void | Promise<void>;
     /** warn receives the notifier's non-fatal errors. */
     warn: (err: Error) => void;
+    /** onSignal, when set, hears each change signal, during a rebuild too. */
+    onSignal?: () => void;
     /** signal stops the loop once aborted. */
     signal?: AbortLike;
 }
@@ -147,6 +149,7 @@ export function runLoop(ntf: Notifier, opts: LoopOptions): Promise<void> {
         ntf.listen({
             change: () => {
                 if (stopped) return;
+                opts.onSignal?.();
                 if (rebuilding) pending = true;
                 else arm();
             },

@@ -348,12 +348,22 @@ describe("run", { timeout: 30_000 }, () => {
         expect(res.status).toBe(200);
         expect(await res.text()).toContain("shop/catalog/epub.md");
 
+        res = await fetch(`${base}/status`);
+        expect(res.status).toBe(200);
+        expect(await res.json()).toMatchObject({
+            generation: 0,
+            docs: 1,
+            watching: false,
+            pending: false,
+            last_error: "",
+        });
+
         // --- When --- MCP tools over /mcp.
         const client = await connect(base);
         const tools = await client.listTools();
 
         // --- Then ---
-        expect(tools.tools).toHaveLength(4);
+        expect(tools.tools).toHaveLength(5);
         const have = await call(client, "get_doc", {
             id: "shop/catalog/epub.md",
         });
@@ -505,7 +515,7 @@ describe("run", { timeout: 30_000 }, () => {
         expect(res.isError).toBeFalsy();
         expect(res.structuredContent).toEqual({ gap_id: "gap-0001" });
         const tools = await client.listTools();
-        expect(tools.tools).toHaveLength(12);
+        expect(tools.tools).toHaveLength(13);
         await client.close();
 
         srv.ctl.abort();
@@ -616,7 +626,7 @@ describe("run", { timeout: 30_000 }, () => {
         expect(textOf(gls)).not.toContain("Users");
 
         // --- Then --- MCP adds glossary_terms and the gap tools.
-        expect((await client.listTools()).tools).toHaveLength(13);
+        expect((await client.listTools()).tools).toHaveLength(14);
         await client.close();
 
         srv.ctl.abort();
