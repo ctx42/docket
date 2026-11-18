@@ -233,11 +233,15 @@ async function preflightDeps(rt: PluginRuntime): Promise<PreflightDeps> {
     };
 }
 
-/** pushSelected pushes exactly the given dests, creating any confirmed new pages. */
+/**
+ * pushSelected pushes exactly the given dests, creating any confirmed new
+ * pages and keeping back the reply drafts in `hold` (dest → draft keys).
+ */
 export async function pushSelected(
     rt: PluginRuntime,
     reporter: Reporter,
     dests: string[],
+    hold: Map<string, Set<string>> = new Map(),
 ): Promise<PushOutcome> {
     const { links, healed } = await openLinkIndex(
         rt.fs,
@@ -265,6 +269,7 @@ export async function pushSelected(
         links,
         linksPath: rt.dirs.linksPath,
         flavor: resolveFlavor(rt.config.flavor),
+        hold,
     });
     reporter.discovered(dests.length);
     return pusher.pushDests(dests, plan);

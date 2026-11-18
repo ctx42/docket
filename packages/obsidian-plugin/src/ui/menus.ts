@@ -152,9 +152,7 @@ export function addReplyItem(
             .setTitle("Reply to comment…")
             .setIcon("reply")
             .setDisabled(plugin.controller.busy)
-            .onClick(
-                () => void plugin.controller.reply(toDest(file.path), ref),
-            ),
+            .onClick(() => void plugin.controller.reply(file, ref)),
     );
 }
 

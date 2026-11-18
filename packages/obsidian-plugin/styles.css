@@ -1086,6 +1086,22 @@ div.docket-review-row .docket-review-main {
     overflow-y: auto;
 }
 
+/* A reply draft waiting in the note for a push: its own color and icon. */
+.callout[data-callout="reply"] {
+    --callout-color: var(--callout-warning);
+    --callout-icon: lucide-reply;
+}
+
+/* Push review: a note's reply drafts, indented under its row. */
+.docket-review-reply {
+    display: flex;
+    align-items: baseline;
+    gap: var(--size-4-2);
+    padding: var(--size-2-1) 0 var(--size-2-1) var(--size-4-8);
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+}
+
 /* Reply dialog: the answered comment, then the reply's text box. */
 .docket-reply-quote {
     margin: 0 0 var(--size-4-3);

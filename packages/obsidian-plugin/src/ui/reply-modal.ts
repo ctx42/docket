@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 // The reply dialog: it shows the comment being answered and takes the reply's
-// text, so a user never types callout syntax. Obsidian glue; the thread under
+// text, so a user never types callout syntax. The reply is sent at once, or
+// saved as a draft in the note for the next push to send. Obsidian glue; the thread under
 // the cursor comes from note-actions.ts, sending from the controller.
 
 import type { CommentRef } from "@docket/core";
@@ -11,16 +12,29 @@ import { type App, Modal, Platform, Setting } from "obsidian";
 /** QUOTE_MAX caps the quoted comment, so a long one leaves room to write. */
 const QUOTE_MAX = 600;
 
+/** ReplyAnswer is the dialog's answer: send the text now, or keep it as a draft. */
+export interface ReplyAnswer {
+    action: "send" | "draft";
+    /** The reply, trimmed, never empty. */
+    text: string;
+}
+
 /**
- * replyModal asks for a reply to the comment `ref`, resolving with the text
- * (trimmed, never empty) when the user sends it, or null when they cancel.
- * Ctrl+Enter (Cmd+Enter on macOS) sends too.
+ * replyModal asks for a reply to the comment `ref`, starting from the thread's
+ * draft `draft` when it has one. It resolves with the text and whether to
+ * send it now or save it as the draft, or null when the user cancels.
+ * Ctrl+Enter (Cmd+Enter on macOS) sends.
  */
-export function replyModal(app: App, ref: CommentRef): Promise<string | null> {
+export function replyModal(
+    app: App,
+    ref: CommentRef,
+    draft: string | null,
+): Promise<ReplyAnswer | null> {
     return new Promise((resolve) => {
         let answered = false;
         const who = ref.author === "" ? "comment" : ref.author;
-        const modal = new Modal(app).setTitle(`Reply to ${who}`);
+        const verb = draft === null ? "Reply" : "Edit draft reply";
+        const modal = new Modal(app).setTitle(`${verb} to ${who}`);
         const el = modal.contentEl;
         if (ref.text !== "") {
             const quote =
@@ -40,35 +54,45 @@ export function replyModal(app: App, ref: CommentRef): Promise<string | null> {
                     "Your reply. Markdown works: **bold**, [link](url).",
             },
         });
+        area.value = draft ?? "";
         const key = Platform.isMacOS ? "Cmd" : "Ctrl";
         el.createEl("p", {
             cls: "setting-item-description",
-            text: `Send posts it to Confluence at once (${key}+Enter).`,
+            text:
+                `Send posts it to Confluence at once (${key}+Enter). ` +
+                "Save as draft keeps it in the note under the comment; " +
+                "your next push offers to send it.",
         });
-        const send = (): void => {
+        const answer = (action: ReplyAnswer["action"]): void => {
             const text = area.value.trim();
             if (text === "") return;
             answered = true;
-            resolve(text);
+            resolve({ action, text });
             modal.close();
         };
-        let ok: HTMLButtonElement | null = null;
+        const buttons: HTMLButtonElement[] = [];
         new Setting(el)
             .addButton((b) =>
                 b.setButtonText("Cancel").onClick(() => modal.close()),
             )
             .addButton((b) => {
-                ok = b.buttonEl;
-                b.setButtonText("Send").setCta().onClick(send);
+                buttons.push(b.buttonEl);
+                b.setButtonText("Save as draft").onClick(() => answer("draft"));
+            })
+            .addButton((b) => {
+                buttons.push(b.buttonEl);
+                b.setButtonText("Send")
+                    .setCta()
+                    .onClick(() => answer("send"));
             });
         const sync = (): void => {
-            if (ok !== null) ok.disabled = area.value.trim() === "";
+            for (const b of buttons) b.disabled = area.value.trim() === "";
         };
         area.oninput = sync;
         area.onkeydown = (e) => {
             if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
-                send();
+                answer("send");
             }
         };
         sync();

@@ -98,6 +98,26 @@ export function reviewModel(entries: PreflightEntry[]): ReviewModel {
     return { rows, hidden };
 }
 
+/**
+ * reviewHold is the drafts a push keeps back, by note dest: the ones the user
+ * unticked (`unticked`) and every draft that cannot be sent. Notes holding
+ * nothing are left out.
+ */
+export function reviewHold(
+    entries: PreflightEntry[],
+    unticked: Map<string, Set<string>>,
+): Map<string, Set<string>> {
+    const hold = new Map<string, Set<string>>();
+    for (const e of entries) {
+        const keys = new Set(unticked.get(e.dest));
+        for (const r of e.replies) {
+            if (r.mark !== "") keys.add(r.key);
+        }
+        if (keys.size > 0) hold.set(e.dest, keys);
+    }
+    return hold;
+}
+
 /** NewChoice is a new note's review answer. */
 export type NewChoice = "later" | "create" | "never";
 

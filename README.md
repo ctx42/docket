@@ -574,19 +574,42 @@ alongside the body:
   next pull), and **dangling** inline comments — ones whose highlighted text was
   deleted, so the anchor no longer exists in the body.
 
-Comments are **managed on Confluence**, with two exceptions: the Obsidian
-plugin can **reply** to a comment, and a push can **resolve** an inline comment.
-A push **strips** the callouts and `[^cf-…]` anchors before reconstructing the
-body, so it never sends a reply, an edit, or a new comment. Typing a reply
-callout into the note does nothing; use the reply command below.
+Comments are **managed on Confluence**, with two exceptions: you can **reply**
+to a comment, and a push can **resolve** an inline comment. A push **strips**
+the callouts, reply drafts, and `[^cf-…]` anchors before reconstructing the
+body, so none of them reach the page itself. A push never edits or creates a
+comment of its own.
 
-- **Reply** in Obsidian: right-click inside a `[!comment]` callout and choose
-  **Reply to comment…** (or run that command from the command palette with the
-  cursor in the callout). Write the reply and click **Send**. It goes to
-  Confluence at once, not with the next push, and the note is pulled so the
-  reply shows as a callout. Markdown works: bold, links, lists. A reply always
-  answers the thread, even when the cursor is in one of its replies. The CLI
-  has no reply command; reply in the Confluence UI there.
+- **Reply** in Obsidian: click the reply arrow on a `[!comment]` callout, or
+  right-click inside it and choose **Reply to comment…** (also in the command
+  palette). Write the reply; Markdown works: bold, links, lists. **Send**
+  posts it to Confluence at once and pulls the note, so the reply shows as a
+  callout. **Save as draft** keeps it in the note, right under the comment,
+  for a later push:
+
+  ```
+  > [!comment] id:123 · @Jane Doe · … · open
+  > Which devices?
+
+  > [!reply] draft
+  > Only the T2 loggers.
+  ```
+
+  Opening the reply dialog on a comment that has a draft edits that draft. A
+  reply always answers the thread, even from one of its replies.
+- **Drafts go out with a push.** The push review (and the CLI push, which asks
+  in a list) shows each draft ticked; untick one to keep it for a later push.
+  `docket push --yes` sends them all. A sent draft leaves the note and comes
+  back as a reply callout. You can also write a `> [!reply] draft` block by
+  hand, after a blank line under the comment's callout.
+- A pull keeps your drafts under their comments. When a comment is resolved
+  or deleted on Confluence before you push, its draft stays where it was and
+  its first line says so (`> [!reply] draft · thread id:123 is resolved on
+  Confluence`); a push does not send it. Copy the text elsewhere, or delete it.
+- A push **fails** before anything is sent when a `[!reply]` draft is not
+  under a comment, is empty, or sits inside a comment callout with no blank
+  line before it, and when a `[!comment]` callout has no id (a reply typed by
+  hand). Use the reply button or a `[!reply]` draft instead.
 
 - **Resolve** an inline comment by removing **both** its `[!comment]` callout and
   its `[^cf-…]` anchor from the note, then pushing. Deleting the whole commented

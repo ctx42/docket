@@ -592,7 +592,7 @@ export default class docketPlugin extends Plugin {
                     editor.getCursor().line,
                 );
                 if (ref === null) return false;
-                if (!checking) void c.reply(toDest(file.path), ref);
+                if (!checking) void c.reply(file, ref);
                 return true;
             },
         });
@@ -657,7 +657,7 @@ export default class docketPlugin extends Plugin {
             new Notice(`docket: comment id:${id} is not in the note; pull it`);
             return;
         }
-        await this.controller.reply(toDest(file.path), ref);
+        await this.controller.reply(file, ref);
     }
 
     /** activeNote is the active Markdown note, or null. */

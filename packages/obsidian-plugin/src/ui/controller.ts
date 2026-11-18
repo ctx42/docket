@@ -13,6 +13,7 @@ import {
     type Choice,
     type CommentRef,
     describeHolder,
+    draftOf,
     overwrites,
     type PreflightEntry,
     type PublishPlan,
@@ -21,10 +22,12 @@ import {
     publish,
     type RemoteBody,
     RunLockError,
+    removeDraft,
     replyToComment,
     type StatusReport,
+    upsertDraft,
 } from "@docket/core";
-import { type App, MarkdownView, Notice } from "obsidian";
+import { type App, MarkdownView, Notice, type TFile } from "obsidian";
 import type docketPlugin from "../main.ts";
 import { buildRuntime, type PluginRuntime } from "../runtime.ts";
 import { confirmModal } from "./confirm.ts";
@@ -36,6 +39,7 @@ import {
     pullVault,
     pushSelected,
     type Target,
+    toDest,
     vaultStatus,
 } from "./operations.ts";
 import { reviewPush } from "./push-modal.ts";
@@ -181,7 +185,12 @@ export class SyncController {
         if (choice === null) return;
         await this.execute("pushing", async (rt, reporter) => {
             await markNever(rt, choice.never);
-            const outcome = await pushSelected(rt, reporter, choice.push);
+            const outcome = await pushSelected(
+                rt,
+                reporter,
+                choice.push,
+                choice.hold,
+            );
             for (const e of outcome.errors) reporter.fail(e);
             reporter.setCounts({
                 ok: outcome.pushed,
@@ -239,17 +248,39 @@ export class SyncController {
     }
 
     /**
-     * reply asks for a reply to the comment thread `ref` of note `dest`, posts
-     * it to Confluence, then pulls the note, so the reply shows as a callout and
-     * push's record of the thread includes it.
+     * reply asks for a reply to the comment thread `ref` of note `file`,
+     * starting from the thread's draft when it has one. Saved as a draft, the
+     * reply goes into the note under the thread for a later push. Sent, it is
+     * posted to Confluence, the draft it came from leaves the note, and the
+     * note is pulled, so the reply shows as a callout and push's record of the
+     * thread includes it.
      */
-    async reply(dest: string, ref: CommentRef): Promise<void> {
+    async reply(file: TFile, ref: CommentRef): Promise<void> {
         if (this.refuseRun() || this.refuseBusy()) return;
-        const text = await replyModal(this.app, ref);
-        if (text === null) return;
+        await this.saveEditors();
+        const draft = draftOf(await this.app.vault.read(file), ref.id);
+        const answer = await replyModal(this.app, ref, draft);
+        if (answer === null) return;
+        if (answer.action === "draft") {
+            try {
+                await this.app.vault.process(file, (t) =>
+                    upsertDraft(t, ref.id, answer.text),
+                );
+                new Notice("docket: reply saved as a draft for your next push");
+            } catch (err) {
+                this.fail(err);
+            }
+            return;
+        }
+        const dest = toDest(file.path);
         await this.execute("replying", async (rt, reporter) => {
-            await replyToComment(rt, dest, ref.id, text);
+            await replyToComment(rt, dest, ref.id, answer.text);
             reporter.log(`replied to comment id:${ref.id}`);
+            if (draft !== null) {
+                await this.app.vault.process(file, (t) =>
+                    removeDraft(t, ref.id),
+                );
+            }
             const out = await pullNotes(rt, reporter, [dest]);
             for (const e of out.errors) reporter.fail(e);
             reporter.setTally(out.tally, out.errors.length);

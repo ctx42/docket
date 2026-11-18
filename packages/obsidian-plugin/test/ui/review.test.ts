@@ -7,6 +7,7 @@ import {
     changeGroups,
     type NewChoice,
     reviewCommit,
+    reviewHold,
     reviewModel,
     statusSections,
     statusText,
@@ -215,5 +216,32 @@ describe("changeGroups", () => {
         expect(have.map((g) => g.id)).toEqual(["ignored"]);
         expect(have[0]?.rows[0]?.name).toBe("quiet.md");
         expect(have[0]?.rows[0]?.row?.kind).toBe("ignored");
+    });
+});
+
+describe("reviewHold", () => {
+    it("holds the unticked drafts and every draft that cannot go", () => {
+        const a = {
+            ...entry("a.md", "modified"),
+            replies: [
+                { key: "C1#1", to: "", text: "x", mark: "" },
+                { key: "C1#2", to: "", text: "y", mark: "" },
+                {
+                    key: "C9#1",
+                    to: "",
+                    text: "z",
+                    mark: "thread id:C9 is gone",
+                },
+            ],
+        };
+        const b = {
+            ...entry("b.md", "modified"),
+            replies: [{ key: "C2#1", to: "", text: "x", mark: "" }],
+        };
+        const unticked = new Map([["/v/a.md", new Set(["C1#2"])]]);
+
+        const have = reviewHold([a, b], unticked);
+
+        expect(have).toEqual(new Map([["/v/a.md", new Set(["C1#2", "C9#1"])]]));
     });
 });

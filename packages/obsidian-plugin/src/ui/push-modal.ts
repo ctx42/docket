@@ -5,19 +5,24 @@
 // what goes to Confluence. Rows and commit semantics come from review.ts; this
 // file is DOM glue, verified by typecheck + manual load.
 
-import type { PreflightEntry } from "@docket/core";
+import { type PreflightEntry, replyLabel } from "@docket/core";
 import { type App, DropdownComponent, Modal, Setting } from "obsidian";
 import {
     type NewChoice,
     type ReviewRow,
     reviewCommit,
+    reviewHold,
     reviewModel,
 } from "./review.ts";
 
-/** PushChoice is the review's answer: the dests to push and to mark never. */
+/**
+ * PushChoice is the review's answer: the dests to push and to mark never, and
+ * the reply drafts to keep back, by dest → draft keys.
+ */
 export interface PushChoice {
     push: string[];
     never: string[];
+    hold: Map<string, Set<string>>;
 }
 
 /**
@@ -44,6 +49,7 @@ class PushReviewModal extends Modal {
     private done = false;
     private readonly picked = new Set<string>();
     private readonly answers = new Map<string, NewChoice>();
+    private readonly unticked = new Map<string, Set<string>>();
     private readonly boxes: HTMLInputElement[] = [];
     private goBtn: HTMLButtonElement | null = null;
 
@@ -132,6 +138,7 @@ class PushReviewModal extends Modal {
                 text: `Resolves comment ${c}`,
             });
         }
+        this.replies(list, r);
         if (r.control === "new") {
             const dd = new DropdownComponent(row);
             for (const [value, text] of NEW_OPTIONS) dd.addOption(value, text);
@@ -139,6 +146,31 @@ class PushReviewModal extends Modal {
                 this.answers.set(e.dest, v as NewChoice);
                 this.refresh();
             });
+        }
+    }
+
+    /**
+     * replies draws a note's reply drafts under its row: one ticked checkbox
+     * each, or a locked one for a draft that cannot be sent. Unticking keeps
+     * the draft in the note for a later push.
+     */
+    private replies(list: HTMLElement, r: ReviewRow): void {
+        if (r.control !== "pick") return;
+        const dest = r.entry.dest;
+        for (const reply of r.entry.replies) {
+            const row = list.createEl("label", {
+                cls: "docket-review-reply",
+            });
+            const box = row.createEl("input", { type: "checkbox" });
+            box.checked = reply.mark === "";
+            box.disabled = reply.mark !== "";
+            box.onchange = () => {
+                const keys = this.unticked.get(dest) ?? new Set<string>();
+                if (box.checked) keys.delete(reply.key);
+                else keys.add(reply.key);
+                this.unticked.set(dest, keys);
+            };
+            row.createSpan({ text: replyLabel(reply) });
         }
     }
 
@@ -152,7 +184,10 @@ class PushReviewModal extends Modal {
     }
 
     private commit(): void {
-        this.finish(reviewCommit(this.picked, this.answers));
+        this.finish({
+            ...reviewCommit(this.picked, this.answers),
+            hold: reviewHold(this.entries, this.unticked),
+        });
         this.close();
     }
 
