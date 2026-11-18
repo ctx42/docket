@@ -54,7 +54,6 @@ const PROJECT_SCHEMA = {
         "watch-debounce": { kind: "ptr", of: { kind: "duration" } },
         glossary: { kind: "string" },
         precedence: LIST,
-        kb: { kind: "string" },
         initiatives: { kind: "string" },
     },
 } as const satisfies Schema;
@@ -69,7 +68,6 @@ interface ProjectFile {
     watchDebounce: Duration | null;
     glossary: string;
     precedence: string[];
-    kb: string;
     initiatives: string;
 }
 
@@ -104,7 +102,6 @@ export async function loadProject(fs: DocFs, path: string): Promise<Config> {
         "watch-debounce": null,
         glossary: "",
         precedence: null,
-        kb: "",
         initiatives: "",
     };
     let front: string;
@@ -135,7 +132,6 @@ export async function loadProject(fs: DocFs, path: string): Promise<Config> {
         watchDebounce: pf["watch-debounce"] as Duration | null,
         glossary: pf["glossary"] as string,
         precedence: (pf["precedence"] as string[] | null) ?? [],
-        kb: pf["kb"] as string,
         initiatives: pf["initiatives"] as string,
     };
     try {
@@ -162,7 +158,6 @@ async function projectConfig(
     for (const [key, val] of [
         ["gaps", pf.gaps],
         ["glossary", pf.glossary],
-        ["kb", pf.kb],
         ["initiatives", pf.initiatives],
     ] as const) {
         relPath(key, val);
@@ -172,7 +167,6 @@ async function projectConfig(
     const cfg = emptyConfig();
     cfg.listen = `:${pf.mcpPort}`;
     cfg.gaps = resolvePath(root, pf.gaps);
-    cfg.kb = resolvePath(root, pf.kb);
     cfg.watch = {
         enabled: pf.watch,
         debounce: pf.watchDebounce ?? DEFAULT_DEBOUNCE,

@@ -73,7 +73,6 @@ describe("loadConfig (project-config.md)", () => {
             glossary: "upstream/bookshop/glossary",
             precedence: ["kb", "upstream/bookshop"],
             initiatives: "initiatives",
-            kb: `${ROOT}/kb`,
             project: { root: ROOT, server: "srd", port: 7777 },
         } satisfies Config);
     });
@@ -86,13 +85,21 @@ describe("loadConfig (project-config.md)", () => {
             enabled: false,
             debounce: 500n * MILLISECOND,
         });
-        expect([have.gaps, have.glossary, have.initiatives, have.kb]).toEqual([
-            "",
+        expect([have.gaps, have.glossary, have.initiatives]).toEqual([
             "",
             "",
             "",
         ]);
         expect(have.precedence).toEqual([]);
+    });
+
+    it("ignores kb, which only the srd skills read", async () => {
+        const have = await load(
+            project(`${HEAD}sources: [kb]\nkb: /elsewhere/kb\n`, "kb"),
+        );
+
+        expect(have.project?.server).toBe("srd");
+        expect(have).not.toHaveProperty("kb");
     });
 
     it("ignores srd-standard, which only the srd skills read", async () => {
@@ -246,11 +253,6 @@ describe("loadConfig (project-config.md)", () => {
             "absolute glossary",
             `${HEAD}sources: [kb]\nglossary: /kb/g\n`,
             /glossary path "\/kb\/g" must be relative/,
-        ],
-        [
-            "absolute kb",
-            `${HEAD}sources: [kb]\nkb: /kb\n`,
-            /kb path "\/kb" must be relative/,
         ],
         [
             "absolute initiatives",
@@ -584,7 +586,6 @@ describe("loadConfig and checkMCPJSON against Go", () => {
                 glossary: cfg.glossary,
                 precedence: cfg.precedence,
                 initiatives: cfg.initiatives,
-                kb: sub(cfg.kb),
                 project: cfg.project && {
                     ...cfg.project,
                     root: sub(cfg.project.root),

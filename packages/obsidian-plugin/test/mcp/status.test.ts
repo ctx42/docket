@@ -204,13 +204,14 @@ describe("serverKeyLines", () => {
         const have = serverKeyLines(NOTE);
 
         expect(have).toBe(
-            "kb: kb\nmcp-server: docs\nsources:\n  - docs\n  - kb # the KB",
+            "mcp-server: docs\nsources:\n  - docs\n  - kb # the KB",
         );
     });
 
     it("ignores keys the server does not read, the body, and line ends", () => {
         const other = NOTE.replace("srd-work: work", "srd-work: none")
             .replace("srd-standard: s.md", "srd-standard: t.md")
+            .replace("kb: kb", "kb: other")
             .replace("# Body", "# Other body")
             .replaceAll("\n", "\r\n");
 

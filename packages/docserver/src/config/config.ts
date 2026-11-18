@@ -80,8 +80,6 @@ export interface Config {
     precedence: string[];
     /** initiatives is the unranked path prefix (projects only). */
     initiatives: string;
-    /** kb is the resolved knowledge-base folder (projects only). */
-    kb: string;
     /** project is set for a project-config.md. */
     project: Project | null;
 }
@@ -104,7 +102,6 @@ export function emptyConfig(): Config {
         glossary: "",
         precedence: [],
         initiatives: "",
-        kb: "",
         project: null,
     };
 }

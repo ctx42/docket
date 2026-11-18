@@ -149,7 +149,6 @@ const SERVER_KEYS: ReadonlySet<string> = new Set([
     "watch-debounce",
     "glossary",
     "precedence",
-    "kb",
     "initiatives",
 ]);
 
