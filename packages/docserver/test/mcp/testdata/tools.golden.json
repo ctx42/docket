@@ -5,6 +5,78 @@
   },
   "tools": [
     {
+      "description": "Check stored references (citations) against the corpus: for each one, whether it still names a document, and a section when it carries #<anchor>. A reference matches by the document's id, by its path, or by a longer path ending in / and its path (match tail), as a checkout path does. A found reference carries the document's id and current path; cite the id. A lost one carries why, and candidates: documents with the same file name, which may be where it moved.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "the references to check, 1 to 100: ids or paths, each optionally followed by #<anchor>"
+          }
+        },
+        "required": ["refs"],
+        "additionalProperties": false
+      },
+      "name": "check_refs",
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "refs": {
+            "type": ["null", "array"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "found": {
+                  "type": "boolean"
+                },
+                "match": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "anchor": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "candidates": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["id", "path"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": ["ref", "found"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["refs"],
+        "additionalProperties": false
+      }
+    },
+    {
       "description": "Delete a draft gap's file. Only a draft can be deleted; deleting the highest-numbered draft frees its number.",
       "inputSchema": {
         "type": "object",

@@ -119,6 +119,30 @@ export interface DocInfo {
     title: string;
 }
 
+/** RefCheck is what {@link Engine.checkRefs} learned about one reference. */
+export interface RefCheck {
+    /** ref is the reference as given. */
+    ref: string;
+    found: boolean;
+    /**
+     * match is how a found reference named its document: by its id, by its
+     * path, or by a longer path ending in "/" and its path ("tail").
+     */
+    match?: "id" | "path" | "tail";
+    /** id and path are a found document's identity and current path. */
+    id?: string;
+    path?: string;
+    /** anchor is a found reference's heading anchor, "" for none. */
+    anchor?: string;
+    /** reason says why a reference was not found. */
+    reason?: string;
+    /** candidates are documents with a lost reference's file name. */
+    candidates?: { id: string; path: string }[];
+}
+
+/** MAX_CANDIDATES caps {@link RefCheck.candidates}. */
+const MAX_CANDIDATES = 5;
+
 /** DocRef locates an ingested document and its citation metadata. */
 export interface DocRef {
     id: string;
@@ -266,6 +290,91 @@ export class Engine {
             sourceURL: dref.sourceURL,
             text,
         };
+    }
+
+    /**
+     * checkRefs reports, for each reference, whether it still names a
+     * document, and a section when it carries "#<anchor>": by the
+     * document's id or path, or by a longer path ending in "/" and its path,
+     * as a checkout path does. A found reference carries the document's id
+     * and current path; a lost one carries why, and the documents that share
+     * its file name, which may be where it moved.
+     */
+    async checkRefs(refs: readonly string[]): Promise<RefCheck[]> {
+        const out: RefCheck[] = [];
+        for (const ref of refs) out.push(await this.checkRef(ref));
+        return out;
+    }
+
+    /** checkRef is {@link checkRefs} for one reference. */
+    private async checkRef(ref: string): Promise<RefCheck> {
+        const at = ref.indexOf("#");
+        const ident = at < 0 ? ref : ref.slice(0, at);
+        const anchor = at < 0 ? "" : ref.slice(at + 1);
+        const hit = this.locate(ident);
+        if (hit === undefined) {
+            return {
+                ref,
+                found: false,
+                reason: `${goQuote(ident)} names no corpus document`,
+                candidates: this.sameName(ident),
+            };
+        }
+        const { dref, match } = hit;
+        if (anchor !== "") {
+            try {
+                await this.getSection(
+                    match === "tail" ? dref.path : ident,
+                    anchor,
+                );
+            } catch (err) {
+                if (!isDocNotFound(err)) throw err;
+                const reason = (err as Error).message;
+                return { ref, found: false, reason, candidates: [] };
+            }
+        }
+        return {
+            ref,
+            found: true,
+            match,
+            id: dref.id,
+            path: dref.path,
+            anchor,
+        };
+    }
+
+    /**
+     * locate returns the document ident names by its id or path, else the
+     * one whose path ident ends with after a "/", the longest such path.
+     */
+    private locate(
+        ident: string,
+    ): { dref: DocRef; match: "id" | "path" | "tail" } | undefined {
+        const dref = this.snap.docs.get(ident);
+        if (dref !== undefined) {
+            const byId = dref.id === ident && dref.id !== dref.path;
+            return { dref, match: byId ? "id" : "path" };
+        }
+        let best: DocRef | undefined;
+        for (const doc of this.snap.list) {
+            if (!ident.endsWith(`/${doc.path}`)) continue;
+            if (best === undefined || doc.path.length > best.path.length) {
+                best = this.snap.docs.get(doc.path);
+            }
+        }
+        return best === undefined ? undefined : { dref: best, match: "tail" };
+    }
+
+    /** sameName lists the documents whose file name is ident's. */
+    private sameName(ident: string): { id: string; path: string }[] {
+        const name = ident.slice(ident.lastIndexOf("/") + 1);
+        if (name === "") return [];
+        return this.snap.list
+            .filter(
+                (doc) => doc.path.slice(doc.path.lastIndexOf("/") + 1) === name,
+            )
+            .slice(0, MAX_CANDIDATES)
+            .map((doc) => ({ id: doc.id, path: doc.path }));
     }
 
     /**

@@ -234,6 +234,50 @@ describe("GET /docs", () => {
     });
 });
 
+describe("POST /refs/check", () => {
+    it("reports each reference", async () => {
+        // --- Given ---
+        const { rest } = await newRest();
+
+        // --- When ---
+        const have = await rest.handle({
+            method: "POST",
+            path: "/refs/check",
+            query: "",
+            body: new TextEncoder().encode(
+                '{"refs":["intro-1","x/shop/intro.md"]}',
+            ),
+        });
+
+        // --- Then ---
+        expect(have.status).toBe(200);
+        const body = JSON.parse(have.body) as {
+            refs: { found: boolean; match: string; id: string }[];
+        };
+        expect(body.refs.map((r) => [r.found, r.match, r.id])).toEqual([
+            [true, "id", "intro-1"],
+            [true, "tail", "intro-1"],
+        ]);
+    });
+
+    it("refuses an empty list", async () => {
+        // --- Given ---
+        const { rest } = await newRest();
+
+        // --- When ---
+        const have = await rest.handle({
+            method: "POST",
+            path: "/refs/check",
+            query: "",
+            body: new TextEncoder().encode('{"refs":[]}'),
+        });
+
+        // --- Then ---
+        expect(have.status).toBe(400);
+        expect(have.body).toContain("refs must hold 1 to 100 references");
+    });
+});
+
 describe("GET /docs/{id...}", () => {
     it("returns one section for an id with an anchor", async () => {
         // --- Given ---

@@ -675,6 +675,86 @@ describe("Engine.search", () => {
     });
 });
 
+describe("Engine.checkRefs", () => {
+    /** refsEngine holds an identified page with a heading, and a plain one. */
+    function refsEngine(): Promise<Engine> {
+        const fs = new MemDocFs()
+            .writeFile("/d/a.md", "---\nid: doc-12\n---\n## Plans\n\nx\n")
+            .writeFile("/d/sub/b.md", "body\n")
+            .writeFile("/d/other/c.md", "body\n");
+        return create(fs, [{ name: "docs", dir: "/d" }]);
+    }
+
+    it.each([
+        ["an id", "doc-12", "id", "doc-12", "docs/a.md", ""],
+        [
+            "a path",
+            "docs/sub/b.md",
+            "path",
+            "docs/sub/b.md",
+            "docs/sub/b.md",
+            "",
+        ],
+        [
+            "an id and anchor",
+            "doc-12#plans",
+            "id",
+            "doc-12",
+            "docs/a.md",
+            "plans",
+        ],
+        [
+            "a checkout path",
+            "/home/u/vault/docs/sub/b.md",
+            "tail",
+            "docs/sub/b.md",
+            "docs/sub/b.md",
+            "",
+        ],
+    ])("finds %s", async (_, ref, match, id, path, anchor) => {
+        const eng = await refsEngine();
+
+        const [have] = await eng.checkRefs([ref]);
+
+        expect(have).toEqual({ ref, found: true, match, id, path, anchor });
+    });
+
+    it("reports an anchor the document lacks", async () => {
+        const eng = await refsEngine();
+
+        const [have] = await eng.checkRefs(["doc-12#none"]);
+
+        expect(have).toEqual({
+            ref: "doc-12#none",
+            found: false,
+            reason: 'document "doc-12" has no heading with anchor "none"',
+            candidates: [],
+        });
+    });
+
+    it("suggests documents with the same file name for a lost ref", async () => {
+        const eng = await refsEngine();
+
+        const [have] = await eng.checkRefs(["docs/old/b.md#x"]);
+
+        expect(have).toEqual({
+            ref: "docs/old/b.md#x",
+            found: false,
+            reason: '"docs/old/b.md" names no corpus document',
+            candidates: [{ id: "docs/sub/b.md", path: "docs/sub/b.md" }],
+        });
+    });
+
+    it("reports a ref with no likely document", async () => {
+        const eng = await refsEngine();
+
+        const [have] = await eng.checkRefs(["kb/none.md"]);
+
+        expect(have?.found).toBe(false);
+        expect(have?.candidates).toEqual([]);
+    });
+});
+
 describe("Engine.getDoc", () => {
     // go: Test_Engine_GetDoc
     it("returns the whole file with its metadata", async () => {

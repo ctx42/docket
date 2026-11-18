@@ -1183,6 +1183,7 @@ describe("OpenAPI description", () => {
                 "/search",
                 "/docs",
                 "/docs/{id}",
+                "/refs/check",
                 "/openapi.yaml",
                 "/glossary",
                 "/gaps",

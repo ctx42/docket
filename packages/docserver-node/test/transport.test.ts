@@ -97,6 +97,7 @@ describe("Streamable HTTP", () => {
         const have = res.structuredContent as { results: { id: string }[] };
         expect(have.results.map((r) => r.id)).toEqual(["shop/catalog/epub.md"]);
         expect((await client.listTools()).tools.map((t) => t.name)).toEqual([
+            "check_refs",
             "get_doc",
             "list_docs",
             "search",

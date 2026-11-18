@@ -30,6 +30,8 @@ import { utf8DecodeEscaped, utf8Encode } from "../gocompat/utf8.ts";
 import {
     type GapStore,
     gapJSON,
+    refJSON,
+    refsError,
     reportGap,
     type ToolDeps,
     updatePatch,
@@ -96,6 +98,19 @@ export class Rest {
         this.add("GET", "/search", (r) => this.search(r));
         this.add("GET", "/docs", (r) => this.docs(r));
         this.add("GET", "/docs/{id...}", (r) => this.doc(r));
+        this.add("POST", "/refs/check", (r) =>
+            this.body(r, CHECK_REFS, async (b) => {
+                const refs = (b["refs"] as string[] | null) ?? [];
+                const bad = refsError(refs);
+                if (bad !== undefined) return errorJSON(400, bad);
+                try {
+                    const out = await this.deps.engine.checkRefs(refs);
+                    return json(200, { refs: out.map(refJSON) });
+                } catch (err) {
+                    return this.internal(err);
+                }
+            }),
+        );
         this.add("GET", "/openapi.yaml", () => ({
             status: 200,
             headers: { "Content-Type": "application/yaml" },
@@ -437,6 +452,10 @@ export const UPDATE: RequestSchema = {
         asked: "*string",
         add_hit: "bool",
     },
+};
+export const CHECK_REFS: RequestSchema = {
+    name: "checkRefsRequest",
+    fields: { refs: "[]string" },
 };
 export const FILL: RequestSchema = {
     name: "fillRequest",

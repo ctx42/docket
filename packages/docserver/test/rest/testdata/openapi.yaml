@@ -147,6 +147,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /refs/check:
+    post:
+      summary: Check stored references
+      description: >
+        Reports, for each reference, whether it still names a document, and a
+        section when it carries #<anchor>. A reference matches by the
+        document's id, by its path, or by a longer path ending in / and its
+        path (match tail), as a checkout path does. A lost reference carries
+        why, and the documents with the same file name. Mirrors the MCP
+        check_refs tool.
+      operationId: checkRefs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckRefsRequest"
+      responses:
+        "200":
+          description: One result per reference, in the order given.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckRefsResponse"
+        "400":
+          description: The body is not valid, or holds no or too many refs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /openapi.yaml:
     get:
       summary: This document
@@ -713,6 +743,65 @@ components:
           description: >
             The asked fields the document has, keyed as asked; present only
             when fields is given.
+    CheckRefsRequest:
+      type: object
+      required: [refs]
+      properties:
+        refs:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+          description: >
+            The references to check: ids or paths, each optionally followed
+            by #<anchor>.
+    CheckRefsResponse:
+      type: object
+      required: [refs]
+      properties:
+        refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/RefCheck"
+    RefCheck:
+      type: object
+      required: [ref, found]
+      properties:
+        ref:
+          type: string
+          description: The reference as given.
+        found:
+          type: boolean
+        match:
+          type: string
+          enum: [id, path, tail]
+          description: How a found reference named its document.
+        id:
+          type: string
+          description: A found document's identity; cite this.
+        path:
+          type: string
+          description: A found document's current path.
+        anchor:
+          type: string
+          description: A found reference's heading anchor, empty for none.
+        reason:
+          type: string
+          description: Why a reference was not found.
+        candidates:
+          type: array
+          items:
+            type: object
+            required: [id, path]
+            properties:
+              id:
+                type: string
+              path:
+                type: string
+          description: >
+            Documents with a lost reference's file name, where it may have
+            moved.
     DocList:
       type: object
       required: [docs]

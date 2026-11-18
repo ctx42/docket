@@ -16,7 +16,7 @@ import {
     ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { type Engine, isDocNotFound } from "../engine/engine.ts";
+import { type Engine, isDocNotFound, type RefCheck } from "../engine/engine.ts";
 import {
     type BadFile,
     EC_BAD_FILE,
@@ -135,6 +135,13 @@ export class Tools {
         );
         this.handlers.set("search", (a) => this.search(a));
         this.handlers.set("get_doc", (a) => this.getDoc(a));
+        this.handlers.set("check_refs", async (a) => {
+            const refs = list(a, "refs");
+            const bad = refsError(refs);
+            if (bad !== undefined) throw new ToolError(bad);
+            const out = await this.deps.engine.checkRefs(refs);
+            return { refs: out.map(refJSON) };
+        });
         this.handlers.set("list_docs", async (a) =>
             this.listDocs(str(a, "folder"), a["fields"]),
         );
@@ -384,6 +391,30 @@ function intOverflow(name: string, args: Args): string | undefined {
             ? json.slice(at)
             : `${utf8Decode(rest.slice(0, 32))}...`;
     return `json: cannot unmarshal number ${window} overflows ${into}`;
+}
+
+/** refJSON is a {@link RefCheck} as check_refs answers it. */
+export function refJSON(rc: RefCheck): { [key: string]: GoJSON | undefined } {
+    return {
+        ref: rc.ref,
+        found: rc.found,
+        match: rc.match,
+        id: rc.id,
+        path: rc.path,
+        anchor: rc.anchor,
+        reason: rc.reason,
+        candidates: rc.candidates?.map((c) => ({ id: c.id, path: c.path })),
+    };
+}
+
+/** MAX_REFS caps the references one check_refs call takes. */
+export const MAX_REFS = 100;
+
+/** refsError says why refs cannot be checked, or undefined when they can. */
+export function refsError(refs: readonly string[]): string | undefined {
+    if (refs.length < 1 || refs.length > MAX_REFS)
+        return `refs must hold 1 to ${MAX_REFS} references`;
+    return undefined;
 }
 
 /** reportGap returns the gap report_gap's arguments describe. */

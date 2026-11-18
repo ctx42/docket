@@ -65,7 +65,7 @@ describe("tools/list", () => {
         const have = await names(client);
 
         // --- Then ---
-        expect(have).toHaveLength(3);
+        expect(have).toHaveLength(4);
         expect(have).toEqual(
             expect.arrayContaining(["search", "get_doc", "list_docs"]),
         );
@@ -85,7 +85,7 @@ describe("tools/list", () => {
         const have = await names(client);
 
         // --- Then ---
-        expect(have).toHaveLength(11);
+        expect(have).toHaveLength(12);
         expect(have).toEqual(
             expect.arrayContaining([
                 "report_gap",
@@ -112,7 +112,7 @@ describe("tools/list", () => {
         const have = await names(client);
 
         // --- Then ---
-        expect(have).toHaveLength(4);
+        expect(have).toHaveLength(5);
         expect(have).toContain("glossary_terms");
         expect(have).not.toContain("report_gap");
     });
@@ -127,7 +127,7 @@ describe("tools/list", () => {
         const have = await names(client);
 
         // --- Then ---
-        expect(have).toEqual(["get_doc", "list_docs", "search"]);
+        expect(have).toEqual(["check_refs", "get_doc", "list_docs", "search"]);
     });
 
     it("equals the Go server's tools/list and server info", async () => {
@@ -269,6 +269,64 @@ describe("search", () => {
             "doc/misc/c.md": 5,
             "initiatives/srd.md": undefined,
         });
+    });
+});
+
+describe("check_refs", () => {
+    it("reports each reference", async () => {
+        // --- Given ---
+        const { engine } = await identityEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "check_refs",
+            arguments: { refs: ["doc-12#license-plan", "gone.md"] },
+        });
+
+        // --- Then ---
+        expect(res.isError).toBeFalsy();
+        expect(decode(res)).toEqual({
+            refs: [
+                {
+                    ref: "doc-12#license-plan",
+                    found: true,
+                    match: "id",
+                    id: "doc-12",
+                    path: "shop/g.md",
+                    anchor: "license-plan",
+                },
+                {
+                    ref: "gone.md",
+                    found: false,
+                    reason: '"gone.md" names no corpus document',
+                    candidates: [],
+                },
+            ],
+        });
+    });
+
+    it.each([
+        ["no refs", { refs: [] }, "refs must hold 1 to 100 references"],
+        [
+            "too many refs",
+            { refs: Array.from({ length: 101 }, (_, i) => `r${i}`) },
+            "refs must hold 1 to 100 references",
+        ],
+    ])("refuses %s", async (_, args, want) => {
+        // --- Given ---
+        const { engine } = await identityEngine();
+        const client = await connect({ engine, version: "x" });
+
+        // --- When ---
+        const res = await client.callTool({
+            name: "check_refs",
+            arguments: args,
+        });
+
+        // --- Then ---
+        expect(res.isError).toBe(true);
+        expect(contentText(res)).toContain(want);
     });
 });
 
