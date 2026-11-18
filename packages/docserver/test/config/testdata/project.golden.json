@@ -935,7 +935,30 @@
       "kb/notes.txt": "x"
     },
     "want": {
-      "err": "validate config: srd-standard path \"../../s.md\" escapes the project root"
+      "config": {
+        "listen": ":7777",
+        "sources": {
+          "kb": {
+            "dir": "$ROOT/kb",
+            "file": ""
+          }
+        },
+        "gaps": "",
+        "watch": {
+          "enabled": false,
+          "debounce": 500000000
+        },
+        "glossary": "",
+        "precedence": null,
+        "initiatives": "",
+        "kb": "",
+        "project": {
+          "root": "$ROOT",
+          "server": "srd",
+          "port": 7777
+        }
+      },
+      "mcp_found": false
     }
   },
   {

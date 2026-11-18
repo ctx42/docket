@@ -198,7 +198,7 @@ describe("rereadsConfig", () => {
 
 describe("serverKeyLines", () => {
     const NOTE =
-        "---\nmcp-server: docs\nsources:\n  - docs\n  - kb # the KB\nkb: kb\nsrd-work: work\n---\n\n# Body\n";
+        "---\nmcp-server: docs\nsources:\n  - docs\n  - kb # the KB\nkb: kb\nsrd-standard: s.md\nsrd-work: work\n---\n\n# Body\n";
 
     it("keeps the lines of the keys the server reads", () => {
         const have = serverKeyLines(NOTE);
@@ -210,6 +210,7 @@ describe("serverKeyLines", () => {
 
     it("ignores keys the server does not read, the body, and line ends", () => {
         const other = NOTE.replace("srd-work: work", "srd-work: none")
+            .replace("srd-standard: s.md", "srd-standard: t.md")
             .replace("# Body", "# Other body")
             .replaceAll("\n", "\r\n");
 

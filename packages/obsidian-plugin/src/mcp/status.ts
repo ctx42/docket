@@ -151,7 +151,6 @@ const SERVER_KEYS: ReadonlySet<string> = new Set([
     "precedence",
     "kb",
     "initiatives",
-    "srd-standard",
 ]);
 
 /**

@@ -56,7 +56,6 @@ const PROJECT_SCHEMA = {
         precedence: LIST,
         kb: { kind: "string" },
         initiatives: { kind: "string" },
-        "srd-standard": { kind: "string" },
     },
 } as const satisfies Schema;
 
@@ -72,7 +71,6 @@ interface ProjectFile {
     precedence: string[];
     kb: string;
     initiatives: string;
-    srdStandard: string;
 }
 
 /**
@@ -108,7 +106,6 @@ export async function loadProject(fs: DocFs, path: string): Promise<Config> {
         precedence: null,
         kb: "",
         initiatives: "",
-        "srd-standard": "",
     };
     let front: string;
     try {
@@ -140,7 +137,6 @@ export async function loadProject(fs: DocFs, path: string): Promise<Config> {
         precedence: (pf["precedence"] as string[] | null) ?? [],
         kb: pf["kb"] as string,
         initiatives: pf["initiatives"] as string,
-        srdStandard: pf["srd-standard"] as string,
     };
     try {
         return await projectConfig(fs, file, posixClean(posixDir(path)));
@@ -168,7 +164,6 @@ async function projectConfig(
         ["glossary", pf.glossary],
         ["kb", pf.kb],
         ["initiatives", pf.initiatives],
-        ["srd-standard", pf.srdStandard],
     ] as const) {
         relPath(key, val);
     }

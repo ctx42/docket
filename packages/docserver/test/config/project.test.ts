@@ -95,6 +95,14 @@ describe("loadConfig (project-config.md)", () => {
         expect(have.precedence).toEqual([]);
     });
 
+    it("ignores srd-standard, which only the srd skills read", async () => {
+        const have = await load(
+            project(`${HEAD}sources: [kb]\nsrd-standard: ../../s.md\n`, "kb"),
+        );
+
+        expect(have.project?.server).toBe("srd");
+    });
+
     // go: Test_Load_project_cleans_source_entry
     it("cleans a source entry", async () => {
         const have = await load(project(`${HEAD}sources: [kb/]\n`, "kb"));
@@ -248,11 +256,6 @@ describe("loadConfig (project-config.md)", () => {
             "absolute initiatives",
             `${HEAD}sources: [kb]\ninitiatives: /i\n`,
             /initiatives path "\/i" must be relative/,
-        ],
-        [
-            "escaping srd-standard",
-            `${HEAD}sources: [kb]\nsrd-standard: ../../s.md\n`,
-            /srd-standard path "\.\.\/\.\.\/s\.md" escapes the project root/,
         ],
         [
             "glossary missing",
