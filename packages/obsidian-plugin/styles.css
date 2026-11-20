@@ -943,10 +943,71 @@
     overflow-wrap: anywhere;
     user-select: text;
 }
-.docket-log-wrap > summary {
-    cursor: var(--cursor);
+/* Last run tree: notes under their folders, like the file explorer. A
+   folder's expand-all/collapse-all pair (and the header's, for the whole
+   tree) shows only while its row is hovered. */
+.docket-run-acts {
+    display: flex;
+    align-items: center;
+    gap: var(--size-2-1);
+    visibility: hidden;
+}
+.docket-section-head .docket-run-acts {
+    align-self: center;
+    margin-left: auto;
+}
+.docket-section-head:hover .docket-run-acts,
+.docket-run-folder > .tree-item-self:hover .docket-run-acts,
+.docket-run-folder > .tree-item-self:focus-within .docket-run-acts {
+    visibility: visible;
+}
+.docket-run-folder > .tree-item-self {
+    align-items: center;
+}
+.docket-run-folder > .tree-item-self > .tree-item-inner {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.docket-run-entry .tree-item-inner {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.docket-run-icon {
+    color: var(--text-faint);
+}
+.docket-run-entry.is-added .docket-run-icon {
+    color: var(--text-success);
+}
+.docket-run-entry.is-updated .docket-run-icon {
+    color: var(--color-blue);
+}
+.docket-run-entry.is-updated .docket-run-icon circle {
+    r: 4px;
+    fill: currentColor;
+}
+.docket-run-entry.is-moved .docket-run-icon {
+    color: var(--text-accent);
+}
+.docket-run-entry.is-conflict .docket-run-icon,
+.docket-run-entry.is-warn .docket-run-icon {
+    color: var(--text-warning);
+}
+.docket-run-entry.is-deleted .docket-run-icon,
+.docket-run-entry.is-err .docket-run-icon {
+    color: var(--text-error);
+}
+.docket-run-entry.is-deleted .docket-change-name {
     color: var(--text-muted);
+    text-decoration: line-through;
+}
+.docket-run-notes {
+    display: flex;
+    flex-direction: column;
     font-size: var(--font-ui-smaller);
+    user-select: text;
 }
 .docket-log {
     display: flex;

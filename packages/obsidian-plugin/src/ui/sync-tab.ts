@@ -83,7 +83,7 @@ export class SyncTab {
         private readonly host: SyncHost,
     ) {
         this.changes = new ChangesList(plugin, () => host.rerender());
-        this.runLog = new RunLog(plugin);
+        this.runLog = new RunLog(plugin, () => host.rerender());
     }
 
     /** render draws the tab into `root`. */
