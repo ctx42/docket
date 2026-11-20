@@ -9,6 +9,8 @@ import {
     HISTORY_CAP,
     kbName,
     kbRepoId,
+    listId,
+    mergeHistory,
     parseHistoryCap,
     type RepoId,
     recordMessage,
@@ -81,7 +83,50 @@ describe("CommitHistory", () => {
 
         expect(store.lists.get("vault")).toEqual(["b"]);
         expect(store.lists.get("kb:kb")).toEqual(["d"]);
-        expect(h.get("sync")).toEqual([]);
+        expect(h.get("kb:other")).toEqual([]);
+    });
+
+    it("shares one list between the vault and Confluence repositories", () => {
+        const store = memStore();
+        const h = new CommitHistory(store.load, store.save, HISTORY_CAP);
+
+        h.record("sync", "docs: a");
+        h.record("vault", "docs: b");
+
+        expect(h.get("vault")).toEqual(["docs: b", "docs: a"]);
+        expect(h.get("sync")).toEqual(["docs: b", "docs: a"]);
+        expect(store.lists.get("vault")).toEqual(["docs: b", "docs: a"]);
+        expect(store.lists.has("sync")).toBe(false);
+        expect(h.get("kb:kb")).toEqual([]);
+    });
+
+    it("folds an old Confluence list into the shared one once", () => {
+        const store = memStore({ vault: ["v2", "v1"], sync: ["s", " v1 "] });
+        const h = new CommitHistory(store.load, store.save, 3);
+
+        const have = h.get("sync");
+
+        expect(have).toEqual(["v2", "v1", "s"]);
+        expect(h.get("vault")).toEqual(["v2", "v1", "s"]);
+        expect(store.lists.get("vault")).toEqual(["v2", "v1", "s"]);
+        expect(store.lists.get("sync")).toEqual([]);
+        expect(store.loads).toEqual(["vault", "sync"]);
+    });
+
+    it("leaves the vault list unsaved when there is no old Confluence list", () => {
+        const store = memStore({ vault: ["v"] });
+        const saves: RepoId[] = [];
+        const h = new CommitHistory(
+            store.load,
+            (repo, list) => {
+                saves.push(repo);
+                store.save(repo, list);
+            },
+            HISTORY_CAP,
+        );
+
+        expect(h.get("vault")).toEqual(["v"]);
+        expect(saves).toEqual([]);
     });
 });
 
@@ -108,6 +153,27 @@ describe("recordMessage", () => {
 
     it("ignores a blank message", () => {
         expect(recordMessage(["a"], "  \n", HISTORY_CAP)).toEqual(["a"]);
+    });
+});
+
+describe("listId", () => {
+    it("maps the sync repository to the vault's list", () => {
+        expect(listId("sync")).toBe("vault");
+        expect(listId("vault")).toBe("vault");
+        expect(listId("kb:kb")).toBe("kb:kb");
+    });
+});
+
+describe("mergeHistory", () => {
+    it("appends the older entries the list lacks, in order", () => {
+        const have = mergeHistory(["b", "a"], ["c", " a ", "d"]);
+
+        expect(have).toEqual(["b", "a", "c", "d"]);
+    });
+
+    it("keeps the list when the older one is empty", () => {
+        expect(mergeHistory(["a"], [])).toEqual(["a"]);
+        expect(mergeHistory([], ["a"])).toEqual(["a"]);
     });
 });
 

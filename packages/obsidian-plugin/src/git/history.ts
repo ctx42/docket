@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 // This device's commit-message history: the messages it committed, most recent
-// first, kept per repository and offered again in that repository's Git tab.
-// Pure, so it carries no Obsidian import; settings/store.ts persists it.
+// first, offered again in the Git tab. The vault and Confluence (sync)
+// repositories share one list; each knowledge base keeps its own. Pure, so it
+// carries no Obsidian import; settings/store.ts persists it.
 
 /** KbRepoId names a git knowledge base's repository by its vault folder. */
 export type KbRepoId = `kb:${string}`;
@@ -65,15 +66,35 @@ export function parseHistoryCap(text: string): number | null {
     return n <= HISTORY_CAP_MAX ? n : null;
 }
 
+/**
+ * listId is the repository whose stored list holds `repo`'s messages: the
+ * vault's for the vault and sync repositories, its own for a knowledge base.
+ */
+export function listId(repo: RepoId): RepoId {
+    return repo === "sync" ? "vault" : repo;
+}
+
+/**
+ * mergeHistory appends the entries of `older` missing from `list` (compared
+ * after trimming) to `list`, keeping each list's order.
+ */
+export function mergeHistory(
+    list: readonly string[],
+    older: readonly string[],
+): string[] {
+    const seen = new Set(list.map((m) => m.trim()));
+    return [...list, ...older.filter((m) => !seen.has(m.trim()))];
+}
+
 /** firstLine returns a message's first line, as the history picker shows it. */
 export function firstLine(message: string): string {
     return message.split(/\r?\n/, 1)[0] ?? "";
 }
 
 /**
- * CommitHistory holds this device's messages for every repository. It loads a
- * repository's list on first use, cut to the cap, and saves a list whenever it
- * changes.
+ * CommitHistory holds this device's messages for every repository, the vault
+ * and sync repositories sharing one list (see {@link listId}). It loads a list
+ * on first use, cut to the cap, and saves a list whenever it changes.
  */
 export class CommitHistory {
     private readonly lists = new Map<RepoId, string[]>();
@@ -86,17 +107,20 @@ export class CommitHistory {
 
     /** get returns `repo`'s messages, most recent first. */
     get(repo: RepoId): string[] {
-        let list = this.lists.get(repo);
+        const id = listId(repo);
+        let list = this.lists.get(id);
         if (list === undefined) {
-            list = capHistory(this.load(repo), this.cap);
-            this.lists.set(repo, list);
+            list = capHistory(this.load(id), this.cap);
+            if (id === "vault") list = this.foldSync(list);
+            this.lists.set(id, list);
         }
         return list;
     }
 
     /** record puts a message first in `repo`'s list and saves it. */
     record(repo: RepoId, message: string): void {
-        this.put(repo, recordMessage(this.get(repo), message, this.cap));
+        const id = listId(repo);
+        this.put(id, recordMessage(this.get(id), message, this.cap));
     }
 
     /**
@@ -108,6 +132,19 @@ export class CommitHistory {
         for (const [repo, list] of this.lists) {
             this.put(repo, capHistory(list, cap));
         }
+    }
+
+    /**
+     * foldSync returns the vault's `list` with a sync list stored before the
+     * two shared one appended; it saves the result and clears the old list.
+     */
+    private foldSync(list: string[]): string[] {
+        const old = this.load("sync");
+        if (old.length === 0) return list;
+        const merged = capHistory(mergeHistory(list, old), this.cap);
+        this.save("vault", merged);
+        this.save("sync", []);
+        return merged;
     }
 
     private put(repo: RepoId, list: string[]): void {
