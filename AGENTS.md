@@ -138,3 +138,24 @@ locations: `_assets/` (shared images), `.adf_cache/` (cached `.vN.json` ADF +
 - This is a from-scratch TS rewrite of an earlier Go tool. **Parity with the Go
   version is not a goal** — prefer correctness; the many `ported from pkg/…`
   comments are history, not a spec to match.
+
+## UI design
+
+- Last run list: the run's notes as a file-explorer tree (Obsidian tree items).
+  Within a folder: notes with a problem (conflict, warning, failure), then
+  sub-folders holding a problem, then other sub-folders, then other notes,
+  each by name with numbers by value. A chain of single folders merges into
+  one row (`doc/user_docs`).
+- A folder holding only routine results (updated, unchanged, skipped) starts
+  closed; in a run of at most 15 notes (`SMALL_RUN`) every folder starts open.
+- Run note row: outcome icon (added `plus` green, updated filled `dot` blue,
+  moved `arrow-right` accent, deleted `minus` red with the name struck out,
+  conflict or warning `alert-triangle` warning colour, failure red); the name
+  without `.md` (`_index.md` takes its folder's name); a faint detail line;
+  `vN` flair on the right; the full path as the tooltip.
+- Expand all / collapse all: the `chevrons-up-down` / `chevrons-down-up`
+  pair, shown only while a folder row (acts on its branch) or the Last run
+  header (acts on the whole tree) is hovered; hidden with `visibility` so
+  nothing shifts.
+- Rejected for the Last run list: groups by outcome, one flat line per note,
+  filter chips, source-control letters, and expand/collapse by depth level.
