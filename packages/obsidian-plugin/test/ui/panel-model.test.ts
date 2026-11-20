@@ -10,7 +10,6 @@ import {
     changeTooltip,
     destOf,
     followsEnd,
-    logLink,
     progressPercent,
     SYNC_FOLDER_SUGGESTION,
     setupStep,
@@ -162,19 +161,6 @@ describe("changeTooltip", () => {
         const have = changeTooltip("a.md", "", { error: "HTTP 500" });
 
         expect(have).toBe("a.md\nNo Confluence diff: HTTP 500");
-    });
-});
-
-describe("logLink", () => {
-    it("splits a line around the page name", () => {
-        expect(logLink("pulled a.md (v3)", "a.md")).toEqual({
-            before: "pulled ",
-            after: " (v3)",
-        });
-    });
-
-    it("is null when the line lacks the name", () => {
-        expect(logLink("pulled b.md", "a.md")).toBeNull();
     });
 });
 

@@ -161,19 +161,6 @@ export function changeTooltip(
     return tip.filter((t) => t !== "").join("\n");
 }
 
-/**
- * logLink splits a log line around the page name it reports, so the name can
- * link to its note, or returns null when the line does not hold the name.
- */
-export function logLink(
-    text: string,
-    name: string,
-): { before: string; after: string } | null {
-    const at = text.indexOf(name);
-    if (at < 0) return null;
-    return { before: text.slice(0, at), after: text.slice(at + name.length) };
-}
-
 /** destOf maps a syncRoot-relative page name back to its vault path. */
 export function destOf(syncRoot: string, name: string): string {
     return syncRoot === "" || syncRoot === "." ? name : `${syncRoot}/${name}`;
